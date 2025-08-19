@@ -41,6 +41,7 @@ $scores = mysqli_query($connection, $query);
                   <th>Enterprising</th>
                   <th>Conventional</th>
                   <th>Tanggal Tes</th>
+                  <th>Aksi</th>
                 </tr>
               </thead>
               <tbody>
@@ -60,6 +61,9 @@ $scores = mysqli_query($connection, $query);
                       <td><?php echo floatval($row['enterprising']); ?>%</td>
                       <td><?php echo floatval($row['conventional']); ?>%</td>
                       <td><?php echo htmlspecialchars($row['created_at']); ?></td>
+                      <td>
+                        <a href="admin_score_detail.php?score_id=<?php echo intval($row['score_id']); ?>" class="btn btn-sm btn-outline-success">Detail Tes</a>
+                      </td>
                     </tr>
                     <tr>
                       <td></td>
