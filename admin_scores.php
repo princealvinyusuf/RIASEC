@@ -6,7 +6,7 @@ if (empty($_SESSION['is_admin'])) {
 }
 ?>
 <?php include 'includes/header.php' ?>
-
+<?php
 // Ensure join columns exist but do not mutate schema here; util_functions handles backfill
 $order = 'ORDER BY pts.created_at DESC';
 
