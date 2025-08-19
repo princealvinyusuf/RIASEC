@@ -91,6 +91,9 @@ function insertTestResults($result){
 		die("QUERY FAILED".mysqli_error($connection));
 	}
 
+	// Capture inserted score id immediately after INSERT
+	$scoreId = mysqli_insert_id($connection);
+
 	// Create table to store detailed answers if it does not exist
 	$createAnswers = "CREATE TABLE IF NOT EXISTS test_answers (
 		id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
@@ -105,22 +108,16 @@ function insertTestResults($result){
 		INDEX idx_statement (statement_id, statement_category)
 	) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4";
 	mysqli_query($connection, $createAnswers);
-
-	$scoreId = mysqli_insert_id($connection);
 	if ($scoreId) {
-		$categories = array('R','I','A','S','E','C');
-		foreach ($categories as $cat) {
-			foreach ($_POST as $key => $value) {
-				if (strpos($key, $cat) === 0) {
-					$statementNumericId = substr($key, 1);
-					if ($statementNumericId !== '' && ctype_digit($statementNumericId)) {
-						$ans = intval($value);
-						if ($ans >= 1 && $ans <= 5) {
-							$sid = intval($statementNumericId);
-							$piid = $personalInfoId !== null ? $personalInfoId : 0;
-							mysqli_query($connection, "INSERT INTO test_answers (score_id, personal_info_id, statement_id, statement_category, answer) VALUES ($scoreId, $piid, $sid, '".$connection->real_escape_string($cat)."', $ans)");
-						}
-					}
+		foreach ($_POST as $key => $value) {
+			if (!is_string($key)) { continue; }
+			if (preg_match('/^([RIASEC])(\d+)$/', $key, $m)) {
+				$cat = $m[1];
+				$sid = intval($m[2]);
+				$ans = intval($value);
+				if ($sid > 0 && $ans >= 1 && $ans <= 5) {
+					$piid = $personalInfoId !== null ? $personalInfoId : 0;
+					mysqli_query($connection, "INSERT INTO test_answers (score_id, personal_info_id, statement_id, statement_category, answer) VALUES ($scoreId, $piid, $sid, '$cat', $ans)");
 				}
 			}
 		}
