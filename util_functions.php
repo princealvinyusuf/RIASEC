@@ -62,11 +62,29 @@ function calculateScoreInPercentage($scoreList){
 // To insert data into database for research purposes
 function insertTestResults($result){
 	global $scorePercentageList,$connection;
-	$query = "INSERT INTO personality_test_scores ( ";
-	$query.= "realistic,investigative, artistic, "; 
-	$query.= "social,enterprising,conventional,result) ";
-	$query.= "VALUES({$scorePercentageList['R']},{$scorePercentageList['I']},{$scorePercentageList['A']},{$scorePercentageList['S']},";
-	$query.= "{$scorePercentageList['E']},{$scorePercentageList['C']},'{$result}')";
+	if (session_status() === PHP_SESSION_NONE) { session_start(); }
+	$personalInfoId = isset($_SESSION['personal_info_id']) ? intval($_SESSION['personal_info_id']) : null;
+
+	// Ensure linking column exists
+	$colRes = mysqli_query($connection, "SHOW COLUMNS FROM personality_test_scores LIKE 'personal_info_id'");
+	if ($colRes && mysqli_num_rows($colRes) === 0) {
+		mysqli_query($connection, "ALTER TABLE personality_test_scores ADD COLUMN personal_info_id INT UNSIGNED NULL");
+	}
+	// Optional timestamp column for ordering
+	$tsRes = mysqli_query($connection, "SHOW COLUMNS FROM personality_test_scores LIKE 'created_at'");
+	if ($tsRes && mysqli_num_rows($tsRes) === 0) {
+		mysqli_query($connection, "ALTER TABLE personality_test_scores ADD COLUMN created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP");
+	}
+
+	if ($personalInfoId !== null) {
+		$query = "INSERT INTO personality_test_scores (personal_info_id, realistic, investigative, artistic, social, enterprising, conventional, result) ";
+		$query.= "VALUES({$personalInfoId}, {$scorePercentageList['R']}, {$scorePercentageList['I']}, {$scorePercentageList['A']}, {$scorePercentageList['S']}, ";
+		$query.= "{$scorePercentageList['E']}, {$scorePercentageList['C']}, '{$result}')";
+	} else {
+		$query = "INSERT INTO personality_test_scores (realistic, investigative, artistic, social, enterprising, conventional, result) ";
+		$query.= "VALUES({$scorePercentageList['R']}, {$scorePercentageList['I']}, {$scorePercentageList['A']}, {$scorePercentageList['S']}, ";
+		$query.= "{$scorePercentageList['E']}, {$scorePercentageList['C']}, '{$result}')";
+	}
 	
 	$insertIntoTestResults = mysqli_query($connection,$query);
 	if(!$insertIntoTestResults){
