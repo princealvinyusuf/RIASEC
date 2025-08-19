@@ -6,7 +6,7 @@ if (empty($_SESSION['is_admin'])) {
 }
 ?>
 <?php include 'includes/header.php' ?>
-
+<?php
 $scoreId = isset($_GET['score_id']) ? intval($_GET['score_id']) : 0;
 if ($scoreId <= 0) {
   echo '<div class="container py-5"><div class="alert alert-danger">Parameter tidak valid.</div></div>';
@@ -35,6 +35,7 @@ $detailSql = "SELECT ta.statement_id, ta.statement_category, ta.answer, s.statem
               WHERE ta.score_id = $scoreId
               ORDER BY ta.statement_category, ta.statement_id";
 $detailRes = mysqli_query($connection, $detailSql);
+?>
 ?>
 <div class="container py-5">
   <div class="mb-3">
