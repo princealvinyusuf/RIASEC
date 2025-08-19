@@ -1,6 +1,11 @@
-<?php include 'includes/header.php' ?>
 <?php
 if (session_status() === PHP_SESSION_NONE) { session_start(); }
+if (empty($_SESSION['is_admin'])) {
+  header('Location: admin_login.php');
+  exit;
+}
+?>
+<?php include 'includes/header.php' ?>
 
 // Ensure join columns exist but do not mutate schema here; util_functions handles backfill
 $order = 'ORDER BY pts.created_at DESC';
@@ -23,7 +28,10 @@ $scores = mysqli_query($connection, $query);
     <div class="col-lg-12">
       <div class="card shadow-sm border-0">
         <div class="card-body">
-          <h1 class="card-title display-6 fw-bold text-success mb-3">Daftar Hasil Tes RIASEC</h1>
+          <div class="d-flex justify-content-between align-items-center mb-3">
+            <h1 class="card-title display-6 fw-bold text-success mb-0">Daftar Hasil Tes RIASEC</h1>
+            <a href="admin_logout.php" class="btn btn-outline-danger btn-sm">Logout</a>
+          </div>
           <div class="table-responsive">
             <table class="table table-bordered align-middle">
               <thead class="table-success">

@@ -1,6 +1,11 @@
-<?php include 'includes/header.php' ?>
 <?php
 if (session_status() === PHP_SESSION_NONE) { session_start(); }
+if (empty($_SESSION['is_admin'])) {
+  header('Location: admin_login.php');
+  exit;
+}
+?>
+<?php include 'includes/header.php' ?>
 
 $scoreId = isset($_GET['score_id']) ? intval($_GET['score_id']) : 0;
 if ($scoreId <= 0) {
