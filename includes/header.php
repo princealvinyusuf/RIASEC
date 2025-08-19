@@ -1,4 +1,4 @@
-<?php include 'db.php' ?>
+<?php include_once 'db.php' ?>
 <!DOCTYPE html>
 <html lang="id">
 <head>

@@ -1,3 +1,10 @@
+<?php
+if (session_status() === PHP_SESSION_NONE) { session_start(); }
+if (!isset($_SESSION['personal_info_id'])) {
+  header('Location: personal_info.php');
+  exit;
+}
+?>
 <?php include 'includes/header.php' ?>
 <div class="container py-5">
   <div class="row justify-content-center mb-4">

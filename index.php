@@ -30,7 +30,7 @@
       <div class="card shadow-sm border-0">
         <div class="card-body">
           <h4 class="fw-bold text-success mb-3">Siap mengetahui tipe RIASEC Anda?</h4>
-          <a href="test_form.php" class="btn btn-success btn-lg px-5">Mulai Tes</a>
+          <a href="personal_info.php" class="btn btn-success btn-lg px-5">Mulai Tes</a>
         </div>
       </div>
     </div>
