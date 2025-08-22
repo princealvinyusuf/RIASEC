@@ -70,7 +70,7 @@
           }
           ?>
           <div class="mb-4">
-            <h6 class="fw-bold mb-2">Penjelasan Tipe C (Conventional)</h6>
+            <h6 class="fw-bold mb-2">Penjelasan</h6>
             <div class="text-muted">
               <?php foreach ($paras as $p) { ?>
                 <p class="mb-2"><?php echo htmlspecialchars($p); ?></p>
