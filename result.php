@@ -28,6 +28,55 @@
               </div>
             </div>
           </div>
+          <?php
+          // Ensure table for dynamic RIASEC paragraphs exists
+          $createParaTable = "CREATE TABLE IF NOT EXISTS riasec_paragraphs (
+            id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+            code CHAR(1) NOT NULL,
+            position TINYINT UNSIGNED NOT NULL,
+            content TEXT NOT NULL,
+            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+            INDEX idx_code_position (code, position)
+          ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4";
+          mysqli_query($connection, $createParaTable);
+
+          // Seed default 4 paragraphs for code 'C' if empty
+          $countRes = mysqli_query($connection, "SELECT COUNT(*) AS c FROM riasec_paragraphs WHERE code='C'");
+          $rowC = $countRes ? mysqli_fetch_assoc($countRes) : null;
+          if (!$rowC || intval($rowC['c']) === 0) {
+            $defaults = array(
+              1 => 'Tipe Conventional (C) cenderung menyukai aktivitas yang terstruktur, detail, dan mengikuti aturan yang jelas. Mereka bekerja efektif dengan data, administrasi, dan prosedur yang rapi.',
+              2 => 'Orang dengan tipe C biasanya teliti, disiplin, dan dapat diandalkan. Mereka nyaman bekerja di lingkungan yang stabil dengan tanggung jawab yang jelas.',
+              3 => 'Contoh bidang pekerjaan yang sesuai: administrasi, akuntansi, arsip, sekretaris, data entry, dan pekerjaan perkantoran lainnya.',
+              4 => 'Kekuatan utama tipe C adalah ketelitian, ketertiban, dan konsistensi. Mereka unggul dalam menjaga sistem tetap berjalan dengan rapi dan efisien.'
+            );
+            foreach ($defaults as $pos => $content) {
+              $stmt = mysqli_prepare($connection, "INSERT INTO riasec_paragraphs (code, position, content) VALUES ('C', ?, ?)");
+              if ($stmt) {
+                mysqli_stmt_bind_param($stmt, 'is', $pos, $content);
+                mysqli_stmt_execute($stmt);
+                mysqli_stmt_close($stmt);
+              }
+            }
+          }
+
+          // Fetch paragraphs for 'C'
+          $paras = array();
+          $res = mysqli_query($connection, "SELECT position, content FROM riasec_paragraphs WHERE code='C' ORDER BY position ASC");
+          if ($res) {
+            while ($r = mysqli_fetch_assoc($res)) {
+              $paras[] = $r['content'];
+            }
+          }
+          ?>
+          <div class="mb-4">
+            <h6 class="fw-bold mb-2">Penjelasan Tipe C (Conventional)</h6>
+            <div class="text-muted">
+              <?php foreach ($paras as $p) { ?>
+                <p class="mb-2"><?php echo htmlspecialchars($p); ?></p>
+              <?php } ?>
+            </div>
+          </div>
           <div class="text-center">
             <a href="test_form.php" class="btn btn-success btn-lg px-5">Coba Tes Lagi</a>
           </div>
