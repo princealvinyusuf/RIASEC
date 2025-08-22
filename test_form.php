@@ -59,14 +59,9 @@ while($row=mysqli_fetch_assoc($statement_select_query )){
               </table>
             </div>
             <div class="mb-3 mt-4">
-              <label class="form-label">Apakah Anda mengizinkan data ini digunakan untuk tujuan penelitian?</label>
-              <div class="form-check form-check-inline">
-                <input class="form-check-input" type="radio" name="can_save_data" value="true" id="saveDataYes" required>
-                <label class="form-check-label" for="saveDataYes">Ya</label>
-              </div>
-              <div class="form-check form-check-inline">
-                <input class="form-check-input" type="radio" name="can_save_data" value="false" id="saveDataNo" required>
-                <label class="form-check-label" for="saveDataNo">Tidak</label>
+              <div class="form-check">
+                <input class="form-check-input" type="checkbox" name="can_save_data" value="true" id="saveDataYes" required>
+                <label class="form-check-label" for="saveDataYes">Ya, saya setuju jawaban saya disimpan secara anonim untuk tujuan penelitian.</label>
               </div>
             </div>
             <div class="text-end">
@@ -95,7 +90,7 @@ while($row=mysqli_fetch_assoc($statement_select_query )){
               var consentAnswered = !!form.querySelector('input[name="can_save_data"]:checked');
               submitBtn.disabled = !(allStatementsAnswered && consentAnswered);
             }
-            form.addEventListener('change', function(e){ if (e.target && e.target.matches('input[type="radio"]')) { checkCompleteness(); }});
+            form.addEventListener('change', function(e){ if (e.target && (e.target.matches('input[type="radio"]') || e.target.matches('input[type="checkbox"]'))) { checkCompleteness(); }});
             checkCompleteness();
           });
           </script>

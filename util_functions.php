@@ -35,7 +35,7 @@ function getPersonalityTestResults(){
 
 function isSubmissionComplete(){
 	global $connection;
-	if (!isset($_POST['can_save_data']) || !in_array($_POST['can_save_data'], array('true','false'), true)) {
+	if (!isset($_POST['can_save_data']) || $_POST['can_save_data'] !== 'true') {
 		return false;
 	}
 	$res = mysqli_query($connection, "SELECT statement_id, statement_category FROM statements");
