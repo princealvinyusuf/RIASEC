@@ -59,9 +59,13 @@ function renderFormattedContent($content) {
     
     $output = '';
     
+    // Start the main container with green background
+    $output .= '<div class="card bg-light border-0 mb-4" style="background: linear-gradient(135deg, #f8fff8 0%, #e8f5e8 100%) !important; border-left: 4px solid #28a745 !important;">';
+    $output .= '<div class="card-body p-4">';
+    
     // Display title if exists
     if (isset($sections['Title'])) {
-        $output .= '<h5 class="fw-bold mb-3">' . htmlspecialchars($sections['Title']) . '</h5>';
+        $output .= '<h5 class="fw-bold mb-3 text-success">' . htmlspecialchars($sections['Title']) . '</h5>';
     }
     
     // Display each section
@@ -69,7 +73,7 @@ function renderFormattedContent($content) {
         if ($sectionName === 'Title') continue;
         
         $output .= '<div class="mb-3">';
-        $output .= '<h6 class="fw-bold mb-2">' . htmlspecialchars($sectionName) . ':</h6>';
+        $output .= '<h6 class="fw-bold mb-2 text-success">' . htmlspecialchars($sectionName) . ':</h6>';
         
         // Split content by lines and create bullet points
         $lines = explode("\n", $sectionContent);
@@ -89,6 +93,9 @@ function renderFormattedContent($content) {
         
         $output .= '</div>';
     }
+    
+    $output .= '</div>'; // Close card-body
+    $output .= '</div>'; // Close card
     
     return $output;
 }
