@@ -1,5 +1,99 @@
 <?php include 'includes/header.php' ?>
 <?php include 'util_functions.php' ?>
+
+<?php
+// Function to format content with bullet points
+function formatContentWithBullets($content) {
+    // Split content by sections
+    $sections = array();
+    
+    // Define section markers
+    $sectionMarkers = array(
+        'Penjelasan:' => 'Penjelasan',
+        'Kekuatan:' => 'Kekuatan',
+        'Lingkungan favorit:' => 'Lingkungan Favorit',
+        'Contoh karir:' => 'Contoh Karir'
+    );
+    
+    $currentSection = '';
+    $currentContent = '';
+    $lines = explode("\n", $content);
+    
+    foreach ($lines as $line) {
+        $line = trim($line);
+        if (empty($line)) continue;
+        
+        $foundSection = false;
+        foreach ($sectionMarkers as $marker => $sectionName) {
+            if (strpos($line, $marker) === 0) {
+                // Save previous section if exists
+                if (!empty($currentSection) && !empty($currentContent)) {
+                    $sections[$currentSection] = trim($currentContent);
+                }
+                $currentSection = $sectionName;
+                $currentContent = '';
+                $foundSection = true;
+                break;
+            }
+        }
+        
+        if (!$foundSection && !empty($currentSection)) {
+            $currentContent .= $line . "\n";
+        } elseif (!$foundSection && empty($currentSection)) {
+            // This is the title/header line
+            $sections['Title'] = $line;
+        }
+    }
+    
+    // Save the last section
+    if (!empty($currentSection) && !empty($currentContent)) {
+        $sections[$currentSection] = trim($currentContent);
+    }
+    
+    return $sections;
+}
+
+// Function to render formatted content
+function renderFormattedContent($content) {
+    $sections = formatContentWithBullets($content);
+    
+    $output = '';
+    
+    // Display title if exists
+    if (isset($sections['Title'])) {
+        $output .= '<h5 class="fw-bold mb-3">' . htmlspecialchars($sections['Title']) . '</h5>';
+    }
+    
+    // Display each section
+    foreach ($sections as $sectionName => $sectionContent) {
+        if ($sectionName === 'Title') continue;
+        
+        $output .= '<div class="mb-3">';
+        $output .= '<h6 class="fw-bold mb-2">' . htmlspecialchars($sectionName) . ':</h6>';
+        
+        // Split content by lines and create bullet points
+        $lines = explode("\n", $sectionContent);
+        if (count($lines) > 1) {
+            $output .= '<ul class="mb-0 ps-3">';
+            foreach ($lines as $line) {
+                $line = trim($line);
+                if (!empty($line)) {
+                    $output .= '<li>' . htmlspecialchars($line) . '</li>';
+                }
+            }
+            $output .= '</ul>';
+        } else {
+            // Single line content
+            $output .= '<p class="mb-0">' . htmlspecialchars(trim($sectionContent)) . '</p>';
+        }
+        
+        $output .= '</div>';
+    }
+    
+    return $output;
+}
+?>
+
 <div class="container py-5">
   <div class="row justify-content-center">
     <div class="col-lg-8">
@@ -73,7 +167,9 @@
             <h6 class="fw-bold mb-2">Penjelasan</h6>
             <div class="text-muted">
               <?php foreach ($paras as $p) { ?>
-                <p class="mb-2"><?php echo htmlspecialchars($p); ?></p>
+                <div class="mb-3">
+                  <?php echo renderFormattedContent($p); ?>
+                </div>
               <?php } ?>
             </div>
           </div>
