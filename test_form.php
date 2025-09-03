@@ -21,7 +21,10 @@ if (!isset($_SESSION['personal_info_id'])) {
             Semua pernyataan dan pilihan persetujuan penelitian wajib diisi sebelum melihat hasil.
           </div>
           <?php } ?>
-          <p><a href="index.php" class="text-decoration-none">&larr; Kembali ke Beranda</a></p>
+          <p class="mb-3"><a href="index.php" class="text-decoration-none">&larr; Kembali ke Beranda</a></p>
+          <div class="text-center mb-3">
+            <img src="jobi.png" alt="Maskot Jobi" class="img-fluid" style="max-width: 150px;">
+          </div>
           <form action="result.php" method="post">
             <div class="table-responsive">
               <table class="table table-bordered align-middle">

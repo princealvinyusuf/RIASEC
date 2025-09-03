@@ -80,6 +80,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         <div class="card-body">
           <h1 class="card-title display-6 fw-bold text-success mb-3">Formulir Data Pribadi</h1>
           <p class="mb-3"><a href="index.php" class="text-decoration-none">&larr; Kembali ke Beranda</a></p>
+          <div class="text-center mb-3">
+            <img src="jobi.png" alt="Maskot Jobi" class="img-fluid" style="max-width: 150px;">
+          </div>
           <?php if (!empty($errors)) { ?>
           <div class="alert alert-danger" role="alert">
             <ul class="mb-0 ps-3">
