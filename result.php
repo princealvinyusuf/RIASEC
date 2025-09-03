@@ -136,7 +136,7 @@ function renderFormattedContent($content) {
               </div>
             </div>
             <div class="text-center mt-3">
-              <a href="generate_pdf.php" class="btn btn-primary btn-lg px-4" download>
+              <a href="generate_pdf.php" class="btn btn-primary btn-lg px-4">
                 <i class="fas fa-download me-2"></i>Unduh Laporan Ini
               </a>
             </div>
