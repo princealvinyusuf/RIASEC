@@ -160,62 +160,38 @@ $html = '
             font-weight: bold;
             margin-bottom: 10px;
         }
-        .chart-container {
-            height: 300px;
+        .results-table {
             width: 100%;
+            border-collapse: collapse;
             margin: 20px 0;
             background-color: #f8f9fa;
             border-radius: 5px;
-            padding: 20px;
-            position: relative;
+            overflow: hidden;
         }
-        .chart-title {
+        .results-table th {
+            background-color: #28a745;
+            color: white;
+            padding: 12px;
+            text-align: center;
+            font-weight: bold;
             font-size: 1rem;
+        }
+        .results-table td {
+            padding: 12px;
+            text-align: center;
+            border-bottom: 1px solid #dee2e6;
+            font-size: 0.9rem;
+        }
+        .results-table tr:nth-child(even) {
+            background-color: #f1f3f4;
+        }
+        .results-table tr:hover {
+            background-color: #e8f5e8;
+        }
+        .percentage-cell {
             font-weight: bold;
             color: #28a745;
-            text-align: center;
-            margin-bottom: 15px;
-        }
-        .chart-bars {
-            width: 100%;
-            margin-top: 20px;
-        }
-        .chart-row {
-            display: table;
-            width: 100%;
-            table-layout: fixed;
-        }
-        .chart-bar {
-            display: table-cell;
-            width: 16.66%;
-            text-align: center;
-            vertical-align: bottom;
-            padding: 0 5px;
-        }
-        .chart-bar-inner {
-            background: linear-gradient(to top, #28a745, #20c997);
-            border-radius: 5px 5px 0 0;
-            margin: 0 auto;
-            width: 40px;
-        }
-        .chart-bar-label {
-            position: absolute;
-            bottom: 5px;
-            left: 0;
-            right: 0;
-            font-size: 0.8rem;
-            font-weight: bold;
-            color: #333;
-            text-align: center;
-        }
-        .chart-bar-value {
-            position: absolute;
-            top: 5px;
-            left: 50%;
-            transform: translateX(-50%);
-            font-size: 0.8rem;
-            font-weight: bold;
-            color: #28a745;
+            font-size: 1.1rem;
         }
         .chart-y-axis {
             position: absolute;
@@ -301,37 +277,40 @@ $html = '
         <p style="margin: 0;">Berdasarkan hasil tes, tipe kepribadian Anda adalah <strong>' . htmlspecialchars($result_personality) . '</strong></p>
     </div>
     
-    <div class="chart-container">
-        <div class="chart-title">RIASEC test results in percentages</div>
-        <div class="chart-bars">
-            <div class="chart-row">';
-        
-        // Create chart bars
-        $maxPercentage = max($scorePercentageList);
-        $personalityTypes = array(
-            'R' => 'Realistic',
-            'I' => 'Investigative', 
-            'A' => 'Artistic',
-            'S' => 'Social',
-            'E' => 'Enterprising',
-            'C' => 'Conventional'
-        );
-        
-        foreach ($personalityTypes as $code => $name) {
-            $percentage = $scorePercentageList[$code];
-            $barHeight = ($percentage / $maxPercentage) * 180; // Max height 180px
-            $html .= '
-            <div class="chart-bar">
-                <div class="chart-bar-value">' . number_format($percentage, 1) . '%</div>
-                <div class="chart-bar-inner" style="height: ' . $barHeight . 'px;"></div>
-                <div class="chart-bar-label">' . $name . '</div>
-            </div>';
-        }
-        
-        $html .= '
-            </div>
-        </div>
-    </div>
+    <table class="results-table">
+        <thead>
+            <tr>
+                <th>Personality Type</th>
+                <th>Percentage</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td>Realistic</td>
+                <td class="percentage-cell">' . number_format($scorePercentageList['R'], 1) . '%</td>
+            </tr>
+            <tr>
+                <td>Investigative</td>
+                <td class="percentage-cell">' . number_format($scorePercentageList['I'], 1) . '%</td>
+            </tr>
+            <tr>
+                <td>Artistic</td>
+                <td class="percentage-cell">' . number_format($scorePercentageList['A'], 1) . '%</td>
+            </tr>
+            <tr>
+                <td>Social</td>
+                <td class="percentage-cell">' . number_format($scorePercentageList['S'], 1) . '%</td>
+            </tr>
+            <tr>
+                <td>Enterprising</td>
+                <td class="percentage-cell">' . number_format($scorePercentageList['E'], 1) . '%</td>
+            </tr>
+            <tr>
+                <td>Conventional</td>
+                <td class="percentage-cell">' . number_format($scorePercentageList['C'], 1) . '%</td>
+            </tr>
+        </tbody>
+    </table>
     
     <div class="section">
         <div class="section-title">Keterangan Kode RIASEC:</div>
