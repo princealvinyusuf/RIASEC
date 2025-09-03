@@ -161,67 +161,61 @@ $html = '
             margin-bottom: 10px;
         }
         .chart-container {
+            height: 300px;
             width: 100%;
             margin: 20px 0;
             background-color: #f8f9fa;
             border-radius: 5px;
             padding: 20px;
-            text-align: center;
+            position: relative;
         }
         .chart-title {
             font-size: 1rem;
             font-weight: bold;
             color: #28a745;
             text-align: center;
-            margin-bottom: 20px;
+            margin-bottom: 15px;
         }
         .chart-bars {
-            display: inline-block;
+            display: table;
             width: 100%;
-            max-width: 600px;
-            margin: 0 auto;
+            height: 200px;
+            margin-top: 20px;
+            table-layout: fixed;
         }
-        .chart-bar-row {
-            display: block;
-            margin-bottom: 15px;
-            text-align: left;
+        .chart-bar {
+            display: table-cell;
+            width: 16.66%;
+            vertical-align: bottom;
+            text-align: center;
+            position: relative;
+            padding: 0 5px;
+        }
+        .chart-bar-inner {
+            background: linear-gradient(to top, #28a745, #20c997);
+            border-radius: 5px 5px 0 0;
+            position: relative;
+            margin: 0 auto;
+            width: 40px;
         }
         .chart-bar-label {
-            display: inline-block;
-            width: 120px;
-            font-size: 0.9rem;
+            position: absolute;
+            bottom: -25px;
+            left: 0;
+            right: 0;
+            font-size: 0.8rem;
             font-weight: bold;
             color: #333;
-            text-align: right;
-            vertical-align: middle;
-            margin-right: 15px;
-        }
-        .chart-bar-container {
-            display: inline-block;
-            width: 300px;
-            height: 25px;
-            background-color: #e9ecef;
-            border-radius: 12px;
-            position: relative;
-            overflow: hidden;
-            vertical-align: middle;
-        }
-        .chart-bar-fill {
-            height: 100%;
-            background: linear-gradient(90deg, #28a745, #20c997);
-            border-radius: 12px;
-            position: relative;
-            min-width: 20px;
+            text-align: center;
         }
         .chart-bar-value {
             position: absolute;
-            right: 10px;
-            top: 50%;
-            transform: translateY(-50%);
+            top: -25px;
+            left: 50%;
+            transform: translateX(-50%);
             font-size: 0.8rem;
             font-weight: bold;
-            color: white;
-            text-shadow: 1px 1px 2px rgba(0,0,0,0.5);
+            color: #28a745;
         }
         .chart-y-axis {
             position: absolute;
@@ -312,6 +306,7 @@ $html = '
         <div class="chart-bars">';
         
         // Create chart bars
+        $maxPercentage = max($scorePercentageList);
         $personalityTypes = array(
             'R' => 'Realistic',
             'I' => 'Investigative', 
@@ -323,15 +318,12 @@ $html = '
         
         foreach ($personalityTypes as $code => $name) {
             $percentage = $scorePercentageList[$code];
-            $barWidth = $percentage; // Use percentage directly as width percentage
+            $barHeight = ($percentage / $maxPercentage) * 180; // Max height 180px
             $html .= '
-            <div class="chart-bar-row">
+            <div class="chart-bar">
+                <div class="chart-bar-value">' . number_format($percentage, 1) . '%</div>
+                <div class="chart-bar-inner" style="height: ' . $barHeight . 'px;"></div>
                 <div class="chart-bar-label">' . $name . '</div>
-                <div class="chart-bar-container">
-                    <div class="chart-bar-fill" style="width: ' . $barWidth . '%;">
-                        <div class="chart-bar-value">' . number_format($percentage, 1) . '%</div>
-                    </div>
-                </div>
             </div>';
         }
         
