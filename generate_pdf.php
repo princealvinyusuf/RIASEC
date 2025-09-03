@@ -161,54 +161,60 @@ $html = '
             margin-bottom: 10px;
         }
         .chart-container {
-            height: 300px;
             width: 100%;
             margin: 20px 0;
             background-color: #f8f9fa;
             border-radius: 5px;
             padding: 20px;
-            position: relative;
         }
         .chart-title {
             font-size: 1rem;
             font-weight: bold;
             color: #28a745;
             text-align: center;
-            margin-bottom: 15px;
+            margin-bottom: 20px;
         }
         .chart-bars {
             display: flex;
-            justify-content: space-around;
-            align-items: end;
-            height: 200px;
-            margin-top: 20px;
+            flex-direction: column;
+            gap: 15px;
         }
-        .chart-bar {
-            width: 60px;
-            background: linear-gradient(to top, #28a745, #20c997);
-            border-radius: 5px 5px 0 0;
-            position: relative;
-            margin: 0 5px;
+        .chart-bar-row {
+            display: flex;
+            align-items: center;
+            gap: 10px;
         }
         .chart-bar-label {
-            position: absolute;
-            bottom: -25px;
-            left: 50%;
-            transform: translateX(-50%);
-            font-size: 0.8rem;
+            width: 120px;
+            font-size: 0.9rem;
             font-weight: bold;
             color: #333;
-            text-align: center;
-            width: 100%;
+            text-align: right;
+        }
+        .chart-bar-container {
+            flex: 1;
+            height: 30px;
+            background-color: #e9ecef;
+            border-radius: 15px;
+            position: relative;
+            overflow: hidden;
+        }
+        .chart-bar-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #28a745, #20c997);
+            border-radius: 15px;
+            position: relative;
+            transition: width 0.3s ease;
         }
         .chart-bar-value {
             position: absolute;
-            top: -25px;
-            left: 50%;
-            transform: translateX(-50%);
+            right: 10px;
+            top: 50%;
+            transform: translateY(-50%);
             font-size: 0.8rem;
             font-weight: bold;
-            color: #28a745;
+            color: white;
+            text-shadow: 1px 1px 2px rgba(0,0,0,0.5);
         }
         .chart-y-axis {
             position: absolute;
@@ -299,7 +305,6 @@ $html = '
         <div class="chart-bars">';
         
         // Create chart bars
-        $maxPercentage = max($scorePercentageList);
         $personalityTypes = array(
             'R' => 'Realistic',
             'I' => 'Investigative', 
@@ -311,11 +316,15 @@ $html = '
         
         foreach ($personalityTypes as $code => $name) {
             $percentage = $scorePercentageList[$code];
-            $barHeight = ($percentage / $maxPercentage) * 180; // Max height 180px
+            $barWidth = $percentage; // Use percentage directly as width percentage
             $html .= '
-            <div class="chart-bar" style="height: ' . $barHeight . 'px;">
-                <div class="chart-bar-value">' . number_format($percentage, 1) . '%</div>
+            <div class="chart-bar-row">
                 <div class="chart-bar-label">' . $name . '</div>
+                <div class="chart-bar-container">
+                    <div class="chart-bar-fill" style="width: ' . $barWidth . '%;">
+                        <div class="chart-bar-value">' . number_format($percentage, 1) . '%</div>
+                    </div>
+                </div>
             </div>';
         }
         
