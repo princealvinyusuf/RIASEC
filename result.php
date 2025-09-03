@@ -109,11 +109,10 @@ function renderFormattedContent($content) {
           <?php 
           getPersonalityTestResults(); 
           
-                     // Set session flag to indicate test completion
-           if (session_status() === PHP_SESSION_NONE) { session_start(); }
-           $_SESSION['test_completed'] = true;
-           $_SESSION['result_personality'] = $result_personality;
-           $_SESSION['scorePercentageList'] = $scorePercentageList;
+          // Set session flag to indicate test completion
+          if (session_status() === PHP_SESSION_NONE) { session_start(); }
+          $_SESSION['test_completed'] = true;
+          $_SESSION['result_personality'] = $result_personality;
           ?>
           <div class="alert alert-success text-center mb-4" role="alert">
             <h4 class="alert-heading">Hasil Tes RIASEC Anda</h4>
@@ -137,7 +136,7 @@ function renderFormattedContent($content) {
               </div>
             </div>
             <div class="text-center mt-3">
-              <a href="generate_pdf_advanced.php" class="btn btn-primary btn-lg px-4">
+              <a href="generate_pdf.php" class="btn btn-primary btn-lg px-4" download>
                 <i class="fas fa-download me-2"></i>Unduh Laporan Ini
               </a>
             </div>

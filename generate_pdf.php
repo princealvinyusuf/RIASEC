@@ -5,12 +5,6 @@ include 'util_functions.php';
 
 // Check if mPDF is available, if not, we'll use a fallback
 $mpdf_available = false;
-
-// Try to include mPDF if it exists
-if (file_exists('vendor/autoload.php')) {
-    require_once 'vendor/autoload.php';
-}
-
 try {
     if (class_exists('Mpdf\Mpdf')) {
         $mpdf_available = true;
@@ -103,22 +97,17 @@ if (empty($result_personality)) {
 // Get score percentages for the chart
 $scorePercentageList = array('R'=>'0','I'=>'0','A'=>'0','S'=>'0','E'=>'0','C'=>'0');
 
-// First try to get from session if available
-if (isset($_SESSION['scorePercentageList'])) {
-    $scorePercentageList = $_SESSION['scorePercentageList'];
-} else {
-    // Get the latest test scores from database
-    $scoreQuery = "SELECT realistic, investigative, artistic, social, enterprising, conventional FROM personality_test_scores ORDER BY created_at DESC LIMIT 1";
-    $scoreRes = mysqli_query($connection, $scoreQuery);
-    if ($scoreRes && mysqli_num_rows($scoreRes) > 0) {
-        $scoreData = mysqli_fetch_assoc($scoreRes);
-        $scorePercentageList['R'] = $scoreData['realistic'];
-        $scorePercentageList['I'] = $scoreData['investigative'];
-        $scorePercentageList['A'] = $scoreData['artistic'];
-        $scorePercentageList['S'] = $scoreData['social'];
-        $scorePercentageList['E'] = $scoreData['enterprising'];
-        $scorePercentageList['C'] = $scoreData['conventional'];
-    }
+// Get the latest test scores from database
+$scoreQuery = "SELECT realistic, investigative, artistic, social, enterprising, conventional FROM personality_test_scores ORDER BY created_at DESC LIMIT 1";
+$scoreRes = mysqli_query($connection, $scoreQuery);
+if ($scoreRes && mysqli_num_rows($scoreRes) > 0) {
+    $scoreData = mysqli_fetch_assoc($scoreRes);
+    $scorePercentageList['R'] = $scoreData['realistic'];
+    $scorePercentageList['I'] = $scoreData['investigative'];
+    $scorePercentageList['A'] = $scoreData['artistic'];
+    $scorePercentageList['S'] = $scoreData['social'];
+    $scorePercentageList['E'] = $scoreData['enterprising'];
+    $scorePercentageList['C'] = $scoreData['conventional'];
 }
 
 // Fetch paragraphs for the result personality type
@@ -172,63 +161,42 @@ $html = '
             height: 300px;
             width: 100%;
             margin: 20px 0;
-            background-color: #ffffff;
-            border: 1px solid #e9ecef;
-            border-radius: 8px;
+            background-color: #f8f9fa;
+            border-radius: 5px;
             padding: 20px;
             position: relative;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
         }
         .chart-title {
-            font-size: 1.1rem;
+            font-size: 1rem;
             font-weight: bold;
-            color: #333;
+            color: #28a745;
             text-align: center;
-            margin-bottom: 20px;
-            font-family: Arial, sans-serif;
+            margin-bottom: 15px;
         }
         .chart-bars {
-            width: 100%;
+            display: flex;
+            justify-content: space-around;
+            align-items: end;
             height: 200px;
             margin-top: 20px;
-            padding: 0 10px;
-            position: relative;
-            text-align: center;
         }
         .chart-bar {
-            display: inline-block;
-            width: 14%;
-            background: linear-gradient(to top, #007bff, #0056b3);
-            border-radius: 4px 4px 0 0;
+            width: 60px;
+            background: linear-gradient(to top, #28a745, #20c997);
+            border-radius: 5px 5px 0 0;
             position: relative;
-            margin: 0 1%;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-            min-height: 5px;
-            vertical-align: bottom;
-        }
-        .chart-bar:hover {
-            background: linear-gradient(to top, #0056b3, #004085);
-        }
-        .chart-bar-highest {
-            background: linear-gradient(to top, #28a745, #20c997) !important;
-            box-shadow: 0 4px 8px rgba(40, 167, 69, 0.3) !important;
-        }
-        .chart-bar-highest .chart-bar-value {
-            color: #28a745 !important;
-            font-weight: bold;
+            margin: 0 5px;
         }
         .chart-bar-label {
             position: absolute;
-            bottom: -30px;
+            bottom: -25px;
             left: 50%;
             transform: translateX(-50%);
-            font-size: 0.75rem;
-            font-weight: 600;
+            font-size: 0.8rem;
+            font-weight: bold;
             color: #333;
             text-align: center;
             width: 100%;
-            font-family: Arial, sans-serif;
-            white-space: nowrap;
         }
         .chart-bar-value {
             position: absolute;
@@ -237,25 +205,7 @@ $html = '
             transform: translateX(-50%);
             font-size: 0.8rem;
             font-weight: bold;
-            color: #007bff;
-            background: rgba(255,255,255,0.9);
-            padding: 2px 6px;
-            border-radius: 3px;
-            font-family: Arial, sans-serif;
-        }
-        .chart-y-axis {
-            position: absolute;
-            left: 0;
-            top: 0;
-            height: 100%;
-            width: 40px;
-            border-right: 1px solid #ddd;
-        }
-        .chart-y-label {
-            position: absolute;
-            right: 5px;
-            font-size: 0.7rem;
-            color: #666;
+            color: #28a745;
         }
         .chart-y-axis {
             position: absolute;
@@ -341,53 +291,34 @@ $html = '
         <p style="margin: 0;">Berdasarkan hasil tes, tipe kepribadian Anda adalah <strong>' . htmlspecialchars($result_personality) . '</strong></p>
     </div>
     
-                   <div class="chart-container">
-          <div class="chart-title">RIASEC test results in percentages</div>
-          <table style="width: 100%; height: 200px; border-collapse: collapse; margin-top: 20px;">
-              <tr style="height: 150px; vertical-align: bottom;">';
-          
-                    // Create chart bars similar to CanvasJS
-           $maxPercentage = max($scorePercentageList);
-           $personalityTypes = array(
-               'R' => 'Realistic',
-               'I' => 'Investigative', 
-               'A' => 'Artistic',
-               'S' => 'Social',
-               'E' => 'Enterprising',
-               'C' => 'Conventional'
-           );
-           
-           // Calculate dynamic height based on max percentage
-           $maxBarHeight = 150; // Maximum bar height in pixels
-           $minBarHeight = 10;  // Minimum bar height for visibility
-           
-           foreach ($personalityTypes as $code => $name) {
-               $percentage = floatval($scorePercentageList[$code]);
-               
-               // Calculate bar height with minimum height guarantee
-               if ($maxPercentage > 0) {
-                   $barHeight = max($minBarHeight, ($percentage / $maxPercentage) * $maxBarHeight);
-               } else {
-                   $barHeight = $minBarHeight;
-               }
-               
-               // Add highlight for the highest score
-               $isHighest = ($percentage == $maxPercentage && $percentage > 0);
-               $barColor = $isHighest ? 'background: linear-gradient(to top, #28a745, #20c997);' : 'background: linear-gradient(to top, #007bff, #0056b3);';
-               $barShadow = $isHighest ? 'box-shadow: 0 4px 8px rgba(40, 167, 69, 0.3);' : 'box-shadow: 0 2px 4px rgba(0,0,0,0.1);';
-               $valueColor = $isHighest ? 'color: #28a745; font-weight: bold;' : 'color: #007bff;';
-               
-               $html .= '<td style="width: 16.66%; text-align: center; vertical-align: bottom; padding: 0 2px;">';
-               $html .= '<div style="position: relative; display: inline-block; width: 80%; max-width: 50px;">';
-               $html .= '<div style="' . $barColor . ' height: ' . $barHeight . 'px; border-radius: 4px 4px 0 0; position: relative; ' . $barShadow . ' min-height: 5px;">';
-               $html .= '<div style="position: absolute; top: -25px; left: 50%; transform: translateX(-50%); font-size: 0.8rem; font-weight: bold; ' . $valueColor . ' background: rgba(255,255,255,0.9); padding: 2px 6px; border-radius: 3px; font-family: Arial, sans-serif;">' . number_format($percentage, 1) . '%</div>';
-               $html .= '</div>';
-               $html .= '<div style="position: absolute; bottom: -30px; left: 50%; transform: translateX(-50%); font-size: 0.75rem; font-weight: 600; color: #333; text-align: center; width: 100%; font-family: Arial, sans-serif; white-space: nowrap;">' . $name . '</div>';
-               $html .= '</div>';
-               $html .= '</td>';
-           }
-           
-           $html .= '</tr></table></div>';
+    <div class="chart-container">
+        <div class="chart-title">RIASEC test results in percentages</div>
+        <div class="chart-bars">';
+        
+        // Create chart bars
+        $maxPercentage = max($scorePercentageList);
+        $personalityTypes = array(
+            'R' => 'Realistic',
+            'I' => 'Investigative', 
+            'A' => 'Artistic',
+            'S' => 'Social',
+            'E' => 'Enterprising',
+            'C' => 'Conventional'
+        );
+        
+        foreach ($personalityTypes as $code => $name) {
+            $percentage = $scorePercentageList[$code];
+            $barHeight = ($percentage / $maxPercentage) * 180; // Max height 180px
+            $html .= '
+            <div class="chart-bar" style="height: ' . $barHeight . 'px;">
+                <div class="chart-bar-value">' . number_format($percentage, 1) . '%</div>
+                <div class="chart-bar-label">' . $name . '</div>
+            </div>';
+        }
+        
+        $html .= '
+        </div>
+    </div>
     
     <div class="section">
         <div class="section-title">Keterangan Kode RIASEC:</div>
@@ -458,15 +389,6 @@ $html .= '
 if ($mpdf_available) {
     // Use mPDF to generate PDF
     try {
-        // Try to use system temp directory first, then fallback to custom
-        $temp_dir = sys_get_temp_dir();
-        if (!is_writable($temp_dir)) {
-            $temp_dir = __DIR__ . '/tmp';
-            if (!file_exists($temp_dir)) {
-                mkdir($temp_dir, 0755, true);
-            }
-        }
-        
         $mpdf = new \Mpdf\Mpdf([
             'mode' => 'utf-8',
             'format' => 'A4',
@@ -474,49 +396,22 @@ if ($mpdf_available) {
             'margin_right' => 15,
             'margin_top' => 15,
             'margin_bottom' => 15,
-            'tempDir' => $temp_dir,
         ]);
         
         $mpdf->WriteHTML($html);
         
-        // Force download with proper headers
+        // Output PDF
         $filename = 'laporan_riasec_' . date('Y-m-d_H-i-s') . '.pdf';
-        
-        // Set headers to force download
-        header('Content-Type: application/pdf');
-        header('Content-Disposition: attachment; filename="' . $filename . '"');
-        header('Cache-Control: no-cache, no-store, must-revalidate');
-        header('Pragma: no-cache');
-        header('Expires: 0');
-        
-        // Output the PDF
         $mpdf->Output($filename, 'D');
         exit;
     } catch (Exception $e) {
-        // Log error for debugging
-        error_log("mPDF Error: " . $e->getMessage());
-        
-        // Fallback to HTML output with download headers
+        // Fallback to HTML output
         header('Content-Type: text/html; charset=utf-8');
-        header('Content-Disposition: attachment; filename="laporan_riasec_' . date('Y-m-d_H-i-s') . '.html"');
         echo $html;
     }
 } else {
-    // mPDF not available - provide HTML that can be printed to PDF
+    // Fallback: Output HTML that can be printed to PDF
     header('Content-Type: text/html; charset=utf-8');
-    header('Content-Disposition: attachment; filename="laporan_riasec_' . date('Y-m-d_H-i-s') . '.html"');
-    
-    // Add print-friendly CSS for better PDF conversion
-    $html = str_replace('</head>', '
-    <style>
-        @media print {
-            body { margin: 0; padding: 20px; }
-            .chart-container { page-break-inside: avoid; }
-            .explanation { page-break-inside: avoid; }
-        }
-    </style>
-    </head>', $html);
-    
     echo $html;
 }
 ?>

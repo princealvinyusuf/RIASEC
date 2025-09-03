@@ -32,7 +32,6 @@ function getPersonalityTestResults(){
 		if (session_status() === PHP_SESSION_NONE) { session_start(); }
 		$_SESSION['test_completed'] = true;
 		$_SESSION['result_personality'] = $result_personality;
-		$_SESSION['scorePercentageList'] = $scorePercentageList;
 	} else{
 		header("Location: test_form.php?message=REQ");
 	}
