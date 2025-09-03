@@ -3,10 +3,11 @@
   <div class="row justify-content-center mb-4">
     <div class="col-lg-8">
       <div class="card shadow-sm border-0">
-        <div class="card-body text-center">
-          <h1 class="card-title display-5 fw-bold text-success mb-2">Selamat Datang di Asesmen RIASEC</h1>
-          <p class="lead text-secondary mb-0">Temukan tipe kepribadian karier Anda</p>
-        </div>
+                 <div class="card-body text-center">
+           <h1 class="card-title display-5 fw-bold text-success mb-2">Selamat Datang di Asesmen RIASEC</h1>
+           <p class="lead text-secondary mb-3">Temukan tipe kepribadian karier Anda</p>
+           <img src="jobi.png" alt="Maskot Jobi" class="img-fluid" style="max-width: 200px;">
+         </div>
       </div>
     </div>
   </div>
