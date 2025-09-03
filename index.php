@@ -14,10 +14,9 @@
     <div class="col-lg-8">
       <div class="card shadow-sm border-0">
         <div class="card-body">
-          <h5 class="fw-bold mb-2 text-success">Pengenalan</h5>
-          <p class="mb-3">Holland Occupational Themes (RIASEC) adalah teori kepribadian karier yang dikembangkan John L. Holland sejak 1950-an. Teori ini mengelompokkan minat kerja ke dalam enam tipe utama, yaitu Realistic, Investigative, Artistic, Social, Enterprising, dan Conventional (RIASEC). Instrumen RIASEC pada asesmen ini diadaptasi dari Panduan Implementasi Bimbingan dan Konseling untuk Jenjang Pendidikan Dasar dan Menengah (Kemendikbud, 2021) yang dapat diakses publik.</p>
-          <hr>
-          <h5 class="fw-bold mb-2 text-success">Prosedur</h5>
+                     <h5 class="fw-bold mb-2 text-success">Pengenalan</h5>
+           <p class="mb-3">Holland Occupational Themes (RIASEC) adalah teori kepribadian karier yang dikembangkan John L. Holland sejak 1950-an. Teori ini mengelompokkan minat kerja ke dalam enam tipe utama, yaitu Realistic, Investigative, Artistic, Social, Enterprising, dan Conventional (RIASEC). Instrumen RIASEC pada asesmen ini diadaptasi dari Panduan Implementasi Bimbingan dan Konseling untuk Jenjang Pendidikan Dasar dan Menengah (Kemendikbud, 2021) yang dapat diakses publik.</p>
+           <h5 class="fw-bold mb-2 text-success">Prosedur</h5>
           <p class="mb-3">Asesmen ini terdiri dari 42 pernyataan aktivitas yang harus kamu nilai berdasarkan seberapa suka kamu dalam menjalani aktivitas tersebut, dengan skala:</p>
           <ul class="mb-3">
             <li>(1) tidak suka</li>
