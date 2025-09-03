@@ -384,8 +384,8 @@ if (!empty($paras)) {
 
 $html .= '
     <div class="footer">
-        <p>Laporan ini dibuat secara otomatis oleh sistem tes RIASEC</p>
-        <p>© ' . date('Y') . ' Sistem Tes RIASEC</p>
+        <p>Laporan ini dibuat secara otomatis oleh sistem asesmen RIASEC</p>
+        <p>© ' . date('Y') . ' Pusat Pasar Kerja</p>
     </div>
 </body>
 </html>';
