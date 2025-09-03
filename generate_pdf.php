@@ -5,12 +5,15 @@ include 'util_functions.php';
 
 // Check if mPDF is available, if not, we'll use a fallback
 $mpdf_available = false;
-try {
+
+// Try to include Composer autoloader
+if (file_exists('vendor/autoload.php')) {
+    require_once 'vendor/autoload.php';
+    
+    // Check if mPDF class exists
     if (class_exists('Mpdf\Mpdf')) {
         $mpdf_available = true;
     }
-} catch (Exception $e) {
-    $mpdf_available = false;
 }
 
 // Function to format content for PDF
@@ -416,6 +419,33 @@ if ($mpdf_available) {
         exit;
     }
 } else {
+    // Debug: Check what's available
+    if (file_exists('vendor/autoload.php')) {
+        // Try to force load mPDF
+        require_once 'vendor/autoload.php';
+        if (class_exists('Mpdf\Mpdf')) {
+            try {
+                $mpdf = new \Mpdf\Mpdf([
+                    'mode' => 'utf-8',
+                    'format' => 'A4',
+                    'margin_left' => 15,
+                    'margin_right' => 15,
+                    'margin_top' => 15,
+                    'margin_bottom' => 15,
+                ]);
+                
+                $mpdf->WriteHTML($html);
+                
+                // Output PDF
+                $filename = 'laporan_riasec_' . date('Y-m-d_H-i-s') . '.pdf';
+                $mpdf->Output($filename, 'D');
+                exit;
+            } catch (Exception $e) {
+                // Continue to HTML fallback
+            }
+        }
+    }
+    
     // Fallback: Force download of HTML file that can be printed to PDF
     $filename = 'laporan_riasec_' . date('Y-m-d_H-i-s') . '.html';
     header('Content-Type: text/html; charset=utf-8');
