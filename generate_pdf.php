@@ -400,18 +400,29 @@ if ($mpdf_available) {
         
         $mpdf->WriteHTML($html);
         
-        // Output PDF
+        // Force download with proper headers
         $filename = 'laporan_riasec_' . date('Y-m-d_H-i-s') . '.pdf';
+        
+        // Set headers to force download
+        header('Content-Type: application/pdf');
+        header('Content-Disposition: attachment; filename="' . $filename . '"');
+        header('Cache-Control: no-cache, no-store, must-revalidate');
+        header('Pragma: no-cache');
+        header('Expires: 0');
+        
+        // Output the PDF
         $mpdf->Output($filename, 'D');
         exit;
     } catch (Exception $e) {
-        // Fallback to HTML output
+        // Fallback to HTML output with download headers
         header('Content-Type: text/html; charset=utf-8');
+        header('Content-Disposition: attachment; filename="laporan_riasec_' . date('Y-m-d_H-i-s') . '.html"');
         echo $html;
     }
 } else {
-    // Fallback: Output HTML that can be printed to PDF
+    // Fallback: Output HTML that can be printed to PDF with download headers
     header('Content-Type: text/html; charset=utf-8');
+    header('Content-Disposition: attachment; filename="laporan_riasec_' . date('Y-m-d_H-i-s') . '.html"');
     echo $html;
 }
 ?>
