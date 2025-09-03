@@ -135,7 +135,7 @@ if ($res && mysqli_num_rows($res) > 0) {
     }
 }
 
-// Create HTML content for PDF
+// Create HTML content for PDF with advanced chart
 $html = '
 <!DOCTYPE html>
 <html>
@@ -164,104 +164,98 @@ $html = '
             margin-bottom: 10px;
         }
         .chart-container {
-            height: 300px;
+            height: 350px;
             width: 100%;
             margin: 20px 0;
-            background-color: #ffffff;
-            border: 1px solid #e9ecef;
-            border-radius: 8px;
-            padding: 20px;
+            background: linear-gradient(135deg, #f8f9fa 0%, #ffffff 100%);
+            border: 2px solid #e9ecef;
+            border-radius: 12px;
+            padding: 25px;
             position: relative;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
         }
         .chart-title {
-            font-size: 1.1rem;
+            font-size: 1.2rem;
             font-weight: bold;
             color: #333;
             text-align: center;
-            margin-bottom: 20px;
+            margin-bottom: 25px;
             font-family: Arial, sans-serif;
+            text-transform: uppercase;
+            letter-spacing: 1px;
         }
         .chart-bars {
             display: flex;
             justify-content: space-around;
             align-items: end;
-            height: 200px;
-            margin-top: 20px;
-            padding: 0 10px;
+            height: 220px;
+            margin-top: 25px;
+            padding: 0 15px;
+            position: relative;
         }
         .chart-bar {
-            width: 50px;
+            width: 55px;
             background: linear-gradient(to top, #007bff, #0056b3);
-            border-radius: 4px 4px 0 0;
+            border-radius: 6px 6px 0 0;
             position: relative;
-            margin: 0 8px;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            margin: 0 10px;
+            box-shadow: 0 3px 6px rgba(0,0,0,0.15);
             transition: all 0.3s ease;
-        }
-        .chart-bar:hover {
-            background: linear-gradient(to top, #0056b3, #004085);
+            border: 1px solid rgba(255,255,255,0.3);
         }
         .chart-bar-highest {
             background: linear-gradient(to top, #28a745, #20c997) !important;
-            box-shadow: 0 4px 8px rgba(40, 167, 69, 0.3) !important;
+            box-shadow: 0 6px 12px rgba(40, 167, 69, 0.4) !important;
+            border: 2px solid rgba(255,255,255,0.5) !important;
         }
         .chart-bar-highest .chart-bar-value {
             color: #28a745 !important;
             font-weight: bold;
+            background: rgba(255,255,255,0.95) !important;
         }
         .chart-bar-label {
             position: absolute;
-            bottom: -30px;
+            bottom: -35px;
             left: 50%;
             transform: translateX(-50%);
-            font-size: 0.75rem;
+            font-size: 0.7rem;
             font-weight: 600;
             color: #333;
             text-align: center;
             width: 100%;
             font-family: Arial, sans-serif;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
         }
         .chart-bar-value {
             position: absolute;
-            top: -25px;
+            top: -30px;
             left: 50%;
             transform: translateX(-50%);
-            font-size: 0.8rem;
+            font-size: 0.85rem;
             font-weight: bold;
             color: #007bff;
             background: rgba(255,255,255,0.9);
-            padding: 2px 6px;
-            border-radius: 3px;
+            padding: 4px 8px;
+            border-radius: 4px;
             font-family: Arial, sans-serif;
+            border: 1px solid rgba(0,0,0,0.1);
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
         }
-        .chart-y-axis {
+        .chart-grid {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            pointer-events: none;
+        }
+        .chart-grid-line {
             position: absolute;
             left: 0;
-            top: 0;
-            height: 100%;
-            width: 40px;
-            border-right: 1px solid #ddd;
-        }
-        .chart-y-label {
-            position: absolute;
-            right: 5px;
-            font-size: 0.7rem;
-            color: #666;
-        }
-        .chart-y-axis {
-            position: absolute;
-            left: 0;
-            top: 0;
-            height: 100%;
-            width: 40px;
-            border-right: 1px solid #ddd;
-        }
-        .chart-y-label {
-            position: absolute;
-            right: 5px;
-            font-size: 0.7rem;
-            color: #666;
+            right: 0;
+            height: 1px;
+            background: rgba(0,0,0,0.1);
         }
         .section { 
             margin: 20px 0; 
@@ -333,49 +327,59 @@ $html = '
         <p style="margin: 0;">Berdasarkan hasil tes, tipe kepribadian Anda adalah <strong>' . htmlspecialchars($result_personality) . '</strong></p>
     </div>
     
-         <div class="chart-container">
-         <div class="chart-title">RIASEC test results in percentages</div>
-         <div class="chart-bars">';
-         
-         // Create chart bars similar to CanvasJS
-         $maxPercentage = max($scorePercentageList);
-         $personalityTypes = array(
-             'R' => 'Realistic',
-             'I' => 'Investigative', 
-             'A' => 'Artistic',
-             'S' => 'Social',
-             'E' => 'Enterprising',
-             'C' => 'Conventional'
-         );
-         
-         // Calculate dynamic height based on max percentage
-         $maxBarHeight = 160; // Maximum bar height in pixels
-         $minBarHeight = 10;  // Minimum bar height for visibility
-         
-         foreach ($personalityTypes as $code => $name) {
-             $percentage = $scorePercentageList[$code];
-             
-             // Calculate bar height with minimum height guarantee
-             if ($maxPercentage > 0) {
-                 $barHeight = max($minBarHeight, ($percentage / $maxPercentage) * $maxBarHeight);
-             } else {
-                 $barHeight = $minBarHeight;
-             }
-             
-             // Add highlight for the highest score
-             $isHighest = ($percentage == $maxPercentage && $percentage > 0);
-             $barClass = $isHighest ? 'chart-bar chart-bar-highest' : 'chart-bar';
-             
-             $html .= '
-             <div class="' . $barClass . '" style="height: ' . $barHeight . 'px;">
-                 <div class="chart-bar-value">' . number_format($percentage, 1) . '%</div>
-                 <div class="chart-bar-label">' . $name . '</div>
-             </div>';
-         }
-         
-         $html .= '
-         </div>
-     </div>
+    <div class="chart-container">
+        <div class="chart-title">RIASEC Test Results in Percentages</div>
+        <div class="chart-grid">';
+        
+        // Add grid lines
+        for ($i = 1; $i <= 4; $i++) {
+            $y = ($i * 25) . '%';
+            $html .= '<div class="chart-grid-line" style="top: ' . $y . ';"></div>';
+        }
+        
+        $html .= '
+        </div>
+        <div class="chart-bars">';
+        
+        // Create advanced chart bars
+        $maxPercentage = max($scorePercentageList);
+        $personalityTypes = array(
+            'R' => 'Realistic',
+            'I' => 'Investigative', 
+            'A' => 'Artistic',
+            'S' => 'Social',
+            'E' => 'Enterprising',
+            'C' => 'Conventional'
+        );
+        
+        // Calculate dynamic height based on max percentage
+        $maxBarHeight = 180; // Maximum bar height in pixels
+        $minBarHeight = 15;  // Minimum bar height for visibility
+        
+        foreach ($personalityTypes as $code => $name) {
+            $percentage = $scorePercentageList[$code];
+            
+            // Calculate bar height with minimum height guarantee
+            if ($maxPercentage > 0) {
+                $barHeight = max($minBarHeight, ($percentage / $maxPercentage) * $maxBarHeight);
+            } else {
+                $barHeight = $minBarHeight;
+            }
+            
+            // Add highlight for the highest score
+            $isHighest = ($percentage == $maxPercentage && $percentage > 0);
+            $barClass = $isHighest ? 'chart-bar chart-bar-highest' : 'chart-bar';
+            
+            $html .= '
+            <div class="' . $barClass . '" style="height: ' . $barHeight . 'px;">
+                <div class="chart-bar-value">' . number_format($percentage, 1) . '%</div>
+                <div class="chart-bar-label">' . $name . '</div>
+            </div>';
+        }
+        
+        $html .= '
+        </div>
+    </div>
     
     <div class="section">
         <div class="section-title">Keterangan Kode RIASEC:</div>
@@ -468,7 +472,7 @@ if ($mpdf_available) {
         $mpdf->WriteHTML($html);
         
         // Force download with proper headers
-        $filename = 'laporan_riasec_' . date('Y-m-d_H-i-s') . '.pdf';
+        $filename = 'laporan_riasec_advanced_' . date('Y-m-d_H-i-s') . '.pdf';
         
         // Set headers to force download
         header('Content-Type: application/pdf');
@@ -486,13 +490,13 @@ if ($mpdf_available) {
         
         // Fallback to HTML output with download headers
         header('Content-Type: text/html; charset=utf-8');
-        header('Content-Disposition: attachment; filename="laporan_riasec_' . date('Y-m-d_H-i-s') . '.html"');
+        header('Content-Disposition: attachment; filename="laporan_riasec_advanced_' . date('Y-m-d_H-i-s') . '.html"');
         echo $html;
     }
 } else {
     // mPDF not available - provide HTML that can be printed to PDF
     header('Content-Type: text/html; charset=utf-8');
-    header('Content-Disposition: attachment; filename="laporan_riasec_' . date('Y-m-d_H-i-s') . '.html"');
+    header('Content-Disposition: attachment; filename="laporan_riasec_advanced_' . date('Y-m-d_H-i-s') . '.html"');
     
     // Add print-friendly CSS for better PDF conversion
     $html = str_replace('</head>', '
