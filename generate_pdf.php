@@ -284,31 +284,43 @@ $html = '
                 <th>Percentage</th>
             </tr>
         </thead>
-        <tbody>
+        <tbody>';
+        
+        // Sort personality types by percentage (highest to lowest)
+        $personalityTypes = array(
+            'R' => 'Realistic',
+            'I' => 'Investigative', 
+            'A' => 'Artistic',
+            'S' => 'Social',
+            'E' => 'Enterprising',
+            'C' => 'Conventional'
+        );
+        
+        // Create array for sorting
+        $sortedData = array();
+        foreach ($personalityTypes as $code => $name) {
+            $sortedData[] = array(
+                'code' => $code,
+                'name' => $name,
+                'percentage' => $scorePercentageList[$code]
+            );
+        }
+        
+        // Sort by percentage (highest first)
+        usort($sortedData, function($a, $b) {
+            return $b['percentage'] <=> $a['percentage'];
+        });
+        
+        // Generate table rows in sorted order
+        foreach ($sortedData as $data) {
+            $html .= '
             <tr>
-                <td>Realistic</td>
-                <td class="percentage-cell">' . number_format($scorePercentageList['R'], 1) . '%</td>
-            </tr>
-            <tr>
-                <td>Investigative</td>
-                <td class="percentage-cell">' . number_format($scorePercentageList['I'], 1) . '%</td>
-            </tr>
-            <tr>
-                <td>Artistic</td>
-                <td class="percentage-cell">' . number_format($scorePercentageList['A'], 1) . '%</td>
-            </tr>
-            <tr>
-                <td>Social</td>
-                <td class="percentage-cell">' . number_format($scorePercentageList['S'], 1) . '%</td>
-            </tr>
-            <tr>
-                <td>Enterprising</td>
-                <td class="percentage-cell">' . number_format($scorePercentageList['E'], 1) . '%</td>
-            </tr>
-            <tr>
-                <td>Conventional</td>
-                <td class="percentage-cell">' . number_format($scorePercentageList['C'], 1) . '%</td>
-            </tr>
+                <td>' . $data['name'] . '</td>
+                <td class="percentage-cell">' . number_format($data['percentage'], 1) . '%</td>
+            </tr>';
+        }
+        
+        $html .= '
         </tbody>
     </table>
     
