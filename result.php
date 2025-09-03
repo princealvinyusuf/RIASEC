@@ -109,10 +109,11 @@ function renderFormattedContent($content) {
           <?php 
           getPersonalityTestResults(); 
           
-          // Set session flag to indicate test completion
-          if (session_status() === PHP_SESSION_NONE) { session_start(); }
-          $_SESSION['test_completed'] = true;
-          $_SESSION['result_personality'] = $result_personality;
+                     // Set session flag to indicate test completion
+           if (session_status() === PHP_SESSION_NONE) { session_start(); }
+           $_SESSION['test_completed'] = true;
+           $_SESSION['result_personality'] = $result_personality;
+           $_SESSION['scorePercentageList'] = $scorePercentageList;
           ?>
           <div class="alert alert-success text-center mb-4" role="alert">
             <h4 class="alert-heading">Hasil Tes RIASEC Anda</h4>

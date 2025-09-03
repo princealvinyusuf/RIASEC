@@ -103,17 +103,22 @@ if (empty($result_personality)) {
 // Get score percentages for the chart
 $scorePercentageList = array('R'=>'0','I'=>'0','A'=>'0','S'=>'0','E'=>'0','C'=>'0');
 
-// Get the latest test scores from database
-$scoreQuery = "SELECT realistic, investigative, artistic, social, enterprising, conventional FROM personality_test_scores ORDER BY created_at DESC LIMIT 1";
-$scoreRes = mysqli_query($connection, $scoreQuery);
-if ($scoreRes && mysqli_num_rows($scoreRes) > 0) {
-    $scoreData = mysqli_fetch_assoc($scoreRes);
-    $scorePercentageList['R'] = $scoreData['realistic'];
-    $scorePercentageList['I'] = $scoreData['investigative'];
-    $scorePercentageList['A'] = $scoreData['artistic'];
-    $scorePercentageList['S'] = $scoreData['social'];
-    $scorePercentageList['E'] = $scoreData['enterprising'];
-    $scorePercentageList['C'] = $scoreData['conventional'];
+// First try to get from session if available
+if (isset($_SESSION['scorePercentageList'])) {
+    $scorePercentageList = $_SESSION['scorePercentageList'];
+} else {
+    // Get the latest test scores from database
+    $scoreQuery = "SELECT realistic, investigative, artistic, social, enterprising, conventional FROM personality_test_scores ORDER BY created_at DESC LIMIT 1";
+    $scoreRes = mysqli_query($connection, $scoreQuery);
+    if ($scoreRes && mysqli_num_rows($scoreRes) > 0) {
+        $scoreData = mysqli_fetch_assoc($scoreRes);
+        $scorePercentageList['R'] = $scoreData['realistic'];
+        $scorePercentageList['I'] = $scoreData['investigative'];
+        $scorePercentageList['A'] = $scoreData['artistic'];
+        $scorePercentageList['S'] = $scoreData['social'];
+        $scorePercentageList['E'] = $scoreData['enterprising'];
+        $scorePercentageList['C'] = $scoreData['conventional'];
+    }
 }
 
 // Fetch paragraphs for the result personality type
