@@ -395,10 +395,13 @@ $html .= '
 if ($mpdf_available) {
     // Use mPDF to generate PDF
     try {
-        // Create custom temp directory if it doesn't exist
-        $custom_temp_dir = __DIR__ . '/tmp';
-        if (!file_exists($custom_temp_dir)) {
-            mkdir($custom_temp_dir, 0755, true);
+        // Try to use system temp directory first, then fallback to custom
+        $temp_dir = sys_get_temp_dir();
+        if (!is_writable($temp_dir)) {
+            $temp_dir = __DIR__ . '/tmp';
+            if (!file_exists($temp_dir)) {
+                mkdir($temp_dir, 0755, true);
+            }
         }
         
         $mpdf = new \Mpdf\Mpdf([
@@ -408,7 +411,7 @@ if ($mpdf_available) {
             'margin_right' => 15,
             'margin_top' => 15,
             'margin_bottom' => 15,
-            'tempDir' => $custom_temp_dir, // Use custom temp directory
+            'tempDir' => $temp_dir,
         ]);
         
         $mpdf->WriteHTML($html);
