@@ -5,6 +5,12 @@ include 'util_functions.php';
 
 // Check if mPDF is available, if not, we'll use a fallback
 $mpdf_available = false;
+
+// Try to include mPDF if it exists
+if (file_exists('vendor/autoload.php')) {
+    require_once 'vendor/autoload.php';
+}
+
 try {
     if (class_exists('Mpdf\Mpdf')) {
         $mpdf_available = true;
@@ -414,15 +420,30 @@ if ($mpdf_available) {
         $mpdf->Output($filename, 'D');
         exit;
     } catch (Exception $e) {
+        // Log error for debugging
+        error_log("mPDF Error: " . $e->getMessage());
+        
         // Fallback to HTML output with download headers
         header('Content-Type: text/html; charset=utf-8');
         header('Content-Disposition: attachment; filename="laporan_riasec_' . date('Y-m-d_H-i-s') . '.html"');
         echo $html;
     }
 } else {
-    // Fallback: Output HTML that can be printed to PDF with download headers
+    // mPDF not available - provide HTML that can be printed to PDF
     header('Content-Type: text/html; charset=utf-8');
     header('Content-Disposition: attachment; filename="laporan_riasec_' . date('Y-m-d_H-i-s') . '.html"');
+    
+    // Add print-friendly CSS for better PDF conversion
+    $html = str_replace('</head>', '
+    <style>
+        @media print {
+            body { margin: 0; padding: 20px; }
+            .chart-container { page-break-inside: avoid; }
+            .explanation { page-break-inside: avoid; }
+        }
+    </style>
+    </head>', $html);
+    
     echo $html;
 }
 ?>
