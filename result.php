@@ -115,8 +115,8 @@ function renderFormattedContent($content) {
           $_SESSION['result_personality'] = $result_personality;
           ?>
           <div class="alert alert-success text-center mb-4" role="alert">
-            <h4 class="alert-heading">Hasil Tes RIASEC Anda</h4>
-            <p class="mb-0">Berdasarkan hasil tes, tipe kepribadian Anda adalah <b><?php echo $result_personality ?></b></p>
+            <h4 class="alert-heading">Hasil Asesmen RIASEC Anda</h4>
+            <p class="mb-0">Berdasarkan hasil asesmen, tipe kepribadian Anda adalah <b><?php echo $result_personality ?></b></p>
           </div>
           <div class="mb-4">
             <div id="chartContainer" style="height: 300px; width: 100%;"></div>

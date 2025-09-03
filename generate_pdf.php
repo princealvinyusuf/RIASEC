@@ -273,8 +273,8 @@ $html = '
 </head>
 <body>
     <div class="alert-success">
-        <div class="alert-heading">Hasil Tes RIASEC Anda</div>
-        <p style="margin: 0;">Berdasarkan hasil tes, tipe kepribadian Anda adalah <strong>' . htmlspecialchars($result_personality) . '</strong></p>
+        <div class="alert-heading">Hasil Asesmen RIASEC Anda</div>
+        <p style="margin: 0;">Berdasarkan hasil asesmen, tipe kepribadian Anda adalah <strong>' . htmlspecialchars($result_personality) . '</strong></p>
     </div>
     
     <table class="results-table">
