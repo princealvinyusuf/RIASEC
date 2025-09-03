@@ -114,6 +114,9 @@ function renderFormattedContent($content) {
           $_SESSION['test_completed'] = true;
           $_SESSION['result_personality'] = $result_personality;
           ?>
+          <div class="text-center mb-3">
+            <img src="jobi.png" alt="Maskot Jobi" class="img-fluid" style="max-width: 150px;">
+          </div>
           <div class="alert alert-success text-center mb-4" role="alert">
             <h4 class="alert-heading">Hasil Asesmen RIASEC Anda</h4>
             <p class="mb-0">Berdasarkan hasil asesmen, tipe kepribadian Anda adalah <b><?php echo $result_personality ?></b></p>
