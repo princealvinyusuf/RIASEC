@@ -36,10 +36,15 @@
   <div class="row justify-content-center">
     <div class="col-lg-8 text-center">
       <div class="card shadow-sm border-0">
-        <div class="card-body">
-          <h4 class="fw-bold text-success mb-3">Siap mengetahui tipe RIASEC Kamu?</h4>
-          <a href="personal_info.php" class="btn btn-success btn-lg px-5">Mulai Asesmen</a>
-        </div>
+                 <div class="card-body">
+           <h4 class="fw-bold text-success mb-3">Siap mengetahui tipe RIASEC Kamu?</h4>
+           <a href="personal_info.php" class="btn btn-success btn-lg px-5">Mulai Asesmen</a>
+           <div class="mt-3">
+             <small class="text-muted">
+               <strong>Catatan:</strong> Hasil asesmen hanya menunjukkan kecenderungan minat karir sesuai jawaban responden. Untuk akurasi lebih tinggi, diperlukan data tambahan dan pendampingan konselor.
+             </small>
+           </div>
+         </div>
       </div>
     </div>
   </div>
