@@ -337,41 +337,41 @@ $html = '
          <div class="chart-title">RIASEC test results in percentages</div>
          <div class="chart-bars">';
          
-         // Create chart bars similar to CanvasJS
-         $maxPercentage = max($scorePercentageList);
-         $personalityTypes = array(
-             'R' => 'Realistic',
-             'I' => 'Investigative', 
-             'A' => 'Artistic',
-             'S' => 'Social',
-             'E' => 'Enterprising',
-             'C' => 'Conventional'
-         );
-         
-         // Calculate dynamic height based on max percentage
-         $maxBarHeight = 160; // Maximum bar height in pixels
-         $minBarHeight = 10;  // Minimum bar height for visibility
-         
-         foreach ($personalityTypes as $code => $name) {
-             $percentage = $scorePercentageList[$code];
-             
-             // Calculate bar height with minimum height guarantee
-             if ($maxPercentage > 0) {
-                 $barHeight = max($minBarHeight, ($percentage / $maxPercentage) * $maxBarHeight);
-             } else {
-                 $barHeight = $minBarHeight;
-             }
-             
-             // Add highlight for the highest score
-             $isHighest = ($percentage == $maxPercentage && $percentage > 0);
-             $barClass = $isHighest ? 'chart-bar chart-bar-highest' : 'chart-bar';
-             
-             $html .= '
-             <div class="' . $barClass . '" style="height: ' . $barHeight . 'px;">
-                 <div class="chart-bar-value">' . number_format($percentage, 1) . '%</div>
-                 <div class="chart-bar-label">' . $name . '</div>
-             </div>';
-         }
+                   // Create chart bars similar to CanvasJS
+          $maxPercentage = max($scorePercentageList);
+          $personalityTypes = array(
+              'R' => 'Realistic',
+              'I' => 'Investigative', 
+              'A' => 'Artistic',
+              'S' => 'Social',
+              'E' => 'Enterprising',
+              'C' => 'Conventional'
+          );
+          
+          // Calculate dynamic height based on max percentage
+          $maxBarHeight = 200; // Maximum bar height in pixels
+          $minBarHeight = 10;  // Minimum bar height for visibility
+          
+          foreach ($personalityTypes as $code => $name) {
+              $percentage = floatval($scorePercentageList[$code]);
+              
+              // Calculate bar height with minimum height guarantee
+              if ($maxPercentage > 0) {
+                  $barHeight = max($minBarHeight, ($percentage / $maxPercentage) * $maxBarHeight);
+              } else {
+                  $barHeight = $minBarHeight;
+              }
+              
+              // Add highlight for the highest score
+              $isHighest = ($percentage == $maxPercentage && $percentage > 0);
+              $barClass = $isHighest ? 'chart-bar chart-bar-highest' : 'chart-bar';
+              
+              $html .= '
+              <div class="' . $barClass . '" style="height: ' . $barHeight . 'px;">
+                  <div class="chart-bar-value">' . number_format($percentage, 1) . '%</div>
+                  <div class="chart-bar-label">' . $name . '</div>
+              </div>';
+          }
          
          $html .= '
          </div>
