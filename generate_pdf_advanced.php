@@ -313,49 +313,53 @@ $html = '
         <p style="margin: 0;">Berdasarkan hasil tes, tipe kepribadian Anda adalah <strong>' . htmlspecialchars($result_personality) . '</strong></p>
     </div>
     
-         <div class="chart-container">
-         <div class="chart-title">RIASEC test results in percentages</div>
-         <div class="chart-bars">';
-        
-                 // Create chart bars similar to CanvasJS
-         $maxPercentage = max($scorePercentageList);
-         $personalityTypes = array(
-             'R' => 'Realistic',
-             'I' => 'Investigative', 
-             'A' => 'Artistic',
-             'S' => 'Social',
-             'E' => 'Enterprising',
-             'C' => 'Conventional'
-         );
-         
-         // Calculate dynamic height based on max percentage
-         $maxBarHeight = 200; // Maximum bar height in pixels
-         $minBarHeight = 10;  // Minimum bar height for visibility
-         
-         foreach ($personalityTypes as $code => $name) {
-             $percentage = floatval($scorePercentageList[$code]);
-             
-             // Calculate bar height with minimum height guarantee
-             if ($maxPercentage > 0) {
-                 $barHeight = max($minBarHeight, ($percentage / $maxPercentage) * $maxBarHeight);
-             } else {
-                 $barHeight = $minBarHeight;
-             }
-             
-             // Add highlight for the highest score
-             $isHighest = ($percentage == $maxPercentage && $percentage > 0);
-             $barClass = $isHighest ? 'chart-bar chart-bar-highest' : 'chart-bar';
-             
-             $html .= '
-             <div class="' . $barClass . '" style="height: ' . $barHeight . 'px;">
-                 <div class="chart-bar-value">' . number_format($percentage, 1) . '%</div>
-                 <div class="chart-bar-label">' . $name . '</div>
-             </div>';
-         }
-        
-        $html .= '
-        </div>
-    </div>
+                   <div class="chart-container">
+          <div class="chart-title">RIASEC test results in percentages</div>
+          <table style="width: 100%; height: 250px; border-collapse: collapse; margin-top: 20px;">
+              <tr style="height: 200px; vertical-align: bottom;">';
+          
+                  // Create chart bars similar to CanvasJS
+                  $maxPercentage = max($scorePercentageList);
+                  $personalityTypes = array(
+                      'R' => 'Realistic',
+                      'I' => 'Investigative', 
+                      'A' => 'Artistic',
+                      'S' => 'Social',
+                      'E' => 'Enterprising',
+                      'C' => 'Conventional'
+                  );
+                  
+                  // Calculate dynamic height based on max percentage
+                  $maxBarHeight = 200; // Maximum bar height in pixels
+                  $minBarHeight = 10;  // Minimum bar height for visibility
+                  
+                  foreach ($personalityTypes as $code => $name) {
+                      $percentage = floatval($scorePercentageList[$code]);
+                      
+                      // Calculate bar height with minimum height guarantee
+                      if ($maxPercentage > 0) {
+                          $barHeight = max($minBarHeight, ($percentage / $maxPercentage) * $maxBarHeight);
+                      } else {
+                          $barHeight = $minBarHeight;
+                      }
+                      
+                      // Add highlight for the highest score
+                      $isHighest = ($percentage == $maxPercentage && $percentage > 0);
+                      $barColor = $isHighest ? 'background: linear-gradient(to top, #28a745, #20c997);' : 'background: linear-gradient(to top, #007bff, #0056b3);';
+                      $barShadow = $isHighest ? 'box-shadow: 0 4px 8px rgba(40, 167, 69, 0.3);' : 'box-shadow: 0 2px 4px rgba(0,0,0,0.1);';
+                      $valueColor = $isHighest ? 'color: #28a745; font-weight: bold;' : 'color: #007bff;';
+                      
+                      $html .= '<td style="width: 16.66%; text-align: center; vertical-align: bottom; padding: 0 2px;">';
+                      $html .= '<div style="position: relative; display: inline-block; width: 80%; max-width: 60px;">';
+                      $html .= '<div style="' . $barColor . ' height: ' . $barHeight . 'px; border-radius: 4px 4px 0 0; position: relative; ' . $barShadow . ' min-height: 5px;">';
+                      $html .= '<div style="position: absolute; top: -25px; left: 50%; transform: translateX(-50%); font-size: 0.8rem; font-weight: bold; ' . $valueColor . ' background: rgba(255,255,255,0.9); padding: 2px 6px; border-radius: 3px; font-family: Arial, sans-serif;">' . number_format($percentage, 1) . '%</div>';
+                      $html .= '</div>';
+                      $html .= '<div style="position: absolute; bottom: -30px; left: 50%; transform: translateX(-50%); font-size: 0.75rem; font-weight: 600; color: #333; text-align: center; width: 100%; font-family: Arial, sans-serif; white-space: nowrap;">' . $name . '</div>';
+                      $html .= '</div>';
+                      $html .= '</td>';
+                  }
+                  
+                  $html .= '</tr></table></div>';
     
     <div class="section">
         <div class="section-title">Keterangan Kode RIASEC:</div>
