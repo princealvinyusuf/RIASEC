@@ -188,26 +188,25 @@ $html = '
             font-family: Arial, sans-serif;
         }
         .chart-bars {
-            display: flex;
-            justify-content: space-around;
-            align-items: end;
+            display: table;
+            width: 100%;
             height: 250px;
             margin-top: 20px;
             padding: 0 10px;
             position: relative;
-            flex-direction: row;
+            table-layout: fixed;
         }
         .chart-bar {
-            width: 60px;
+            display: table-cell;
+            width: 16.66%;
             background: linear-gradient(to top, #007bff, #0056b3);
             border-radius: 4px 4px 0 0;
             position: relative;
-            margin: 0 8px;
+            margin: 0 4px;
             box-shadow: 0 2px 4px rgba(0,0,0,0.1);
             min-height: 5px;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
+            vertical-align: bottom;
+            text-align: center;
         }
         .chart-bar-highest {
             background: linear-gradient(to top, #28a745, #20c997) !important;
