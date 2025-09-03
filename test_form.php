@@ -61,7 +61,7 @@ while($row=mysqli_fetch_assoc($statement_select_query )){
             <div class="mb-3 mt-4">
               <div class="form-check">
                 <input class="form-check-input" type="checkbox" name="can_save_data" value="true" id="saveDataYes" required>
-                <label class="form-check-label" for="saveDataYes">Ya, saya setuju jawaban saya disimpan secara anonim untuk tujuan penelitian.</label>
+                <label class="form-check-label" for="saveDataYes">Saya setuju jawaban saya disimpan untuk keperluan konseling dan pengembangan asesmen.</label>
               </div>
             </div>
             <div class="text-end">
