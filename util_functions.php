@@ -27,6 +27,11 @@ function getPersonalityTestResults(){
 		if(isset($_POST['can_save_data']) && $_POST['can_save_data']==='true'){
 			insertTestResults($result_personality);
 		}
+		
+		// Set session flag to indicate test completion
+		if (session_status() === PHP_SESSION_NONE) { session_start(); }
+		$_SESSION['test_completed'] = true;
+		$_SESSION['result_personality'] = $result_personality;
 	} else{
 		header("Location: test_form.php?message=REQ");
 	}

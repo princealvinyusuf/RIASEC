@@ -106,7 +106,14 @@ function renderFormattedContent($content) {
     <div class="col-lg-8">
       <div class="card shadow-sm border-0">
         <div class="card-body">
-          <?php getPersonalityTestResults(); ?>
+          <?php 
+          getPersonalityTestResults(); 
+          
+          // Set session flag to indicate test completion
+          if (session_status() === PHP_SESSION_NONE) { session_start(); }
+          $_SESSION['test_completed'] = true;
+          $_SESSION['result_personality'] = $result_personality;
+          ?>
           <div class="alert alert-success text-center mb-4" role="alert">
             <h4 class="alert-heading">Hasil Tes RIASEC Anda</h4>
             <p class="mb-0">Berdasarkan hasil tes, tipe kepribadian Anda adalah <b><?php echo $result_personality ?></b></p>

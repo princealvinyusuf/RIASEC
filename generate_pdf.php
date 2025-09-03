@@ -59,8 +59,40 @@ function formatContentForPDF($content) {
     return $sections;
 }
 
-// Get test results
-getPersonalityTestResults();
+// Check if we have valid test results
+session_start();
+
+// Initialize result_personality
+$result_personality = '';
+
+// First try to get from session
+if (isset($_SESSION['result_personality'])) {
+    $result_personality = $_SESSION['result_personality'];
+} else {
+    // Try to get the latest test result from database
+    $latestResult = null;
+    
+    // Get the most recent test result
+    $resultQuery = "SELECT result FROM personality_test_scores ORDER BY created_at DESC LIMIT 1";
+    $resultRes = mysqli_query($connection, $resultQuery);
+    if ($resultRes && mysqli_num_rows($resultRes) > 0) {
+        $latestScore = mysqli_fetch_assoc($resultRes);
+        $result_personality = $latestScore['result'];
+    }
+}
+
+// If still no result, try to get from POST data (if form was just submitted)
+if (empty($result_personality) && isset($_POST['submit'])) {
+    // Temporarily set a flag to prevent redirect
+    $_POST['can_save_data'] = 'true';
+    getPersonalityTestResults();
+}
+
+// If still no result, redirect to test form
+if (empty($result_personality)) {
+    header("Location: test_form.php?message=REQ");
+    exit;
+}
 
 // Fetch paragraphs for the result personality type
 $paras = array();
