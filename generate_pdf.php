@@ -94,12 +94,38 @@ if (empty($result_personality)) {
     exit;
 }
 
+// Get score percentages for the chart
+$scorePercentageList = array('R'=>'0','I'=>'0','A'=>'0','S'=>'0','E'=>'0','C'=>'0');
+
+// Get the latest test scores from database
+$scoreQuery = "SELECT realistic, investigative, artistic, social, enterprising, conventional FROM personality_test_scores ORDER BY created_at DESC LIMIT 1";
+$scoreRes = mysqli_query($connection, $scoreQuery);
+if ($scoreRes && mysqli_num_rows($scoreRes) > 0) {
+    $scoreData = mysqli_fetch_assoc($scoreRes);
+    $scorePercentageList['R'] = $scoreData['realistic'];
+    $scorePercentageList['I'] = $scoreData['investigative'];
+    $scorePercentageList['A'] = $scoreData['artistic'];
+    $scorePercentageList['S'] = $scoreData['social'];
+    $scorePercentageList['E'] = $scoreData['enterprising'];
+    $scorePercentageList['C'] = $scoreData['conventional'];
+}
+
 // Fetch paragraphs for the result personality type
 $paras = array();
+
+// First try to get paragraphs for the actual result personality type
 $res = mysqli_query($connection, "SELECT position, content FROM riasec_paragraphs WHERE code='" . mysqli_real_escape_string($connection, $result_personality) . "' ORDER BY position ASC");
-if ($res) {
+if ($res && mysqli_num_rows($res) > 0) {
     while ($r = mysqli_fetch_assoc($res)) {
         $paras[] = $r['content'];
+    }
+} else {
+    // If no paragraphs found for the result type, get paragraphs for 'C' as fallback
+    $res = mysqli_query($connection, "SELECT position, content FROM riasec_paragraphs WHERE code='C' ORDER BY position ASC");
+    if ($res) {
+        while ($r = mysqli_fetch_assoc($res)) {
+            $paras[] = $r['content'];
+        }
     }
 }
 
@@ -117,22 +143,42 @@ $html = '
             line-height: 1.6;
             color: #333;
         }
-        .header { 
-            text-align: center; 
-            margin-bottom: 30px; 
-            border-bottom: 2px solid #28a745; 
-            padding-bottom: 20px; 
-        }
-        .header h1 {
-            color: #28a745;
-            margin-bottom: 10px;
-        }
-        .result-box { 
-            background-color: #f8fff8; 
-            border-left: 4px solid #28a745; 
+        .alert-success { 
+            background-color: #d1e7dd; 
+            border: 1px solid #badbcc; 
+            color: #0f5132; 
             padding: 15px; 
             margin: 20px 0; 
+            border-radius: 5px; 
+            text-align: center;
+        }
+        .alert-heading {
+            font-size: 18px;
+            font-weight: bold;
+            margin-bottom: 10px;
+        }
+        .chart-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 20px 0;
+            background-color: #f8f9fa;
             border-radius: 5px;
+            overflow: hidden;
+        }
+        .chart-table th {
+            background-color: #28a745;
+            color: white;
+            padding: 12px;
+            text-align: center;
+            font-weight: bold;
+        }
+        .chart-table td {
+            padding: 10px;
+            text-align: center;
+            border-bottom: 1px solid #dee2e6;
+        }
+        .chart-table tr:nth-child(even) {
+            background-color: #f1f3f4;
         }
         .section { 
             margin: 20px 0; 
@@ -145,6 +191,9 @@ $html = '
         }
         .code-list { 
             margin: 15px 0; 
+            background-color: #f8f9fa;
+            padding: 15px;
+            border-radius: 5px;
         }
         .code-list ul { 
             margin: 5px 0; 
@@ -155,8 +204,9 @@ $html = '
         }
         .explanation { 
             margin: 15px 0; 
-            padding: 10px;
-            background-color: #f9f9f9;
+            padding: 15px;
+            background: linear-gradient(135deg, #f8fff8 0%, #e8f5e8 100%);
+            border-left: 4px solid #28a745;
             border-radius: 5px;
         }
         .footer { 
@@ -178,19 +228,56 @@ $html = '
             color: #666;
             font-size: 14px;
         }
+        .chart-title {
+            font-size: 16px;
+            font-weight: bold;
+            color: #28a745;
+            text-align: center;
+            margin: 15px 0;
+        }
     </style>
 </head>
 <body>
-    <div class="header">
-        <h1>Laporan Hasil Tes RIASEC</h1>
-        <p class="date-info">Tanggal: ' . date('d/m/Y H:i') . '</p>
+    <div class="alert-success">
+        <div class="alert-heading">Hasil Tes RIASEC Anda</div>
+        <p style="margin: 0;">Berdasarkan hasil tes, tipe kepribadian Anda adalah <strong>' . htmlspecialchars($result_personality) . '</strong></p>
     </div>
     
-    <div class="result-box">
-        <h2>Hasil Tes RIASEC</h2>
-        <div class="personality-type">' . htmlspecialchars($result_personality) . '</div>
-        <p><strong>Tipe Kepribadian:</strong> ' . htmlspecialchars($result_personality) . '</p>
-    </div>
+    <div class="chart-title">RIASEC Test Results in Percentages</div>
+    <table class="chart-table">
+        <thead>
+            <tr>
+                <th>Personality Type</th>
+                <th>Percentage</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td>Realistic</td>
+                <td>' . number_format($scorePercentageList['R'], 1) . '%</td>
+            </tr>
+            <tr>
+                <td>Investigative</td>
+                <td>' . number_format($scorePercentageList['I'], 1) . '%</td>
+            </tr>
+            <tr>
+                <td>Artistic</td>
+                <td>' . number_format($scorePercentageList['A'], 1) . '%</td>
+            </tr>
+            <tr>
+                <td>Social</td>
+                <td>' . number_format($scorePercentageList['S'], 1) . '%</td>
+            </tr>
+            <tr>
+                <td>Enterprising</td>
+                <td>' . number_format($scorePercentageList['E'], 1) . '%</td>
+            </tr>
+            <tr>
+                <td>Conventional</td>
+                <td>' . number_format($scorePercentageList['C'], 1) . '%</td>
+            </tr>
+        </tbody>
+    </table>
     
     <div class="section">
         <div class="section-title">Keterangan Kode RIASEC:</div>
@@ -209,34 +296,38 @@ $html = '
 // Add explanation paragraphs
 if (!empty($paras)) {
     $html .= '<div class="section">
-        <div class="section-title">Penjelasan:</div>';
+        <div class="section-title">Penjelasan</div>';
     
     foreach ($paras as $p) {
         $sections = formatContentForPDF($p);
         $html .= '<div class="explanation">';
         
+        // Display title if exists
         if (isset($sections['Title'])) {
-            $html .= '<h4 style="color: #28a745; margin-bottom: 10px;">' . htmlspecialchars($sections['Title']) . '</h4>';
+            $html .= '<h5 style="font-weight: bold; margin-bottom: 15px; color: #28a745;">' . htmlspecialchars($sections['Title']) . '</h5>';
         }
         
+        // Display each section
         foreach ($sections as $sectionName => $sectionContent) {
             if ($sectionName === 'Title') continue;
             
-            $html .= '<div style="margin: 10px 0;">';
-            $html .= '<strong style="color: #28a745;">' . htmlspecialchars($sectionName) . ':</strong><br>';
+            $html .= '<div style="margin-bottom: 15px;">';
+            $html .= '<h6 style="font-weight: bold; margin-bottom: 8px; color: #28a745;">' . htmlspecialchars($sectionName) . ':</h6>';
             
+            // Split content by lines and create bullet points
             $lines = explode("\n", $sectionContent);
             if (count($lines) > 1) {
-                $html .= '<ul style="margin: 5px 0; padding-left: 20px;">';
+                $html .= '<ul style="margin: 0; padding-left: 20px;">';
                 foreach ($lines as $line) {
                     $line = trim($line);
                     if (!empty($line)) {
-                        $html .= '<li>' . htmlspecialchars($line) . '</li>';
+                        $html .= '<li style="margin-bottom: 3px;">' . htmlspecialchars($line) . '</li>';
                     }
                 }
                 $html .= '</ul>';
             } else {
-                $html .= htmlspecialchars(trim($sectionContent));
+                // Single line content
+                $html .= '<p style="margin: 0;">' . htmlspecialchars(trim($sectionContent)) . '</p>';
             }
             
             $html .= '</div>';
@@ -244,8 +335,6 @@ if (!empty($paras)) {
         
         $html .= '</div>';
     }
-    
-    $html .= '</div>';
 }
 
 $html .= '

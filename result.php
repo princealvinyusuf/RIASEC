@@ -173,12 +173,22 @@ function renderFormattedContent($content) {
             }
           }
 
-          // Fetch paragraphs for 'C'
+          // Fetch paragraphs for the result personality type
           $paras = array();
-          $res = mysqli_query($connection, "SELECT position, content FROM riasec_paragraphs WHERE code='C' ORDER BY position ASC");
-          if ($res) {
+          
+          // First try to get paragraphs for the actual result personality type
+          $res = mysqli_query($connection, "SELECT position, content FROM riasec_paragraphs WHERE code='" . mysqli_real_escape_string($connection, $result_personality) . "' ORDER BY position ASC");
+          if ($res && mysqli_num_rows($res) > 0) {
             while ($r = mysqli_fetch_assoc($res)) {
               $paras[] = $r['content'];
+            }
+          } else {
+            // If no paragraphs found for the result type, get paragraphs for 'C' as fallback
+            $res = mysqli_query($connection, "SELECT position, content FROM riasec_paragraphs WHERE code='C' ORDER BY position ASC");
+            if ($res) {
+              while ($r = mysqli_fetch_assoc($res)) {
+                $paras[] = $r['content'];
+              }
             }
           }
           ?>
