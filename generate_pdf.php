@@ -194,6 +194,7 @@ $html = '
             height: 200px;
             margin-top: 20px;
             padding: 0 10px;
+            flex-direction: row;
         }
         .chart-bar {
             width: 50px;
@@ -203,6 +204,9 @@ $html = '
             margin: 0 8px;
             box-shadow: 0 2px 4px rgba(0,0,0,0.1);
             transition: all 0.3s ease;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
         }
         .chart-bar:hover {
             background: linear-gradient(to top, #0056b3, #004085);
@@ -226,6 +230,7 @@ $html = '
             text-align: center;
             width: 100%;
             font-family: Arial, sans-serif;
+            white-space: nowrap;
         }
         .chart-bar-value {
             position: absolute;
