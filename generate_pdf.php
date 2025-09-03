@@ -153,32 +153,73 @@ $html = '
             text-align: center;
         }
         .alert-heading {
-            font-size: 18px;
+            font-size: 1.5rem;
             font-weight: bold;
             margin-bottom: 10px;
         }
-        .chart-table {
+        .chart-container {
+            height: 300px;
             width: 100%;
-            border-collapse: collapse;
             margin: 20px 0;
             background-color: #f8f9fa;
             border-radius: 5px;
-            overflow: hidden;
+            padding: 20px;
+            position: relative;
         }
-        .chart-table th {
-            background-color: #28a745;
-            color: white;
-            padding: 12px;
-            text-align: center;
+        .chart-title {
+            font-size: 1rem;
             font-weight: bold;
-        }
-        .chart-table td {
-            padding: 10px;
+            color: #28a745;
             text-align: center;
-            border-bottom: 1px solid #dee2e6;
+            margin-bottom: 15px;
         }
-        .chart-table tr:nth-child(even) {
-            background-color: #f1f3f4;
+        .chart-bars {
+            display: flex;
+            justify-content: space-around;
+            align-items: end;
+            height: 200px;
+            margin-top: 20px;
+        }
+        .chart-bar {
+            width: 60px;
+            background: linear-gradient(to top, #28a745, #20c997);
+            border-radius: 5px 5px 0 0;
+            position: relative;
+            margin: 0 5px;
+        }
+        .chart-bar-label {
+            position: absolute;
+            bottom: -25px;
+            left: 50%;
+            transform: translateX(-50%);
+            font-size: 0.8rem;
+            font-weight: bold;
+            color: #333;
+            text-align: center;
+            width: 100%;
+        }
+        .chart-bar-value {
+            position: absolute;
+            top: -25px;
+            left: 50%;
+            transform: translateX(-50%);
+            font-size: 0.8rem;
+            font-weight: bold;
+            color: #28a745;
+        }
+        .chart-y-axis {
+            position: absolute;
+            left: 0;
+            top: 0;
+            height: 100%;
+            width: 40px;
+            border-right: 1px solid #ddd;
+        }
+        .chart-y-label {
+            position: absolute;
+            right: 5px;
+            font-size: 0.7rem;
+            color: #666;
         }
         .section { 
             margin: 20px 0; 
@@ -187,7 +228,7 @@ $html = '
             font-weight: bold; 
             color: #28a745; 
             margin-bottom: 10px; 
-            font-size: 16px;
+            font-size: 1rem;
         }
         .code-list { 
             margin: 15px 0; 
@@ -201,6 +242,7 @@ $html = '
         }
         .code-list li { 
             margin: 3px 0; 
+            font-size: 0.9rem;
         }
         .explanation { 
             margin: 15px 0; 
@@ -208,6 +250,30 @@ $html = '
             background: linear-gradient(135deg, #f8fff8 0%, #e8f5e8 100%);
             border-left: 4px solid #28a745;
             border-radius: 5px;
+        }
+        .explanation h5 {
+            font-size: 1.1rem;
+            font-weight: bold;
+            margin-bottom: 15px;
+            color: #28a745;
+        }
+        .explanation h6 {
+            font-size: 1rem;
+            font-weight: bold;
+            margin-bottom: 8px;
+            color: #28a745;
+        }
+        .explanation ul {
+            margin: 0;
+            padding-left: 20px;
+        }
+        .explanation li {
+            margin-bottom: 3px;
+            font-size: 0.9rem;
+        }
+        .explanation p {
+            margin: 0;
+            font-size: 0.9rem;
         }
         .footer { 
             text-align: center; 
@@ -217,24 +283,6 @@ $html = '
             border-top: 1px solid #ddd;
             padding-top: 20px;
         }
-        .personality-type {
-            font-size: 24px;
-            font-weight: bold;
-            color: #28a745;
-            text-align: center;
-            margin: 10px 0;
-        }
-        .date-info {
-            color: #666;
-            font-size: 14px;
-        }
-        .chart-title {
-            font-size: 16px;
-            font-weight: bold;
-            color: #28a745;
-            text-align: center;
-            margin: 15px 0;
-        }
     </style>
 </head>
 <body>
@@ -243,41 +291,34 @@ $html = '
         <p style="margin: 0;">Berdasarkan hasil tes, tipe kepribadian Anda adalah <strong>' . htmlspecialchars($result_personality) . '</strong></p>
     </div>
     
-    <div class="chart-title">RIASEC Test Results in Percentages</div>
-    <table class="chart-table">
-        <thead>
-            <tr>
-                <th>Personality Type</th>
-                <th>Percentage</th>
-            </tr>
-        </thead>
-        <tbody>
-            <tr>
-                <td>Realistic</td>
-                <td>' . number_format($scorePercentageList['R'], 1) . '%</td>
-            </tr>
-            <tr>
-                <td>Investigative</td>
-                <td>' . number_format($scorePercentageList['I'], 1) . '%</td>
-            </tr>
-            <tr>
-                <td>Artistic</td>
-                <td>' . number_format($scorePercentageList['A'], 1) . '%</td>
-            </tr>
-            <tr>
-                <td>Social</td>
-                <td>' . number_format($scorePercentageList['S'], 1) . '%</td>
-            </tr>
-            <tr>
-                <td>Enterprising</td>
-                <td>' . number_format($scorePercentageList['E'], 1) . '%</td>
-            </tr>
-            <tr>
-                <td>Conventional</td>
-                <td>' . number_format($scorePercentageList['C'], 1) . '%</td>
-            </tr>
-        </tbody>
-    </table>
+    <div class="chart-container">
+        <div class="chart-title">RIASEC test results in percentages</div>
+        <div class="chart-bars">';
+        
+        // Create chart bars
+        $maxPercentage = max($scorePercentageList);
+        $personalityTypes = array(
+            'R' => 'Realistic',
+            'I' => 'Investigative', 
+            'A' => 'Artistic',
+            'S' => 'Social',
+            'E' => 'Enterprising',
+            'C' => 'Conventional'
+        );
+        
+        foreach ($personalityTypes as $code => $name) {
+            $percentage = $scorePercentageList[$code];
+            $barHeight = ($percentage / $maxPercentage) * 180; // Max height 180px
+            $html .= '
+            <div class="chart-bar" style="height: ' . $barHeight . 'px;">
+                <div class="chart-bar-value">' . number_format($percentage, 1) . '%</div>
+                <div class="chart-bar-label">' . $name . '</div>
+            </div>';
+        }
+        
+        $html .= '
+        </div>
+    </div>
     
     <div class="section">
         <div class="section-title">Keterangan Kode RIASEC:</div>
@@ -304,7 +345,7 @@ if (!empty($paras)) {
         
         // Display title if exists
         if (isset($sections['Title'])) {
-            $html .= '<h5 style="font-weight: bold; margin-bottom: 15px; color: #28a745;">' . htmlspecialchars($sections['Title']) . '</h5>';
+            $html .= '<h5>' . htmlspecialchars($sections['Title']) . '</h5>';
         }
         
         // Display each section
@@ -312,22 +353,22 @@ if (!empty($paras)) {
             if ($sectionName === 'Title') continue;
             
             $html .= '<div style="margin-bottom: 15px;">';
-            $html .= '<h6 style="font-weight: bold; margin-bottom: 8px; color: #28a745;">' . htmlspecialchars($sectionName) . ':</h6>';
+            $html .= '<h6>' . htmlspecialchars($sectionName) . ':</h6>';
             
             // Split content by lines and create bullet points
             $lines = explode("\n", $sectionContent);
             if (count($lines) > 1) {
-                $html .= '<ul style="margin: 0; padding-left: 20px;">';
+                $html .= '<ul>';
                 foreach ($lines as $line) {
                     $line = trim($line);
                     if (!empty($line)) {
-                        $html .= '<li style="margin-bottom: 3px;">' . htmlspecialchars($line) . '</li>';
+                        $html .= '<li>' . htmlspecialchars($line) . '</li>';
                     }
                 }
                 $html .= '</ul>';
             } else {
                 // Single line content
-                $html .= '<p style="margin: 0;">' . htmlspecialchars(trim($sectionContent)) . '</p>';
+                $html .= '<p>' . htmlspecialchars(trim($sectionContent)) . '</p>';
             }
             
             $html .= '</div>';
