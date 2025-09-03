@@ -177,30 +177,30 @@ $html = '
             margin-bottom: 15px;
         }
         .chart-bars {
+            width: 100%;
+            margin-top: 20px;
+        }
+        .chart-row {
             display: table;
             width: 100%;
-            height: 200px;
-            margin-top: 20px;
             table-layout: fixed;
         }
         .chart-bar {
             display: table-cell;
             width: 16.66%;
-            vertical-align: bottom;
             text-align: center;
-            position: relative;
+            vertical-align: bottom;
             padding: 0 5px;
         }
         .chart-bar-inner {
             background: linear-gradient(to top, #28a745, #20c997);
             border-radius: 5px 5px 0 0;
-            position: relative;
             margin: 0 auto;
             width: 40px;
         }
         .chart-bar-label {
             position: absolute;
-            bottom: -25px;
+            bottom: 5px;
             left: 0;
             right: 0;
             font-size: 0.8rem;
@@ -210,7 +210,7 @@ $html = '
         }
         .chart-bar-value {
             position: absolute;
-            top: -25px;
+            top: 5px;
             left: 50%;
             transform: translateX(-50%);
             font-size: 0.8rem;
@@ -303,7 +303,8 @@ $html = '
     
     <div class="chart-container">
         <div class="chart-title">RIASEC test results in percentages</div>
-        <div class="chart-bars">';
+        <div class="chart-bars">
+            <div class="chart-row">';
         
         // Create chart bars
         $maxPercentage = max($scorePercentageList);
@@ -328,6 +329,7 @@ $html = '
         }
         
         $html .= '
+            </div>
         </div>
     </div>
     
