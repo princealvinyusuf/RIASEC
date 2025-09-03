@@ -166,6 +166,7 @@ $html = '
             background-color: #f8f9fa;
             border-radius: 5px;
             padding: 20px;
+            text-align: center;
         }
         .chart-title {
             font-size: 1rem;
@@ -175,36 +176,42 @@ $html = '
             margin-bottom: 20px;
         }
         .chart-bars {
-            display: flex;
-            flex-direction: column;
-            gap: 15px;
+            display: inline-block;
+            width: 100%;
+            max-width: 600px;
+            margin: 0 auto;
         }
         .chart-bar-row {
-            display: flex;
-            align-items: center;
-            gap: 10px;
+            display: block;
+            margin-bottom: 15px;
+            text-align: left;
         }
         .chart-bar-label {
+            display: inline-block;
             width: 120px;
             font-size: 0.9rem;
             font-weight: bold;
             color: #333;
             text-align: right;
+            vertical-align: middle;
+            margin-right: 15px;
         }
         .chart-bar-container {
-            flex: 1;
-            height: 30px;
+            display: inline-block;
+            width: 300px;
+            height: 25px;
             background-color: #e9ecef;
-            border-radius: 15px;
+            border-radius: 12px;
             position: relative;
             overflow: hidden;
+            vertical-align: middle;
         }
         .chart-bar-fill {
             height: 100%;
             background: linear-gradient(90deg, #28a745, #20c997);
-            border-radius: 15px;
+            border-radius: 12px;
             position: relative;
-            transition: width 0.3s ease;
+            min-width: 20px;
         }
         .chart-bar-value {
             position: absolute;
