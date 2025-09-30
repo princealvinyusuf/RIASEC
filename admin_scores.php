@@ -30,7 +30,10 @@ $scores = mysqli_query($connection, $query);
         <div class="card-body">
           <div class="d-flex justify-content-between align-items-center mb-3">
             <h1 class="card-title display-6 fw-bold text-success mb-0">Daftar Hasil Tes RIASEC</h1>
-            <a href="admin_logout.php" class="btn btn-outline-danger btn-sm">Logout</a>
+            <div>
+              <a href="generate_excel.php" class="btn btn-outline-primary btn-sm">Export to Excel</a>
+              <a href="admin_logout.php" class="btn btn-outline-danger btn-sm">Logout</a>
+            </div>
           </div>
           <div class="table-responsive">
             <table class="table table-bordered align-middle">
