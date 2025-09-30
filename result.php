@@ -213,4 +213,36 @@ function renderFormattedContent($content) {
     </div>
   </div>
 </div>
+
+<!-- Evaluation Modal -->
+<div class="modal fade" id="evaluationModal" tabindex="-1" aria-labelledby="evaluationModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="evaluationModalLabel">Evaluasi Asesmen Minat Karir RIASEC</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+        <p>Bantu kami untuk meningkatkan kualitas instrumen dan layanan konseling karir kami ke depan dengan mengisi form evaluasi singkat.</p>
+        <p>Masukan dari kamu akan sangat bermanfaat untuk meningkatkan kualitas pelayanan dan membantu dalam menemukan arah karir yang sesuai.</p>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Tutup</button>
+        <a href="https://forms.gle/ZKUi5JtxNQJZ6mpSA" target="_blank" class="btn btn-primary">Isi Survei</a>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    setTimeout(function() {
+        var evaluationModal = new bootstrap.Modal(document.getElementById('evaluationModal'), {
+            keyboard: false
+        });
+        evaluationModal.show();
+    }, 10000); // 10 seconds
+});
+</script>
+
 <?php include 'includes/footer.php' ?>
