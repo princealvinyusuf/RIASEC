@@ -241,7 +241,7 @@ document.addEventListener('DOMContentLoaded', function() {
             keyboard: false
         });
         evaluationModal.show();
-    }, 10000); // 10 seconds
+    }, 5000); // 5 seconds
 });
 </script>
 
