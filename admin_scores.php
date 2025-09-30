@@ -71,6 +71,7 @@ $scores = mysqli_query($connection, $query);
                       <td><?php echo htmlspecialchars($row['created_at']); ?></td>
                       <td>
                         <a href="admin_score_detail.php?score_id=<?php echo intval($row['score_id']); ?>" class="btn btn-sm btn-outline-success">Detail Tes</a>
+                        <a href="admin_delete_score.php?score_id=<?php echo intval($row['score_id']); ?>" class="btn btn-sm btn-outline-danger" onclick="return confirm('Apakah Anda yakin ingin menghapus hasil tes ini?');">Delete</a>
                       </td>
                     </tr>
                     <tr>
