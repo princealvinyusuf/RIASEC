@@ -7,6 +7,69 @@ if (empty($_SESSION['is_admin'])) {
 ?>
 <?php include 'includes/header.php' ?>
 <?php
+// Analytics Queries
+$total_tests_query = "SELECT COUNT(*) as total FROM personality_test_scores";
+$total_tests_result = mysqli_query($connection, $total_tests_query);
+$total_tests = mysqli_fetch_assoc($total_tests_result)['total'];
+
+$top_code_query = "SELECT result, COUNT(*) as count FROM personality_test_scores GROUP BY result ORDER BY count DESC LIMIT 1";
+$top_code_result = mysqli_query($connection, $top_code_query);
+$top_code = mysqli_fetch_assoc($top_code_result);
+
+$avg_scores_query = "SELECT AVG(realistic) as avg_r, AVG(investigative) as avg_i, AVG(artistic) as avg_a, AVG(social) as avg_s, AVG(enterprising) as avg_e, AVG(conventional) as avg_c FROM personality_test_scores";
+$avg_scores_result = mysqli_query($connection, $avg_scores_query);
+$avg_scores = mysqli_fetch_assoc($avg_scores_result);
+
+$schools_query = "SELECT COUNT(DISTINCT school_name) as total_schools FROM personal_info WHERE school_name IS NOT NULL AND school_name != ''";
+$schools_result = mysqli_query($connection, $schools_query);
+$total_schools = mysqli_fetch_assoc($schools_result)['total_schools'];
+?>
+
+<div class="container py-5">
+  <div class="row mb-4">
+    <div class="col-md-3 mb-3">
+      <div class="card shadow-sm border-0 h-100">
+        <div class="card-body text-center">
+          <h5 class="card-title text-success">Total Tes</h5>
+          <p class="card-text display-4 fw-bold"><?php echo $total_tests; ?></p>
+        </div>
+      </div>
+    </div>
+    <div class="col-md-3 mb-3">
+      <div class="card shadow-sm border-0 h-100">
+        <div class="card-body text-center">
+          <h5 class="card-title text-success">Kode Paling Umum</h5>
+          <p class="card-text display-4 fw-bold"><?php echo $top_code ? htmlspecialchars($top_code['result']) : '-'; ?></p>
+          <small class="text-muted"><?php echo $top_code ? $top_code['count'] . ' kali' : 'Belum ada data'; ?></small>
+        </div>
+      </div>
+    </div>
+    <div class="col-md-3 mb-3">
+      <div class="card shadow-sm border-0 h-100">
+        <div class="card-body text-center">
+          <h5 class="card-title text-success">Partisipasi Sekolah</h5>
+          <p class="card-text display-4 fw-bold"><?php echo $total_schools; ?></p>
+        </div>
+      </div>
+    </div>
+    <div class="col-md-3 mb-3">
+      <div class="card shadow-sm border-0 h-100">
+        <div class="card-body">
+          <h5 class="card-title text-success text-center">Rata-rata Skor (%)</h5>
+          <ul class="list-group list-group-flush">
+            <li class="list-group-item d-flex justify-content-between align-items-center border-0">Realistic (R) <span class="badge bg-primary rounded-pill"><?php echo round($avg_scores['avg_r'] ?? 0, 1); ?></span></li>
+            <li class="list-group-item d-flex justify-content-between align-items-center border-0">Investigative (I) <span class="badge bg-secondary rounded-pill"><?php echo round($avg_scores['avg_i'] ?? 0, 1); ?></span></li>
+            <li class="list-group-item d-flex justify-content-between align-items-center border-0">Artistic (A) <span class="badge bg-success rounded-pill"><?php echo round($avg_scores['avg_a'] ?? 0, 1); ?></span></li>
+            <li class="list-group-item d-flex justify-content-between align-items-center border-0">Social (S) <span class="badge bg-danger rounded-pill"><?php echo round($avg_scores['avg_s'] ?? 0, 1); ?></span></li>
+            <li class="list-group-item d-flex justify-content-between align-items-center border-0">Enterprising (E) <span class="badge bg-warning text-dark rounded-pill"><?php echo round($avg_scores['avg_e'] ?? 0, 1); ?></span></li>
+            <li class="list-group-item d-flex justify-content-between align-items-center border-0">Conventional (C) <span class="badge bg-info text-dark rounded-pill"><?php echo round($avg_scores['avg_c'] ?? 0, 1); ?></span></li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </div>
+
+<?php
 // Ensure join columns exist but do not mutate schema here; util_functions handles backfill
 $order = 'ORDER BY pts.created_at DESC';
 
