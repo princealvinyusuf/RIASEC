@@ -179,7 +179,7 @@ body.app-shell {
 
 .question-text {
     text-align: center;
-    font-size: clamp(1.35rem, 3vw, 3rem);
+    font-size: clamp(1.15rem, 2.3vw, 2.35rem);
     line-height: 1.2;
     font-weight: 800;
     margin-top: 0.4rem;
