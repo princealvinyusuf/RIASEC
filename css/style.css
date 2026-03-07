@@ -230,6 +230,45 @@ body.app-shell {
     gap: 0.75rem;
 }
 
+.question-map {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(42px, 1fr));
+    gap: 0.45rem;
+}
+
+.question-map-btn {
+    width: 100%;
+    border: 1px solid #cfe2d3;
+    background: #ffffff;
+    color: #1c3b2a;
+    border-radius: 10px;
+    padding: 0.35rem 0.2rem;
+    font-weight: 700;
+    font-size: 0.82rem;
+    line-height: 1;
+}
+
+.question-map-btn:hover {
+    background: #f0fbf2;
+}
+
+.question-map-btn.current {
+    border-color: #0a8f3d;
+    box-shadow: 0 0 0 2px rgba(10, 143, 61, 0.15);
+}
+
+.question-map-btn.answered {
+    background: #e6f7ea;
+    border-color: #9fd3ac;
+    color: #0d5b2b;
+}
+
+.question-map-btn.unanswered {
+    background: #fff8e9;
+    border-color: #f0d59b;
+    color: #7e5710;
+}
+
 .results-grid {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(230px, 1fr));

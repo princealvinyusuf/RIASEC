@@ -89,6 +89,19 @@ if ($statementSelectQuery) {
         </div>
 
         <div class="glass-card app-form-card mt-3">
+          <div class="mb-3">
+            <div class="fw-bold mb-2">Peta pertanyaan (klik nomor untuk lompat):</div>
+            <div id="questionMap" class="question-map"></div>
+          </div>
+
+          <div id="unansweredSection" class="alert alert-warning d-none" role="alert">
+            <div class="fw-bold mb-1">Masih ada pertanyaan yang belum dijawab.</div>
+            <div class="small mb-2">Nomor yang belum dijawab: <span id="unansweredList">-</span></div>
+            <button type="button" class="btn btn-sm btn-outline-dark" id="jumpFirstUnansweredBtn">
+              Lompat ke nomor pertama yang kosong
+            </button>
+          </div>
+
           <div class="form-check mb-3">
             <input class="form-check-input" type="checkbox" name="can_save_data" value="true" id="saveDataYes" required>
             <label class="form-check-label" for="saveDataYes">
@@ -117,6 +130,10 @@ if ($statementSelectQuery) {
           const submitBtn = document.getElementById('submitBtn');
           const saveDataCheckbox = document.getElementById('saveDataYes');
           const form = document.getElementById('riasecForm');
+          const unansweredSection = document.getElementById('unansweredSection');
+          const unansweredListEl = document.getElementById('unansweredList');
+          const jumpFirstUnansweredBtn = document.getElementById('jumpFirstUnansweredBtn');
+          const questionMap = document.getElementById('questionMap');
 
           let currentIndex = 0;
 
@@ -140,10 +157,53 @@ if ($statementSelectQuery) {
             });
           }
 
+          function getUnansweredQuestionNumbers() {
+            const missing = [];
+            questions.forEach((q, idx) => {
+              const input = getHiddenInput(q);
+              const val = Number(input.value);
+              if (!(val >= 1 && val <= 5)) {
+                missing.push(idx + 1);
+              }
+            });
+            return missing;
+          }
+
+          function refreshUnansweredSection() {
+            const missing = getUnansweredQuestionNumbers();
+            if (missing.length === 0) {
+              unansweredSection.classList.add('d-none');
+              unansweredListEl.textContent = '-';
+              return;
+            }
+
+            unansweredSection.classList.remove('d-none');
+            unansweredListEl.textContent = missing.join(', ');
+          }
+
+          function refreshQuestionMap() {
+            const missingSet = new Set(getUnansweredQuestionNumbers());
+            const buttons = questionMap.querySelectorAll('.question-map-btn');
+            buttons.forEach((btn, idx) => {
+              const qNum = idx + 1;
+              btn.classList.remove('current', 'answered', 'unanswered');
+              if (idx === currentIndex) {
+                btn.classList.add('current');
+              }
+              if (missingSet.has(qNum)) {
+                btn.classList.add('unanswered');
+              } else {
+                btn.classList.add('answered');
+              }
+            });
+          }
+
           function refreshActionButtons() {
             prevBtn.disabled = currentIndex === 0;
             nextBtn.disabled = currentIndex >= total - 1;
             submitBtn.disabled = !(isAllAnswered() && saveDataCheckbox.checked);
+            refreshUnansweredSection();
+            refreshQuestionMap();
           }
 
           function renderQuestion(index) {
@@ -169,6 +229,19 @@ if ($statementSelectQuery) {
             });
           });
 
+          questions.forEach((_, idx) => {
+            const button = document.createElement('button');
+            button.type = 'button';
+            button.className = 'question-map-btn unanswered';
+            button.textContent = String(idx + 1);
+            button.setAttribute('aria-label', 'Lompat ke pertanyaan ' + String(idx + 1));
+            button.addEventListener('click', function () {
+              currentIndex = idx;
+              renderQuestion(currentIndex);
+            });
+            questionMap.appendChild(button);
+          });
+
           prevBtn.addEventListener('click', function () {
             if (currentIndex > 0) {
               currentIndex -= 1;
@@ -184,6 +257,13 @@ if ($statementSelectQuery) {
           });
 
           saveDataCheckbox.addEventListener('change', refreshActionButtons);
+          jumpFirstUnansweredBtn.addEventListener('click', function () {
+            const missing = getUnansweredQuestionNumbers();
+            if (missing.length > 0) {
+              currentIndex = missing[0] - 1;
+              renderQuestion(currentIndex);
+            }
+          });
 
           document.addEventListener('keydown', function (event) {
             if (!/^[1-5]$/.test(event.key)) {
@@ -202,6 +282,11 @@ if ($statementSelectQuery) {
           form.addEventListener('submit', function (event) {
             if (!(isAllAnswered() && saveDataCheckbox.checked)) {
               event.preventDefault();
+              const missing = getUnansweredQuestionNumbers();
+              if (missing.length > 0) {
+                currentIndex = missing[0] - 1;
+                renderQuestion(currentIndex);
+              }
             }
           });
 
