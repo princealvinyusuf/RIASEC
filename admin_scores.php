@@ -28,6 +28,60 @@ $schools_result = mysqli_query($connection, $schools_query);
 $schools_row = $schools_result ? mysqli_fetch_assoc($schools_result) : array('total_schools' => 0);
 $total_schools = intval($schools_row['total_schools']);
 
+// Filter options
+$schoolOptions = array();
+$schoolOptionRes = mysqli_query($connection, "SELECT DISTINCT school_name FROM personal_info WHERE school_name IS NOT NULL AND school_name != '' ORDER BY school_name ASC");
+if ($schoolOptionRes) {
+    while ($schoolRow = mysqli_fetch_assoc($schoolOptionRes)) {
+        $schoolOptions[] = $schoolRow['school_name'];
+    }
+}
+
+// Current filter values
+$filterSearch = isset($_GET['q']) ? trim($_GET['q']) : '';
+$filterClass = isset($_GET['class_level']) ? trim($_GET['class_level']) : '';
+$filterResult = isset($_GET['result_code']) ? strtoupper(trim($_GET['result_code'])) : '';
+$filterSchool = isset($_GET['school_name']) ? trim($_GET['school_name']) : '';
+$filterDateFrom = isset($_GET['date_from']) ? trim($_GET['date_from']) : '';
+$filterDateTo = isset($_GET['date_to']) ? trim($_GET['date_to']) : '';
+
+$whereClauses = array();
+
+if ($filterSearch !== '') {
+    $safeSearch = mysqli_real_escape_string($connection, $filterSearch);
+    $whereClauses[] = "(pi.full_name LIKE '%{$safeSearch}%' OR pi.email LIKE '%{$safeSearch}%' OR pi.school_name LIKE '%{$safeSearch}%')";
+}
+
+if (in_array($filterClass, array('10', '11', '12'), true)) {
+    $safeClass = mysqli_real_escape_string($connection, $filterClass);
+    $whereClauses[] = "pi.class_level = '{$safeClass}'";
+}
+
+if (preg_match('/^[RIASEC]{1,3}$/', $filterResult)) {
+    $safeResult = mysqli_real_escape_string($connection, $filterResult);
+    $whereClauses[] = "pts.result LIKE '{$safeResult}%'";
+}
+
+if ($filterSchool !== '') {
+    $safeSchool = mysqli_real_escape_string($connection, $filterSchool);
+    $whereClauses[] = "pi.school_name = '{$safeSchool}'";
+}
+
+if ($filterDateFrom !== '' && preg_match('/^\d{4}-\d{2}-\d{2}$/', $filterDateFrom)) {
+    $safeDateFrom = mysqli_real_escape_string($connection, $filterDateFrom);
+    $whereClauses[] = "DATE(pts.created_at) >= '{$safeDateFrom}'";
+}
+
+if ($filterDateTo !== '' && preg_match('/^\d{4}-\d{2}-\d{2}$/', $filterDateTo)) {
+    $safeDateTo = mysqli_real_escape_string($connection, $filterDateTo);
+    $whereClauses[] = "DATE(pts.created_at) <= '{$safeDateTo}'";
+}
+
+$whereSql = '';
+if (!empty($whereClauses)) {
+    $whereSql = 'WHERE ' . implode(' AND ', $whereClauses);
+}
+
 $query = "SELECT pts.id AS score_id,
                  pts.result,
                  pts.realistic, pts.investigative, pts.artistic,
@@ -37,8 +91,10 @@ $query = "SELECT pts.id AS score_id,
                  pi.class_level, pi.school_name, pi.extracurricular, pi.organization, pi.created_at AS person_created
           FROM personality_test_scores pts
           LEFT JOIN personal_info pi ON pi.id = pts.personal_info_id
+          {$whereSql}
           ORDER BY pts.created_at DESC";
 $scores = mysqli_query($connection, $query);
+$filteredTotal = $scores ? mysqli_num_rows($scores) : 0;
 ?>
 
 <section class="page-wrap">
@@ -103,7 +159,64 @@ $scores = mysqli_query($connection, $query);
   </div>
 
   <div class="glass-card app-form-card">
-    <h2 class="h5 fw-bold text-success mb-3">Daftar hasil tes peserta</h2>
+    <div class="d-flex justify-content-between align-items-start flex-wrap gap-2 mb-2">
+      <h2 class="h5 fw-bold text-success mb-0">Daftar hasil tes peserta</h2>
+      <span class="badge text-bg-light border">Menampilkan <?php echo $filteredTotal; ?> data</span>
+    </div>
+
+    <form method="get" action="admin_scores.php" class="mb-3">
+      <div class="row g-2">
+        <div class="col-lg-3 col-md-6">
+          <label class="form-label small mb-1">Cari (nama/email/sekolah)</label>
+          <input type="text" class="form-control" name="q" value="<?php echo htmlspecialchars($filterSearch); ?>" placeholder="Ketik kata kunci">
+        </div>
+        <div class="col-lg-2 col-md-6">
+          <label class="form-label small mb-1">Kelas</label>
+          <select class="form-select" name="class_level">
+            <option value="">Semua</option>
+            <option value="10" <?php echo $filterClass === '10' ? 'selected' : ''; ?>>10</option>
+            <option value="11" <?php echo $filterClass === '11' ? 'selected' : ''; ?>>11</option>
+            <option value="12" <?php echo $filterClass === '12' ? 'selected' : ''; ?>>12</option>
+          </select>
+        </div>
+        <div class="col-lg-2 col-md-6">
+          <label class="form-label small mb-1">Kode RIASEC</label>
+          <select class="form-select" name="result_code">
+            <option value="">Semua</option>
+            <option value="R" <?php echo $filterResult === 'R' ? 'selected' : ''; ?>>R</option>
+            <option value="I" <?php echo $filterResult === 'I' ? 'selected' : ''; ?>>I</option>
+            <option value="A" <?php echo $filterResult === 'A' ? 'selected' : ''; ?>>A</option>
+            <option value="S" <?php echo $filterResult === 'S' ? 'selected' : ''; ?>>S</option>
+            <option value="E" <?php echo $filterResult === 'E' ? 'selected' : ''; ?>>E</option>
+            <option value="C" <?php echo $filterResult === 'C' ? 'selected' : ''; ?>>C</option>
+          </select>
+        </div>
+        <div class="col-lg-3 col-md-6">
+          <label class="form-label small mb-1">Sekolah</label>
+          <select class="form-select" name="school_name">
+            <option value="">Semua sekolah</option>
+            <?php foreach ($schoolOptions as $schoolName) { ?>
+              <option value="<?php echo htmlspecialchars($schoolName); ?>" <?php echo $filterSchool === $schoolName ? 'selected' : ''; ?>>
+                <?php echo htmlspecialchars($schoolName); ?>
+              </option>
+            <?php } ?>
+          </select>
+        </div>
+        <div class="col-lg-2 col-md-6">
+          <label class="form-label small mb-1">Dari tanggal</label>
+          <input type="date" class="form-control" name="date_from" value="<?php echo htmlspecialchars($filterDateFrom); ?>">
+        </div>
+        <div class="col-lg-2 col-md-6">
+          <label class="form-label small mb-1">Sampai tanggal</label>
+          <input type="date" class="form-control" name="date_to" value="<?php echo htmlspecialchars($filterDateTo); ?>">
+        </div>
+      </div>
+      <div class="d-flex gap-2 mt-3">
+        <button type="submit" class="btn btn-primary-soft">Terapkan filter</button>
+        <a href="admin_scores.php" class="btn btn-outline-secondary">Reset</a>
+      </div>
+    </form>
+
     <div class="table-responsive">
       <table class="table table-hover align-middle">
         <thead class="table-success">
