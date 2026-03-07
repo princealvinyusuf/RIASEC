@@ -9,6 +9,8 @@ include 'includes/header.php';
 $totalTests = 0;
 $totalSchools = 0;
 $totalParticipants = 0;
+$totalParticipantsCompleted = 0;
+$totalParticipantsIncomplete = 0;
 $latestTestDate = '-';
 
 $resTotal = mysqli_query($connection, "SELECT COUNT(*) AS total FROM personality_test_scores");
@@ -21,6 +23,23 @@ $resParticipants = mysqli_query($connection, "SELECT COUNT(*) AS total FROM pers
 if ($resParticipants) {
     $row = mysqli_fetch_assoc($resParticipants);
     $totalParticipants = intval($row['total']);
+}
+
+$resParticipantsCompleted = mysqli_query($connection, "SELECT COUNT(DISTINCT personal_info_id) AS total FROM personality_test_scores WHERE personal_info_id IS NOT NULL");
+if ($resParticipantsCompleted) {
+    $row = mysqli_fetch_assoc($resParticipantsCompleted);
+    $totalParticipantsCompleted = intval($row['total']);
+}
+
+$resParticipantsIncomplete = mysqli_query($connection, "
+    SELECT COUNT(*) AS total
+    FROM personal_info pi
+    LEFT JOIN personality_test_scores pts ON pts.personal_info_id = pi.id
+    WHERE pts.id IS NULL
+");
+if ($resParticipantsIncomplete) {
+    $row = mysqli_fetch_assoc($resParticipantsIncomplete);
+    $totalParticipantsIncomplete = intval($row['total']);
 }
 
 $resSchools = mysqli_query($connection, "SELECT COUNT(DISTINCT school_name) AS total FROM personal_info WHERE school_name IS NOT NULL AND school_name != ''");
@@ -101,12 +120,20 @@ if ($resTopSchools) {
 
     <div class="results-grid mb-3">
         <div class="interest-pill">
-            <div class="muted small">Total Tes</div>
+            <div class="muted small">Total Tes Selesai</div>
             <div class="display-6 fw-bold text-success"><?php echo $totalTests; ?></div>
         </div>
         <div class="interest-pill">
-            <div class="muted small">Total Peserta</div>
+            <div class="muted small">Total Peserta Terdaftar</div>
             <div class="display-6 fw-bold text-success"><?php echo $totalParticipants; ?></div>
+        </div>
+        <div class="interest-pill">
+            <div class="muted small">Peserta Sudah Selesai</div>
+            <div class="display-6 fw-bold text-success"><?php echo $totalParticipantsCompleted; ?></div>
+        </div>
+        <div class="interest-pill">
+            <div class="muted small">Peserta Belum Selesai</div>
+            <div class="display-6 fw-bold text-success"><?php echo $totalParticipantsIncomplete; ?></div>
         </div>
         <div class="interest-pill">
             <div class="muted small">Partisipasi Sekolah</div>
