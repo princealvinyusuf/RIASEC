@@ -40,80 +40,82 @@ if ($statementSelectQuery) {
       <div class="alert alert-warning mb-0">Belum ada data pernyataan pada tabel <code>statements</code>.</div>
     <?php } else { ?>
       <form action="result.php" method="post" id="riasecForm">
-        <div class="question-shell">
-          <div class="progress-top">
-            <span class="counter"><span id="currentQuestion">1</span> dari <span id="totalQuestion"><?php echo count($questions); ?></span></span>
-            <span class="badge text-bg-success">Profiler Minat Kerja</span>
+        <div class="test-layout">
+          <div class="question-shell">
+            <div class="progress-top">
+              <span class="counter"><span id="currentQuestion">1</span> dari <span id="totalQuestion"><?php echo count($questions); ?></span></span>
+              <span class="badge text-bg-success">Profiler Minat Kerja</span>
+            </div>
+
+            <div class="progress mb-3" role="progressbar" aria-label="Progress pertanyaan" aria-valuemin="0" aria-valuemax="<?php echo count($questions); ?>">
+              <div id="questionProgress" class="progress-bar" style="width: 0%;"></div>
+            </div>
+
+            <div id="questionContainer">
+              <?php foreach ($questions as $index => $q) { ?>
+                <?php $name = $q['statement_category'] . intval($q['statement_id']); ?>
+                <input type="hidden" name="<?php echo htmlspecialchars($name); ?>" id="input-<?php echo htmlspecialchars($name); ?>" value="">
+                <section
+                  class="question-card riasec-question"
+                  data-question-index="<?php echo $index; ?>"
+                  data-input-id="input-<?php echo htmlspecialchars($name); ?>"
+                  style="<?php echo $index === 0 ? '' : 'display:none;'; ?>"
+                >
+                  <h2 class="question-text"><?php echo htmlspecialchars($q['statement_content']); ?></h2>
+                  <div class="answer-scale">
+                    <button type="button" class="answer-btn" data-value="1" aria-label="Sangat tidak suka">
+                      <span class="face">😫</span>
+                      <span class="label">Sangat Tidak Suka</span>
+                    </button>
+                    <button type="button" class="answer-btn" data-value="2" aria-label="Tidak suka">
+                      <span class="face">🙁</span>
+                      <span class="label">Tidak Suka</span>
+                    </button>
+                    <button type="button" class="answer-btn" data-value="3" aria-label="Ragu-ragu">
+                      <span class="face">😐</span>
+                      <span class="label">Ragu-ragu</span>
+                    </button>
+                    <button type="button" class="answer-btn" data-value="4" aria-label="Suka">
+                      <span class="face">🙂</span>
+                      <span class="label">Suka</span>
+                    </button>
+                    <button type="button" class="answer-btn" data-value="5" aria-label="Sangat suka">
+                      <span class="face">😁</span>
+                      <span class="label">Sangat Suka</span>
+                    </button>
+                  </div>
+                </section>
+              <?php } ?>
+            </div>
           </div>
 
-          <div class="progress mb-3" role="progressbar" aria-label="Progress pertanyaan" aria-valuemin="0" aria-valuemax="<?php echo count($questions); ?>">
-            <div id="questionProgress" class="progress-bar" style="width: 0%;"></div>
-          </div>
+          <div class="glass-card app-form-card test-side-panel">
+            <div class="mb-3">
+              <div class="fw-bold mb-2">Peta pertanyaan (klik nomor untuk lompat):</div>
+              <div id="questionMap" class="question-map"></div>
+            </div>
 
-          <div id="questionContainer">
-            <?php foreach ($questions as $index => $q) { ?>
-              <?php $name = $q['statement_category'] . intval($q['statement_id']); ?>
-              <input type="hidden" name="<?php echo htmlspecialchars($name); ?>" id="input-<?php echo htmlspecialchars($name); ?>" value="">
-              <section
-                class="question-card riasec-question"
-                data-question-index="<?php echo $index; ?>"
-                data-input-id="input-<?php echo htmlspecialchars($name); ?>"
-                style="<?php echo $index === 0 ? '' : 'display:none;'; ?>"
-              >
-                <h2 class="question-text"><?php echo htmlspecialchars($q['statement_content']); ?></h2>
-                <div class="answer-scale">
-                  <button type="button" class="answer-btn" data-value="1" aria-label="Sangat tidak suka">
-                    <span class="face">😫</span>
-                    <span class="label">Sangat Tidak Suka</span>
-                  </button>
-                  <button type="button" class="answer-btn" data-value="2" aria-label="Tidak suka">
-                    <span class="face">🙁</span>
-                    <span class="label">Tidak Suka</span>
-                  </button>
-                  <button type="button" class="answer-btn" data-value="3" aria-label="Ragu-ragu">
-                    <span class="face">😐</span>
-                    <span class="label">Ragu-ragu</span>
-                  </button>
-                  <button type="button" class="answer-btn" data-value="4" aria-label="Suka">
-                    <span class="face">🙂</span>
-                    <span class="label">Suka</span>
-                  </button>
-                  <button type="button" class="answer-btn" data-value="5" aria-label="Sangat suka">
-                    <span class="face">😁</span>
-                    <span class="label">Sangat Suka</span>
-                  </button>
-                </div>
-              </section>
-            <?php } ?>
-          </div>
-        </div>
+            <div id="unansweredSection" class="alert alert-warning d-none" role="alert">
+              <div class="fw-bold mb-1">Masih ada pertanyaan yang belum dijawab.</div>
+              <div class="small mb-2">Nomor yang belum dijawab: <span id="unansweredList">-</span></div>
+              <button type="button" class="btn btn-sm btn-outline-dark" id="jumpFirstUnansweredBtn">
+                Lompat ke nomor pertama yang kosong
+              </button>
+            </div>
 
-        <div class="glass-card app-form-card mt-3">
-          <div class="mb-3">
-            <div class="fw-bold mb-2">Peta pertanyaan (klik nomor untuk lompat):</div>
-            <div id="questionMap" class="question-map"></div>
-          </div>
+            <div class="form-check mb-3">
+              <input class="form-check-input" type="checkbox" name="can_save_data" value="true" id="saveDataYes" required>
+              <label class="form-check-label" for="saveDataYes">
+                Saya setuju jawaban saya disimpan untuk keperluan konseling dan pengembangan asesmen.
+              </label>
+            </div>
 
-          <div id="unansweredSection" class="alert alert-warning d-none" role="alert">
-            <div class="fw-bold mb-1">Masih ada pertanyaan yang belum dijawab.</div>
-            <div class="small mb-2">Nomor yang belum dijawab: <span id="unansweredList">-</span></div>
-            <button type="button" class="btn btn-sm btn-outline-dark" id="jumpFirstUnansweredBtn">
-              Lompat ke nomor pertama yang kosong
-            </button>
-          </div>
-
-          <div class="form-check mb-3">
-            <input class="form-check-input" type="checkbox" name="can_save_data" value="true" id="saveDataYes" required>
-            <label class="form-check-label" for="saveDataYes">
-              Saya setuju jawaban saya disimpan untuk keperluan konseling dan pengembangan asesmen.
-            </label>
-          </div>
-
-          <div class="question-nav">
-            <button type="button" class="btn btn-outline-secondary" id="prevBtn">Sebelumnya</button>
-            <div class="d-flex gap-2">
-              <button type="button" class="btn btn-outline-success" id="nextBtn">Berikutnya</button>
-              <button type="submit" name="submit" class="btn btn-primary-soft" id="submitBtn" disabled>Lihat Hasil</button>
+            <div class="question-nav">
+              <button type="button" class="btn btn-outline-secondary" id="prevBtn">Sebelumnya</button>
+              <div class="d-flex gap-2">
+                <button type="button" class="btn btn-outline-success" id="nextBtn">Berikutnya</button>
+                <button type="submit" name="submit" class="btn btn-primary-soft" id="submitBtn" disabled>Lihat Hasil</button>
+              </div>
             </div>
           </div>
         </div>

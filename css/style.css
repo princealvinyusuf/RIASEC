@@ -134,6 +134,18 @@ body.app-shell {
     border: 1px solid #9dcaab;
 }
 
+.test-layout {
+    display: grid;
+    grid-template-columns: minmax(0, 2fr) minmax(320px, 1fr);
+    gap: 1rem;
+    align-items: start;
+}
+
+.test-side-panel {
+    position: sticky;
+    top: 1rem;
+}
+
 .progress-top {
     display: flex;
     justify-content: space-between;
@@ -341,6 +353,14 @@ body.app-shell {
 }
 
 @media (max-width: 900px) {
+    .test-layout {
+        grid-template-columns: 1fr;
+    }
+
+    .test-side-panel {
+        position: static;
+    }
+
     .answer-scale {
         grid-template-columns: repeat(3, minmax(100px, 1fr));
     }
