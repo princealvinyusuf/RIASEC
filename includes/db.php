@@ -8,8 +8,9 @@ foreach($db as $key => $value){
     define(strtoupper($key),$value);
 }
 
-$connection = mysqli_connect(DB_HOST,DB_USER,DB_PASS,DB_NAME);
-  if(!$connection){
-	  echo "Database Error".mysqli_error($connection);
-  }
+mysqli_report(MYSQLI_REPORT_OFF);
+$connection = @mysqli_connect(DB_HOST, DB_USER, DB_PASS, DB_NAME);
+if (!$connection) {
+    error_log('Database connection failed: ' . mysqli_connect_error());
+}
 ?>

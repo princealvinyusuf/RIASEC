@@ -4,6 +4,7 @@ if (!isset($_SESSION['personal_info_id'])) {
   header('Location: personal_info.php');
   exit;
 }
+include_once __DIR__ . '/includes/db.php';
 ?>
 <?php
 $pageTitle = 'Pertanyaan Minat Kerja - RIASEC';

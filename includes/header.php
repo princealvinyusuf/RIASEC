@@ -1,4 +1,4 @@
-<?php include_once 'db.php'; ?>
+<?php include_once __DIR__ . '/db.php'; ?>
 <?php
 $pageTitle = isset($pageTitle) && is_string($pageTitle) && $pageTitle !== ''
     ? $pageTitle
