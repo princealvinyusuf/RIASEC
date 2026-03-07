@@ -4,6 +4,7 @@ if (empty($_SESSION['is_admin'])) {
   header('Location: admin_login.php');
   exit;
 }
+include_once __DIR__ . '/includes/db.php';
 ?>
 <?php
 $scoreId = isset($_GET['score_id']) ? intval($_GET['score_id']) : 0;
