@@ -151,22 +151,6 @@ if ($resTopSchools) {
     <div class="results-grid">
         <div class="glass-card app-form-card">
             <h2 class="h5 fw-bold text-success mb-3">Distribusi Kode Hasil</h2>
-            <div class="chart-stack mb-3">
-                <?php if (!empty($riasecDistribution)) { ?>
-                    <?php foreach ($riasecDistribution as $row) {
-                        $count = intval($row['total']);
-                        $width = $maxRiasecCount > 0 ? round(($count / $maxRiasecCount) * 100, 1) : 0;
-                    ?>
-                        <div class="chart-row">
-                            <div class="chart-label"><?php echo htmlspecialchars($row['result']); ?></div>
-                            <div class="chart-track"><div class="chart-fill" style="width: <?php echo $width; ?>%;"></div></div>
-                            <div class="chart-value"><?php echo $count; ?></div>
-                        </div>
-                    <?php } ?>
-                <?php } else { ?>
-                    <div class="muted">Belum ada data.</div>
-                <?php } ?>
-            </div>
             <div class="table-responsive stats-scroll">
                 <table class="table table-hover align-middle mb-0">
                     <thead class="table-success" style="position: sticky; top: 0;">
@@ -208,28 +192,6 @@ if ($resTopSchools) {
                 <?php } else { ?>
                     <div class="muted">Belum ada data.</div>
                 <?php } ?>
-            </div>
-            <div class="table-responsive">
-                <table class="table table-hover align-middle">
-                    <thead class="table-success">
-                        <tr>
-                            <th>Kelas</th>
-                            <th>Jumlah</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <?php if (!empty($classDistribution)) { ?>
-                            <?php foreach ($classDistribution as $row) { ?>
-                                <tr>
-                                    <td><?php echo htmlspecialchars($row['class_level'] ?: '-'); ?></td>
-                                    <td><?php echo intval($row['total']); ?></td>
-                                </tr>
-                            <?php } ?>
-                        <?php } else { ?>
-                            <tr><td colspan="2" class="text-center muted">Belum ada data.</td></tr>
-                        <?php } ?>
-                    </tbody>
-                </table>
             </div>
         </div>
     </div>
