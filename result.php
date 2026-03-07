@@ -43,23 +43,33 @@ $jobZones = array(
 );
 
 $careerCatalog = array(
-    array('title' => 'Analis Data', 'tags' => array('I', 'C'), 'zone' => 4, 'why' => 'Mengolah data, membuat insight, dan membantu pengambilan keputusan.'),
-    array('title' => 'UI/UX Designer', 'tags' => array('A', 'I'), 'zone' => 4, 'why' => 'Merancang pengalaman digital yang estetis dan mudah digunakan.'),
-    array('title' => 'Akuntan', 'tags' => array('C', 'I'), 'zone' => 4, 'why' => 'Mengelola laporan keuangan secara teliti dan terstruktur.'),
-    array('title' => 'Digital Marketing Specialist', 'tags' => array('E', 'A'), 'zone' => 3, 'why' => 'Menggabungkan strategi promosi, kreativitas konten, dan analisis.'),
-    array('title' => 'Psikolog/Konselor', 'tags' => array('S', 'I'), 'zone' => 5, 'why' => 'Mendampingi individu dalam pengembangan diri dan pemecahan masalah.'),
-    array('title' => 'Guru/Pengajar', 'tags' => array('S', 'E'), 'zone' => 4, 'why' => 'Membantu proses belajar dan perkembangan peserta didik.'),
-    array('title' => 'Wirausaha', 'tags' => array('E', 'R'), 'zone' => 3, 'why' => 'Membangun produk/jasa, memimpin tim, dan mengambil peluang pasar.'),
-    array('title' => 'Manajer Operasional', 'tags' => array('E', 'C'), 'zone' => 4, 'why' => 'Mengelola proses, target kerja, dan koordinasi lintas tim.'),
-    array('title' => 'Teknisi Jaringan', 'tags' => array('R', 'I'), 'zone' => 3, 'why' => 'Menangani perangkat dan sistem jaringan secara teknis.'),
-    array('title' => 'Surveyor Lapangan', 'tags' => array('R', 'C'), 'zone' => 3, 'why' => 'Bekerja langsung di lapangan dengan pengukuran yang presisi.'),
-    array('title' => 'Perawat', 'tags' => array('S', 'R'), 'zone' => 4, 'why' => 'Memberikan layanan kesehatan praktis dan empatik.'),
-    array('title' => 'Arsitek', 'tags' => array('A', 'R'), 'zone' => 5, 'why' => 'Menggabungkan kreativitas desain dengan perhitungan teknis bangunan.'),
-    array('title' => 'Content Creator', 'tags' => array('A', 'E'), 'zone' => 2, 'why' => 'Menciptakan konten yang menarik dan membangun audiens.'),
-    array('title' => 'Administrator Proyek', 'tags' => array('C', 'E'), 'zone' => 3, 'why' => 'Menata timeline, dokumen, dan koordinasi proyek secara rapi.'),
-    array('title' => 'Peneliti', 'tags' => array('I', 'A'), 'zone' => 5, 'why' => 'Menyusun hipotesis, eksperimen, dan publikasi berbasis data.'),
-    array('title' => 'Mekanik Otomotif', 'tags' => array('R', 'C'), 'zone' => 2, 'why' => 'Memperbaiki kendaraan dengan pendekatan teknis dan prosedural.')
+    array('title' => 'Analis Data', 'keyword' => 'analis data', 'tags' => array('I', 'C'), 'zone' => 4, 'why' => 'Mengolah data, membuat insight, dan membantu pengambilan keputusan.'),
+    array('title' => 'UI/UX Designer', 'keyword' => 'ui ux designer', 'tags' => array('A', 'I'), 'zone' => 4, 'why' => 'Merancang pengalaman digital yang estetis dan mudah digunakan.'),
+    array('title' => 'Akuntan', 'keyword' => 'akuntan', 'tags' => array('C', 'I'), 'zone' => 4, 'why' => 'Mengelola laporan keuangan secara teliti dan terstruktur.'),
+    array('title' => 'Digital Marketing Specialist', 'keyword' => 'digital marketing', 'tags' => array('E', 'A'), 'zone' => 3, 'why' => 'Menggabungkan strategi promosi, kreativitas konten, dan analisis.'),
+    array('title' => 'Psikolog/Konselor', 'keyword' => 'psikolog konselor', 'tags' => array('S', 'I'), 'zone' => 5, 'why' => 'Mendampingi individu dalam pengembangan diri dan pemecahan masalah.'),
+    array('title' => 'Guru/Pengajar', 'keyword' => 'guru pengajar', 'tags' => array('S', 'E'), 'zone' => 4, 'why' => 'Membantu proses belajar dan perkembangan peserta didik.'),
+    array('title' => 'Wirausaha', 'keyword' => 'wirausaha', 'tags' => array('E', 'R'), 'zone' => 3, 'why' => 'Membangun produk/jasa, memimpin tim, dan mengambil peluang pasar.'),
+    array('title' => 'Manajer Operasional', 'keyword' => 'manajer operasional', 'tags' => array('E', 'C'), 'zone' => 4, 'why' => 'Mengelola proses, target kerja, dan koordinasi lintas tim.'),
+    array('title' => 'Teknisi Jaringan', 'keyword' => 'teknisi jaringan', 'tags' => array('R', 'I'), 'zone' => 3, 'why' => 'Menangani perangkat dan sistem jaringan secara teknis.'),
+    array('title' => 'Surveyor Lapangan', 'keyword' => 'surveyor', 'tags' => array('R', 'C'), 'zone' => 3, 'why' => 'Bekerja langsung di lapangan dengan pengukuran yang presisi.'),
+    array('title' => 'Perawat', 'keyword' => 'perawat', 'tags' => array('S', 'R'), 'zone' => 4, 'why' => 'Memberikan layanan kesehatan praktis dan empatik.'),
+    array('title' => 'Arsitek', 'keyword' => 'arsitek', 'tags' => array('A', 'R'), 'zone' => 5, 'why' => 'Menggabungkan kreativitas desain dengan perhitungan teknis bangunan.'),
+    array('title' => 'Content Creator', 'keyword' => 'content creator', 'tags' => array('A', 'E'), 'zone' => 2, 'why' => 'Menciptakan konten yang menarik dan membangun audiens.'),
+    array('title' => 'Administrator Proyek', 'keyword' => 'administrator proyek', 'tags' => array('C', 'E'), 'zone' => 3, 'why' => 'Menata timeline, dokumen, dan koordinasi proyek secara rapi.'),
+    array('title' => 'Peneliti', 'keyword' => 'peneliti', 'tags' => array('I', 'A'), 'zone' => 5, 'why' => 'Menyusun hipotesis, eksperimen, dan publikasi berbasis data.'),
+    array('title' => 'Mekanik Otomotif', 'keyword' => 'mekanik otomotif', 'tags' => array('R', 'C'), 'zone' => 2, 'why' => 'Memperbaiki kendaraan dengan pendekatan teknis dan prosedural.')
 );
+
+function buildKarirhubSearchUrl($keyword) {
+    $keyword = trim((string)$keyword);
+    if ($keyword === '') {
+        return 'https://karirhub.kemnaker.go.id/lowongan-dalam-negeri/lowongan';
+    }
+
+    $filtersValue = 'keyword:' . $keyword . '#' . $keyword;
+    return 'https://karirhub.kemnaker.go.id/lowongan-dalam-negeri/lowongan?filters=' . rawurlencode($filtersValue);
+}
 
 $weights = array();
 foreach ($topCodes as $idx => $code) {
@@ -141,6 +151,16 @@ $careerRecommendations = array_slice($careerCatalog, 0, 12);
           </div>
           <div class="small mb-1">Tag minat: <?php echo htmlspecialchars(implode('-', $career['tags'])); ?></div>
           <div class="muted small"><?php echo htmlspecialchars($career['why']); ?></div>
+          <div class="mt-2">
+            <a
+              class="btn btn-sm btn-outline-success"
+              href="<?php echo htmlspecialchars(buildKarirhubSearchUrl(isset($career['keyword']) ? $career['keyword'] : $career['title'])); ?>"
+              target="_blank"
+              rel="noopener noreferrer"
+            >
+              Lihat Pekerjaan
+            </a>
+          </div>
         </article>
       <?php } ?>
     </div>
