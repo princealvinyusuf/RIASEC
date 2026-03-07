@@ -134,6 +134,35 @@ if ($res && mysqli_num_rows($res) > 0) {
     }
 }
 
+// Prepare sorted score data
+$personalityTypes = array(
+    'R' => 'Realistic',
+    'I' => 'Investigative',
+    'A' => 'Artistic',
+    'S' => 'Social',
+    'E' => 'Enterprising',
+    'C' => 'Conventional'
+);
+
+$sortedData = array();
+foreach ($personalityTypes as $code => $name) {
+    $sortedData[] = array(
+        'code' => $code,
+        'name' => $name,
+        'percentage' => floatval($scorePercentageList[$code])
+    );
+}
+
+usort($sortedData, function($a, $b) {
+    return $b['percentage'] <=> $a['percentage'];
+});
+
+$top3 = array_slice($sortedData, 0, 3);
+$top3Text = '';
+foreach ($top3 as $item) {
+    $top3Text .= $item['code'];
+}
+
 // Create HTML content for PDF
 $html = '
 <!DOCTYPE html>
@@ -142,194 +171,198 @@ $html = '
     <meta charset="UTF-8">
     <title>Laporan Hasil Tes RIASEC</title>
     <style>
-        body { 
-            font-family: Arial, sans-serif; 
-            margin: 20px; 
-            line-height: 1.6;
-            color: #333;
+        body {
+            font-family: DejaVu Sans, Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            color: #13231a;
+            background: #f3fbf3;
+            line-height: 1.45;
+            font-size: 12px;
         }
-        .alert-success { 
-            background-color: #d1e7dd; 
-            border: 1px solid #badbcc; 
-            color: #0f5132; 
-            padding: 15px; 
-            margin: 20px 0; 
-            border-radius: 5px; 
-            text-align: center;
+        .page {
+            padding: 22px;
         }
-        .alert-heading {
-            font-size: 1.5rem;
+        .card {
+            background: #ffffff;
+            border: 1px solid #d9eadc;
+            border-radius: 14px;
+            margin-bottom: 12px;
+            padding: 14px;
+        }
+        .hero {
+            background: #eef9f1;
+            border-color: #c6e2cd;
+        }
+        .kicker {
+            font-size: 10px;
+            text-transform: uppercase;
+            letter-spacing: 0.04em;
+            color: #0a8f3d;
             font-weight: bold;
-            margin-bottom: 10px;
+            margin-bottom: 4px;
         }
-        .results-table {
+        .title {
+            font-size: 21px;
+            font-weight: bold;
+            color: #085c28;
+            margin: 0 0 4px 0;
+        }
+        .subtitle {
+            font-size: 12px;
+            margin: 0;
+            color: #2e4a38;
+        }
+        .section-title {
+            font-size: 14px;
+            font-weight: bold;
+            color: #0a8f3d;
+            margin: 0 0 8px 0;
+        }
+        .chip {
+            display: inline-block;
+            background: #dff3e5;
+            border: 1px solid #b7ddc2;
+            border-radius: 999px;
+            padding: 3px 8px;
+            font-size: 11px;
+            font-weight: bold;
+            color: #0b5e29;
+            margin-right: 5px;
+        }
+        .chip-primary {
+            background: #0a8f3d;
+            border-color: #0a8f3d;
+            color: #ffffff;
+        }
+        table {
             width: 100%;
             border-collapse: collapse;
-            margin: 20px 0;
-            background-color: #f8f9fa;
-            border-radius: 5px;
+        }
+        .score-table th {
+            background: #0a8f3d;
+            color: #ffffff;
+            padding: 8px;
+            font-size: 11px;
+            text-align: left;
+        }
+        .score-table td {
+            border: 1px solid #e1ece3;
+            padding: 8px;
+            vertical-align: middle;
+            font-size: 11px;
+        }
+        .score-bar-wrap {
+            background: #e7f0e8;
+            border-radius: 999px;
+            height: 10px;
             overflow: hidden;
         }
-        .results-table th {
-            background-color: #28a745;
-            color: white;
-            padding: 12px;
-            text-align: center;
+        .score-bar {
+            height: 10px;
+            background: #0a8f3d;
+        }
+        .score-pct {
+            text-align: right;
+            white-space: nowrap;
             font-weight: bold;
-            font-size: 1rem;
+            color: #0b5e29;
+            width: 56px;
         }
-        .results-table td {
+        .legend-list {
+            margin: 0;
+            padding-left: 18px;
+        }
+        .legend-list li {
+            margin-bottom: 4px;
+        }
+        .explanation {
+            margin: 10px 0;
             padding: 12px;
-            text-align: center;
-            border-bottom: 1px solid #dee2e6;
-            font-size: 0.9rem;
-        }
-        .results-table tr:nth-child(even) {
-            background-color: #f1f3f4;
-        }
-        .results-table tr:hover {
-            background-color: #e8f5e8;
-        }
-        .percentage-cell {
-            font-weight: bold;
-            color: #28a745;
-            font-size: 1.1rem;
-        }
-        .chart-y-axis {
-            position: absolute;
-            left: 0;
-            top: 0;
-            height: 100%;
-            width: 40px;
-            border-right: 1px solid #ddd;
-        }
-        .chart-y-label {
-            position: absolute;
-            right: 5px;
-            font-size: 0.7rem;
-            color: #666;
-        }
-        .section { 
-            margin: 20px 0; 
-        }
-        .section-title { 
-            font-weight: bold; 
-            color: #28a745; 
-            margin-bottom: 10px; 
-            font-size: 1rem;
-        }
-        .code-list { 
-            margin: 15px 0; 
-            background-color: #f8f9fa;
-            padding: 15px;
-            border-radius: 5px;
-        }
-        .code-list ul { 
-            margin: 5px 0; 
-            padding-left: 20px;
-        }
-        .code-list li { 
-            margin: 3px 0; 
-            font-size: 0.9rem;
-        }
-        .explanation { 
-            margin: 15px 0; 
-            padding: 15px;
-            background: linear-gradient(135deg, #f8fff8 0%, #e8f5e8 100%);
-            border-left: 4px solid #28a745;
-            border-radius: 5px;
+            border: 1px solid #d5e8d9;
+            border-left: 4px solid #0a8f3d;
+            border-radius: 8px;
+            background: #f9fdf9;
         }
         .explanation h5 {
-            font-size: 1.1rem;
-            font-weight: bold;
-            margin-bottom: 15px;
-            color: #28a745;
+            margin: 0 0 8px 0;
+            font-size: 13px;
+            color: #0a8f3d;
         }
         .explanation h6 {
-            font-size: 1rem;
-            font-weight: bold;
-            margin-bottom: 8px;
-            color: #28a745;
-        }
-        .explanation ul {
-            margin: 0;
-            padding-left: 20px;
-        }
-        .explanation li {
-            margin-bottom: 3px;
-            font-size: 0.9rem;
+            margin: 8px 0 4px 0;
+            font-size: 12px;
+            color: #0a8f3d;
         }
         .explanation p {
             margin: 0;
-            font-size: 0.9rem;
+            font-size: 11px;
         }
-        .footer { 
-            text-align: center; 
-            margin-top: 30px; 
-            font-size: 12px; 
-            color: #666; 
-            border-top: 1px solid #ddd;
-            padding-top: 20px;
+        .explanation ul {
+            margin: 0;
+            padding-left: 16px;
+        }
+        .footer {
+            margin-top: 16px;
+            padding-top: 10px;
+            border-top: 1px solid #d9eadc;
+            text-align: center;
+            color: #5d7465;
+            font-size: 10px;
         }
     </style>
 </head>
 <body>
-    <div class="alert-success">
-        <div class="alert-heading">Hasil Asesmen RIASEC Anda</div>
-        <p style="margin: 0;">Berdasarkan hasil asesmen, tipe kepribadian Anda adalah <strong>' . htmlspecialchars($result_personality) . '</strong></p>
-    </div>
-    
-    <table class="results-table">
-        <thead>
-            <tr>
-                <th>Personality Type</th>
-                <th>Percentage</th>
-            </tr>
-        </thead>
-        <tbody>';
-        
-        // Sort personality types by percentage (highest to lowest)
-        $personalityTypes = array(
-            'R' => 'Realistic',
-            'I' => 'Investigative', 
-            'A' => 'Artistic',
-            'S' => 'Social',
-            'E' => 'Enterprising',
-            'C' => 'Conventional'
-        );
-        
-        // Create array for sorting
-        $sortedData = array();
-        foreach ($personalityTypes as $code => $name) {
-            $sortedData[] = array(
-                'code' => $code,
-                'name' => $name,
-                'percentage' => $scorePercentageList[$code]
-            );
-        }
-        
-        // Sort by percentage (highest first)
-        usort($sortedData, function($a, $b) {
-            return $b['percentage'] <=> $a['percentage'];
-        });
-        
-        // Generate table rows in sorted order
-        foreach ($sortedData as $data) {
-            $html .= '
-            <tr>
-                <td>' . $data['name'] . '</td>
-                <td class="percentage-cell">' . number_format($data['percentage'], 1) . '%</td>
-            </tr>';
-        }
-        
-        $html .= '
-        </tbody>
-    </table>
-    
-    <div class="section">
-        <div class="section-title">Keterangan Kode RIASEC:</div>
-        <div class="code-list">
-            <ul>
+    <div class="page">
+        <div class="card hero">
+            <div class="kicker">Laporan Profil Minat Karier</div>
+            <h1 class="title">Hasil Asesmen RIASEC: ' . htmlspecialchars($result_personality) . '</h1>
+            <p class="subtitle">Top 3 minat dominan: <strong>' . htmlspecialchars($top3Text) . '</strong> | Tanggal cetak: ' . date('d M Y H:i') . '</p>
+            <div style="margin-top:8px;">
+                <span class="chip chip-primary">Kode Utama: ' . htmlspecialchars($result_personality) . '</span>';
+
+foreach ($top3 as $topItem) {
+    $html .= '<span class="chip">' . htmlspecialchars($topItem['code'] . ' - ' . $topItem['name']) . '</span>';
+}
+
+$html .= '
+            </div>
+        </div>
+
+        <div class="card">
+            <h2 class="section-title">Distribusi Skor RIASEC</h2>
+            <table class="score-table">
+                <thead>
+                    <tr>
+                        <th style="width:170px;">Dimensi</th>
+                        <th>Visual Skor</th>
+                        <th style="width:60px; text-align:right;">%</th>
+                    </tr>
+                </thead>
+                <tbody>';
+
+foreach ($sortedData as $data) {
+    $pct = max(0, min(100, floatval($data['percentage'])));
+    $html .= '
+                    <tr>
+                        <td><strong>' . htmlspecialchars($data['code']) . '</strong> - ' . htmlspecialchars($data['name']) . '</td>
+                        <td>
+                            <div class="score-bar-wrap">
+                                <div class="score-bar" style="width:' . $pct . '%;"></div>
+                            </div>
+                        </td>
+                        <td class="score-pct">' . number_format($pct, 1) . '%</td>
+                    </tr>';
+}
+
+$html .= '
+                </tbody>
+            </table>
+        </div>
+
+        <div class="card">
+            <h2 class="section-title">Keterangan Kode RIASEC</h2>
+            <ul class="legend-list">
                 <li><strong>R</strong> = Realistic</li>
                 <li><strong>I</strong> = Investigative</li>
                 <li><strong>A</strong> = Artistic</li>
@@ -337,13 +370,12 @@ $html = '
                 <li><strong>E</strong> = Enterprising</li>
                 <li><strong>C</strong> = Conventional</li>
             </ul>
-        </div>
-    </div>';
+        </div>';
 
 // Add explanation paragraphs
 if (!empty($paras)) {
-    $html .= '<div class="section">
-        <div class="section-title">Penjelasan</div>';
+    $html .= '<div class="card">
+        <h2 class="section-title">Interpretasi Profil</h2>';
     
     foreach ($paras as $p) {
         $sections = formatContentForPDF($p);
@@ -389,6 +421,7 @@ $html .= '
         <p>Laporan ini dibuat secara otomatis oleh sistem asesmen RIASEC</p>
         <p>© ' . date('Y') . ' Pusat Pasar Kerja</p>
     </div>
+</div>
 </body>
 </html>';
 
