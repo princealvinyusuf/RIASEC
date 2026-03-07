@@ -72,75 +72,76 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     }
 }
 ?>
-<?php include 'includes/header.php' ?>
-<div class="container py-5">
-  <div class="row justify-content-center mb-4">
-    <div class="col-lg-8">
-      <div class="card shadow-sm border-0">
-        <div class="card-body">
-          <h1 class="card-title display-6 fw-bold text-success mb-3">Formulir Data Pribadi</h1>
-          <p class="mb-3"><a href="index.php" class="text-decoration-none">&larr; Kembali ke Beranda</a></p>
-          <div class="text-center mb-3">
-            <img src="jobi.png" alt="Maskot Jobi" class="img-fluid" style="max-width: 150px;">
-          </div>
-          <?php if (!empty($errors)) { ?>
-          <div class="alert alert-danger" role="alert">
-            <ul class="mb-0 ps-3">
-              <?php foreach ($errors as $err) { ?>
-                <li><?php echo htmlspecialchars($err); ?></li>
-              <?php } ?>
-            </ul>
-          </div>
+<?php $pageTitle = 'Data Peserta - RIASEC'; ?>
+<?php include 'includes/header.php'; ?>
+
+<section class="page-wrap">
+  <div class="glass-card app-form-card">
+    <div class="form-header mb-4">
+      <p class="mb-2"><a href="index.php" class="text-decoration-none">&larr; Kembali ke beranda</a></p>
+      <h1 class="fw-bold text-success">Data awal peserta</h1>
+      <p>Lengkapi data berikut untuk memulai asesmen minat karier.</p>
+    </div>
+
+    <?php if (!empty($errors)) { ?>
+      <div class="alert alert-danger" role="alert">
+        <ul class="mb-0 ps-3">
+          <?php foreach ($errors as $err) { ?>
+            <li><?php echo htmlspecialchars($err); ?></li>
           <?php } ?>
-          <form action="personal_info.php" method="post" novalidate>
-            <div class="row g-3">
-              <div class="col-md-6">
-                <label class="form-label">Nama Lengkap</label>
-                <input type="text" name="full_name" class="form-control" required value="<?php echo isset($full_name) ? htmlspecialchars($full_name) : '' ?>">
-              </div>
-              <div class="col-md-6">
-                <label class="form-label">Tanggal Lahir</label>
-                <input type="date" name="birth_date" class="form-control" required value="<?php echo isset($birth_date) ? htmlspecialchars($birth_date) : '' ?>">
-              </div>
-              <div class="col-md-6">
-                <label class="form-label">No. HP</label>
-                <input type="text" name="phone" class="form-control" required value="<?php echo isset($phone) ? htmlspecialchars($phone) : '' ?>">
-              </div>
-              <div class="col-md-6">
-                <label class="form-label">E-mail</label>
-                <input type="email" name="email" class="form-control" required value="<?php echo isset($email) ? htmlspecialchars($email) : '' ?>">
-              </div>
-              <div class="col-md-6">
-                <label class="form-label">Kelas</label>
-                <select name="class_level" class="form-select" required>
-                  <option value="" disabled <?php echo !isset($class_level) || $class_level === '' ? 'selected' : '' ?>>Pilih Kelas</option>
-                  <option value="10" <?php echo (isset($class_level) && $class_level==='10') ? 'selected' : '' ?>>10</option>
-                  <option value="11" <?php echo (isset($class_level) && $class_level==='11') ? 'selected' : '' ?>>11</option>
-                  <option value="12" <?php echo (isset($class_level) && $class_level==='12') ? 'selected' : '' ?>>12</option>
-                </select>
-              </div>
-              <div class="col-md-6">
-                <label class="form-label">Nama Sekolah</label>
-                <input type="text" name="school_name" class="form-control" required value="<?php echo isset($school_name) ? htmlspecialchars($school_name) : '' ?>">
-              </div>
-              <div class="col-12">
-                <label class="form-label">Ekstrakurikuler Yang Diikuti</label>
-                <input type="text" name="extracurricular" class="form-control" required value="<?php echo isset($extracurricular) ? htmlspecialchars($extracurricular) : '' ?>">
-              </div>
-              <div class="col-12">
-                <label class="form-label">Organisasi Yang Diikuti</label>
-                <input type="text" name="organization" class="form-control" required value="<?php echo isset($organization) ? htmlspecialchars($organization) : '' ?>">
-              </div>
-            </div>
-            <div class="text-end mt-4">
-              <button type="submit" class="btn btn-success btn-lg px-5">Lanjutkan ke Tes</button>
-            </div>
-          </form>
+        </ul>
+      </div>
+    <?php } ?>
+
+    <form action="personal_info.php" method="post" novalidate>
+      <div class="row g-3">
+        <div class="col-md-6">
+          <label class="form-label">Nama lengkap</label>
+          <input type="text" name="full_name" class="form-control" required value="<?php echo isset($full_name) ? htmlspecialchars($full_name) : ''; ?>">
+        </div>
+        <div class="col-md-6">
+          <label class="form-label">Tanggal lahir</label>
+          <input type="date" name="birth_date" class="form-control" required value="<?php echo isset($birth_date) ? htmlspecialchars($birth_date) : ''; ?>">
+        </div>
+        <div class="col-md-6">
+          <label class="form-label">Nomor HP</label>
+          <input type="text" name="phone" class="form-control" required value="<?php echo isset($phone) ? htmlspecialchars($phone) : ''; ?>">
+        </div>
+        <div class="col-md-6">
+          <label class="form-label">Email</label>
+          <input type="email" name="email" class="form-control" required value="<?php echo isset($email) ? htmlspecialchars($email) : ''; ?>">
+        </div>
+        <div class="col-md-6">
+          <label class="form-label">Kelas</label>
+          <select name="class_level" class="form-select" required>
+            <option value="" disabled <?php echo !isset($class_level) || $class_level === '' ? 'selected' : ''; ?>>Pilih kelas</option>
+            <option value="10" <?php echo (isset($class_level) && $class_level === '10') ? 'selected' : ''; ?>>10</option>
+            <option value="11" <?php echo (isset($class_level) && $class_level === '11') ? 'selected' : ''; ?>>11</option>
+            <option value="12" <?php echo (isset($class_level) && $class_level === '12') ? 'selected' : ''; ?>>12</option>
+          </select>
+        </div>
+        <div class="col-md-6">
+          <label class="form-label">Nama sekolah</label>
+          <input type="text" name="school_name" class="form-control" required value="<?php echo isset($school_name) ? htmlspecialchars($school_name) : ''; ?>">
+        </div>
+        <div class="col-12">
+          <label class="form-label">Ekstrakurikuler yang diikuti</label>
+          <input type="text" name="extracurricular" class="form-control" required value="<?php echo isset($extracurricular) ? htmlspecialchars($extracurricular) : ''; ?>">
+        </div>
+        <div class="col-12">
+          <label class="form-label">Organisasi yang diikuti</label>
+          <input type="text" name="organization" class="form-control" required value="<?php echo isset($organization) ? htmlspecialchars($organization) : ''; ?>">
         </div>
       </div>
-    </div>
+
+      <div class="question-nav mt-4">
+        <a href="index.php" class="btn btn-outline-secondary">Kembali</a>
+        <button type="submit" class="btn btn-primary-soft">Lanjut ke pertanyaan</button>
+      </div>
+    </form>
   </div>
-</div>
-<?php include 'includes/footer.php' ?>
+</section>
+
+<?php include 'includes/footer.php'; ?>
 
 

@@ -5,101 +5,210 @@ if (!isset($_SESSION['personal_info_id'])) {
   exit;
 }
 ?>
-<?php include 'includes/header.php' ?>
-<div class="container py-5">
-  <div class="row justify-content-center mb-4">
-    <div class="col-lg-10">
-      <div class="card shadow-sm border-0">
-        <div class="card-body">
-          <h1 class="card-title display-6 fw-bold text-success mb-3">Isi Formulir Berikut</h1>
-          <?php if(isset($_GET['message']) && $_GET['message']=='T'){?>
-          <div class="alert alert-warning" role="alert">
-            Anda harus mengisi minimal 5-6 pernyataan untuk mendapatkan hasil.
-          </div>
-          <?php } elseif(isset($_GET['message']) && $_GET['message']=='REQ'){ ?>
-          <div class="alert alert-danger" role="alert">
-            Semua pernyataan dan pilihan persetujuan penelitian wajib diisi sebelum melihat hasil.
-          </div>
-          <?php } ?>
-          <p class="mb-3"><a href="index.php" class="text-decoration-none">&larr; Kembali ke Beranda</a></p>
-          <div class="text-center mb-3">
-            <img src="jobi.png" alt="Maskot Jobi" class="img-fluid" style="max-width: 150px;">
-          </div>
-          <form action="result.php" method="post">
-            <div class="table-responsive">
-              <table class="table table-bordered align-middle">
-                <thead class="table-success">
-                  <tr>
-                    <th>Pernyataan</th>
-                    <th>Tidak Suka</th>
-                    <th>Kurang Suka</th>
-                    <th>Netral</th>
-                    <th>Agak Suka</th>
-                    <th>Suka</th>
-                  </tr>
-                </thead>
-                <tbody>
-<?php 
-$query = "SELECT * FROM statements ORDER BY RAND()";
-$statement_select_query = mysqli_query($connection,$query);
-while($row=mysqli_fetch_assoc($statement_select_query )){
-    $statement_id = $row['statement_id'];
-    $statement_content = $row['statement_content'];
-    $statement_category = $row['statement_category'];
+<?php
+$pageTitle = 'Pertanyaan Minat Kerja - RIASEC';
+$query = "SELECT statement_id, statement_content, statement_category FROM statements ORDER BY statement_id ASC";
+$statementSelectQuery = mysqli_query($connection, $query);
+$questions = array();
+if ($statementSelectQuery) {
+    while ($row = mysqli_fetch_assoc($statementSelectQuery)) {
+        $questions[] = $row;
+    }
+}
 ?>
-                  <tr>
-                    <td><?php echo $statement_content?></td>
-                    <?php for($i=1;$i<=5;$i++){ ?>
-                    <td>
-                      <div class="form-check d-flex justify-content-center">
-                        <input class="form-check-input" style="width:1.5em;height:1.5em;" type="radio" name="<?php echo $statement_category.$statement_id ?>" value="<?php echo $i ?>" <?php echo $i===1 ? 'required' : '' ?>>
-                      </div>
-                    </td>
-                    <?php } ?>
-                  </tr>
-<?php } ?>
-                </tbody>
-              </table>
-            </div>
-            <div class="mb-3 mt-4">
-              <div class="form-check">
-                <input class="form-check-input" type="checkbox" name="can_save_data" value="true" id="saveDataYes" required>
-                <label class="form-check-label" for="saveDataYes">Saya setuju jawaban saya disimpan untuk keperluan konseling dan pengembangan asesmen.</label>
-              </div>
-            </div>
-            <div class="text-end">
-              <button type="submit" name="submit" class="btn btn-success btn-lg px-5" id="submitBtn" disabled>Lihat Hasil</button>
-            </div>
-          </form>
-          <script type="text/javascript">
-          document.addEventListener('DOMContentLoaded', function() {
-            var form = document.querySelector('form[action="result.php"]');
-            if (!form) { return; }
-            var submitBtn = document.getElementById('submitBtn');
-            function getStatementGroupNames() {
-              var radios = form.querySelectorAll('input[type="radio"]');
-              var names = {};
-              radios.forEach(function(r){
-                if (/^[RIASEC]\d+$/.test(r.name)) { names[r.name] = true; }
-              });
-              return Object.keys(names);
-            }
-            function isGroupChecked(name) {
-              return !!form.querySelector('input[name="'+name+'"]:checked');
-            }
-            function checkCompleteness() {
-              var names = getStatementGroupNames();
-              var allStatementsAnswered = names.every(function(n){ return isGroupChecked(n); });
-              var consentAnswered = !!form.querySelector('input[name="can_save_data"]:checked');
-              submitBtn.disabled = !(allStatementsAnswered && consentAnswered);
-            }
-            form.addEventListener('change', function(e){ if (e.target && (e.target.matches('input[type="radio"]') || e.target.matches('input[type="checkbox"]'))) { checkCompleteness(); }});
-            checkCompleteness();
-          });
-          </script>
-        </div>
+<?php include 'includes/header.php'; ?>
+
+<section class="page-wrap">
+  <div class="glass-card app-form-card">
+    <div class="d-flex justify-content-between align-items-start flex-wrap gap-2 mb-3">
+      <div>
+        <p class="mb-1"><a href="personal_info.php" class="text-decoration-none">&larr; Kembali ke data peserta</a></p>
+        <h1 class="h3 fw-bold text-success mb-1">Activity Questions</h1>
+        <p class="muted mb-0">Nilai seberapa kamu ingin melakukan aktivitas ini jika menjadi bagian dari pekerjaanmu.</p>
       </div>
+      <div class="badge text-bg-light border">Shortcut keyboard: 1 - 5</div>
     </div>
+
+    <?php if (isset($_GET['message']) && $_GET['message'] === 'REQ') { ?>
+      <div class="alert alert-danger" role="alert">
+        Semua pertanyaan dan persetujuan penyimpanan data wajib diisi sebelum melihat hasil.
+      </div>
+    <?php } ?>
+
+    <?php if (empty($questions)) { ?>
+      <div class="alert alert-warning mb-0">Belum ada data pernyataan pada tabel <code>statements</code>.</div>
+    <?php } else { ?>
+      <form action="result.php" method="post" id="riasecForm">
+        <div class="question-shell">
+          <div class="progress-top">
+            <span class="counter"><span id="currentQuestion">1</span> dari <span id="totalQuestion"><?php echo count($questions); ?></span></span>
+            <span class="badge text-bg-success">Profiler Minat Kerja</span>
+          </div>
+
+          <div class="progress mb-3" role="progressbar" aria-label="Progress pertanyaan" aria-valuemin="0" aria-valuemax="<?php echo count($questions); ?>">
+            <div id="questionProgress" class="progress-bar" style="width: 0%;"></div>
+          </div>
+
+          <div id="questionContainer">
+            <?php foreach ($questions as $index => $q) { ?>
+              <?php $name = $q['statement_category'] . intval($q['statement_id']); ?>
+              <input type="hidden" name="<?php echo htmlspecialchars($name); ?>" id="input-<?php echo htmlspecialchars($name); ?>" value="">
+              <section
+                class="question-card riasec-question"
+                data-question-index="<?php echo $index; ?>"
+                data-input-id="input-<?php echo htmlspecialchars($name); ?>"
+                style="<?php echo $index === 0 ? '' : 'display:none;'; ?>"
+              >
+                <h2 class="question-text"><?php echo htmlspecialchars($q['statement_content']); ?></h2>
+                <div class="answer-scale">
+                  <button type="button" class="answer-btn" data-value="1" aria-label="Sangat tidak suka">
+                    <span class="face">😫</span>
+                    <span class="label">Sangat Tidak Suka</span>
+                  </button>
+                  <button type="button" class="answer-btn" data-value="2" aria-label="Tidak suka">
+                    <span class="face">🙁</span>
+                    <span class="label">Tidak Suka</span>
+                  </button>
+                  <button type="button" class="answer-btn" data-value="3" aria-label="Ragu-ragu">
+                    <span class="face">😐</span>
+                    <span class="label">Ragu-ragu</span>
+                  </button>
+                  <button type="button" class="answer-btn" data-value="4" aria-label="Suka">
+                    <span class="face">🙂</span>
+                    <span class="label">Suka</span>
+                  </button>
+                  <button type="button" class="answer-btn" data-value="5" aria-label="Sangat suka">
+                    <span class="face">😁</span>
+                    <span class="label">Sangat Suka</span>
+                  </button>
+                </div>
+              </section>
+            <?php } ?>
+          </div>
+        </div>
+
+        <div class="glass-card app-form-card mt-3">
+          <div class="form-check mb-3">
+            <input class="form-check-input" type="checkbox" name="can_save_data" value="true" id="saveDataYes" required>
+            <label class="form-check-label" for="saveDataYes">
+              Saya setuju jawaban saya disimpan untuk keperluan konseling dan pengembangan asesmen.
+            </label>
+          </div>
+
+          <div class="question-nav">
+            <button type="button" class="btn btn-outline-secondary" id="prevBtn">Sebelumnya</button>
+            <div class="d-flex gap-2">
+              <button type="button" class="btn btn-outline-success" id="nextBtn">Berikutnya</button>
+              <button type="submit" name="submit" class="btn btn-primary-soft" id="submitBtn" disabled>Lihat Hasil</button>
+            </div>
+          </div>
+        </div>
+      </form>
+
+      <script>
+        document.addEventListener('DOMContentLoaded', function () {
+          const questions = Array.from(document.querySelectorAll('.riasec-question'));
+          const total = questions.length;
+          const currentQuestionEl = document.getElementById('currentQuestion');
+          const progressEl = document.getElementById('questionProgress');
+          const prevBtn = document.getElementById('prevBtn');
+          const nextBtn = document.getElementById('nextBtn');
+          const submitBtn = document.getElementById('submitBtn');
+          const saveDataCheckbox = document.getElementById('saveDataYes');
+          const form = document.getElementById('riasecForm');
+
+          let currentIndex = 0;
+
+          function getHiddenInput(questionEl) {
+            return document.getElementById(questionEl.dataset.inputId);
+          }
+
+          function setActiveButtonState(questionEl, value) {
+            const buttons = questionEl.querySelectorAll('.answer-btn');
+            buttons.forEach((btn) => {
+              const active = btn.dataset.value === String(value);
+              btn.classList.toggle('active', active);
+            });
+          }
+
+          function isAllAnswered() {
+            return questions.every((q) => {
+              const input = getHiddenInput(q);
+              const val = Number(input.value);
+              return val >= 1 && val <= 5;
+            });
+          }
+
+          function refreshActionButtons() {
+            prevBtn.disabled = currentIndex === 0;
+            nextBtn.disabled = currentIndex >= total - 1;
+            submitBtn.disabled = !(isAllAnswered() && saveDataCheckbox.checked);
+          }
+
+          function renderQuestion(index) {
+            questions.forEach((q, idx) => {
+              q.style.display = idx === index ? '' : 'none';
+            });
+            currentQuestionEl.textContent = String(index + 1);
+            const pct = Math.round(((index + 1) / total) * 100);
+            progressEl.style.width = pct + '%';
+            refreshActionButtons();
+          }
+
+          questions.forEach((questionEl) => {
+            const input = getHiddenInput(questionEl);
+            const buttons = questionEl.querySelectorAll('.answer-btn');
+
+            buttons.forEach((button) => {
+              button.addEventListener('click', function () {
+                input.value = this.dataset.value;
+                setActiveButtonState(questionEl, this.dataset.value);
+                refreshActionButtons();
+              });
+            });
+          });
+
+          prevBtn.addEventListener('click', function () {
+            if (currentIndex > 0) {
+              currentIndex -= 1;
+              renderQuestion(currentIndex);
+            }
+          });
+
+          nextBtn.addEventListener('click', function () {
+            if (currentIndex < total - 1) {
+              currentIndex += 1;
+              renderQuestion(currentIndex);
+            }
+          });
+
+          saveDataCheckbox.addEventListener('change', refreshActionButtons);
+
+          document.addEventListener('keydown', function (event) {
+            if (!/^[1-5]$/.test(event.key)) {
+              return;
+            }
+            const activeQuestion = questions[currentIndex];
+            if (!activeQuestion) {
+              return;
+            }
+            const button = activeQuestion.querySelector('.answer-btn[data-value="' + event.key + '"]');
+            if (button) {
+              button.click();
+            }
+          });
+
+          form.addEventListener('submit', function (event) {
+            if (!(isAllAnswered() && saveDataCheckbox.checked)) {
+              event.preventDefault();
+            }
+          });
+
+          renderQuestion(currentIndex);
+        });
+      </script>
+    <?php } ?>
   </div>
-</div>
-<?php include 'includes/footer.php' ?>
+</section>
+
+<?php include 'includes/footer.php'; ?>

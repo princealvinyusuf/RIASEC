@@ -1,248 +1,170 @@
-<?php include 'includes/header.php' ?>
-<?php include 'util_functions.php' ?>
-
 <?php
-// Function to format content with bullet points
-function formatContentWithBullets($content) {
-    // Split content by sections
-    $sections = array();
-    
-    // Define section markers
-    $sectionMarkers = array(
-        'Penjelasan:' => 'Penjelasan',
-        'Kekuatan:' => 'Kekuatan',
-        'Lingkungan favorit:' => 'Lingkungan Favorit',
-        'Contoh karir:' => 'Contoh Karir'
-    );
-    
-    $currentSection = '';
-    $currentContent = '';
-    $lines = explode("\n", $content);
-    
-    foreach ($lines as $line) {
-        $line = trim($line);
-        if (empty($line)) continue;
-        
-        $foundSection = false;
-        foreach ($sectionMarkers as $marker => $sectionName) {
-            if (strpos($line, $marker) === 0) {
-                // Save previous section if exists
-                if (!empty($currentSection) && !empty($currentContent)) {
-                    $sections[$currentSection] = trim($currentContent);
-                }
-                $currentSection = $sectionName;
-                $currentContent = '';
-                $foundSection = true;
-                break;
-            }
-        }
-        
-        if (!$foundSection && !empty($currentSection)) {
-            $currentContent .= $line . "\n";
-        } elseif (!$foundSection && empty($currentSection)) {
-            // This is the title/header line
-            $sections['Title'] = $line;
-        }
-    }
-    
-    // Save the last section
-    if (!empty($currentSection) && !empty($currentContent)) {
-        $sections[$currentSection] = trim($currentContent);
-    }
-    
-    return $sections;
+if (session_status() === PHP_SESSION_NONE) {
+    session_start();
+}
+include 'util_functions.php';
+
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['submit'])) {
+    getPersonalityTestResults();
+} elseif (!isset($_SESSION['result_personality']) || !isset($_SESSION['score_percentage_list'])) {
+    header('Location: test_form.php');
+    exit;
+} else {
+    $result_personality = $_SESSION['result_personality'];
+    $scorePercentageList = $_SESSION['score_percentage_list'];
 }
 
-// Function to render formatted content
-function renderFormattedContent($content) {
-    $sections = formatContentWithBullets($content);
-    
-    $output = '';
-    
-    // Start the main container with green background
-    $output .= '<div class="card bg-light border-0 mb-4" style="background: linear-gradient(135deg, #f8fff8 0%, #e8f5e8 100%) !important; border-left: 4px solid #28a745 !important;">';
-    $output .= '<div class="card-body p-4">';
-    
-    // Display title if exists
-    if (isset($sections['Title'])) {
-        $output .= '<h5 class="fw-bold mb-3 text-success">' . htmlspecialchars($sections['Title']) . '</h5>';
-    }
-    
-    // Display each section
-    foreach ($sections as $sectionName => $sectionContent) {
-        if ($sectionName === 'Title') continue;
-        
-        $output .= '<div class="mb-3">';
-        $output .= '<h6 class="fw-bold mb-2 text-success">' . htmlspecialchars($sectionName) . ':</h6>';
-        
-        // Split content by lines and create bullet points
-        $lines = explode("\n", $sectionContent);
-        if (count($lines) > 1) {
-            $output .= '<ul class="mb-0 ps-3">';
-            foreach ($lines as $line) {
-                $line = trim($line);
-                if (!empty($line)) {
-                    $output .= '<li>' . htmlspecialchars($line) . '</li>';
-                }
-            }
-            $output .= '</ul>';
-        } else {
-            // Single line content
-            $output .= '<p class="mb-0">' . htmlspecialchars(trim($sectionContent)) . '</p>';
-        }
-        
-        $output .= '</div>';
-    }
-    
-    $output .= '</div>'; // Close card-body
-    $output .= '</div>'; // Close card
-    
-    return $output;
+$riasecInfo = array(
+    'R' => array('name' => 'Realistic', 'desc' => 'Menyukai aktivitas praktis, alat, mesin, perbaikan, dan kerja lapangan.'),
+    'I' => array('name' => 'Investigative', 'desc' => 'Suka menganalisis, riset, observasi, pemecahan masalah, dan logika.'),
+    'A' => array('name' => 'Artistic', 'desc' => 'Suka mengekspresikan ide lewat desain, tulisan, seni, musik, atau kreasi.'),
+    'S' => array('name' => 'Social', 'desc' => 'Suka membantu, mendampingi, mengajar, dan berinteraksi dengan orang lain.'),
+    'E' => array('name' => 'Enterprising', 'desc' => 'Suka memimpin, memengaruhi, bernegosiasi, dan mengembangkan peluang.'),
+    'C' => array('name' => 'Conventional', 'desc' => 'Suka ketertiban, data, administrasi, struktur, dan detail yang konsisten.')
+);
+
+$topCodes = str_split(substr($result_personality, 0, 3));
+if (count($topCodes) < 3) {
+    $sortedFallback = $scorePercentageList;
+    arsort($sortedFallback);
+    $topCodes = array_slice(array_keys($sortedFallback), 0, 3);
 }
+
+$sortedScores = $scorePercentageList;
+arsort($sortedScores);
+
+$jobZones = array(
+    array('zone' => 1, 'label' => 'Persiapan minimal', 'desc' => 'Pelatihan singkat atau pengalaman kerja awal.'),
+    array('zone' => 2, 'label' => 'Persiapan dasar', 'desc' => 'Butuh pelatihan beberapa bulan hingga 1 tahun.'),
+    array('zone' => 3, 'label' => 'Persiapan menengah', 'desc' => 'Biasanya perlu pendidikan vokasi/D3 atau pengalaman teknis.'),
+    array('zone' => 4, 'label' => 'Persiapan tinggi', 'desc' => 'Umumnya setara S1 dan pengalaman kerja lebih mendalam.'),
+    array('zone' => 5, 'label' => 'Persiapan sangat tinggi', 'desc' => 'Sering membutuhkan pendidikan lanjut dan keahlian spesialis.')
+);
+
+$careerCatalog = array(
+    array('title' => 'Analis Data', 'tags' => array('I', 'C'), 'zone' => 4, 'why' => 'Mengolah data, membuat insight, dan membantu pengambilan keputusan.'),
+    array('title' => 'UI/UX Designer', 'tags' => array('A', 'I'), 'zone' => 4, 'why' => 'Merancang pengalaman digital yang estetis dan mudah digunakan.'),
+    array('title' => 'Akuntan', 'tags' => array('C', 'I'), 'zone' => 4, 'why' => 'Mengelola laporan keuangan secara teliti dan terstruktur.'),
+    array('title' => 'Digital Marketing Specialist', 'tags' => array('E', 'A'), 'zone' => 3, 'why' => 'Menggabungkan strategi promosi, kreativitas konten, dan analisis.'),
+    array('title' => 'Psikolog/Konselor', 'tags' => array('S', 'I'), 'zone' => 5, 'why' => 'Mendampingi individu dalam pengembangan diri dan pemecahan masalah.'),
+    array('title' => 'Guru/Pengajar', 'tags' => array('S', 'E'), 'zone' => 4, 'why' => 'Membantu proses belajar dan perkembangan peserta didik.'),
+    array('title' => 'Wirausaha', 'tags' => array('E', 'R'), 'zone' => 3, 'why' => 'Membangun produk/jasa, memimpin tim, dan mengambil peluang pasar.'),
+    array('title' => 'Manajer Operasional', 'tags' => array('E', 'C'), 'zone' => 4, 'why' => 'Mengelola proses, target kerja, dan koordinasi lintas tim.'),
+    array('title' => 'Teknisi Jaringan', 'tags' => array('R', 'I'), 'zone' => 3, 'why' => 'Menangani perangkat dan sistem jaringan secara teknis.'),
+    array('title' => 'Surveyor Lapangan', 'tags' => array('R', 'C'), 'zone' => 3, 'why' => 'Bekerja langsung di lapangan dengan pengukuran yang presisi.'),
+    array('title' => 'Perawat', 'tags' => array('S', 'R'), 'zone' => 4, 'why' => 'Memberikan layanan kesehatan praktis dan empatik.'),
+    array('title' => 'Arsitek', 'tags' => array('A', 'R'), 'zone' => 5, 'why' => 'Menggabungkan kreativitas desain dengan perhitungan teknis bangunan.'),
+    array('title' => 'Content Creator', 'tags' => array('A', 'E'), 'zone' => 2, 'why' => 'Menciptakan konten yang menarik dan membangun audiens.'),
+    array('title' => 'Administrator Proyek', 'tags' => array('C', 'E'), 'zone' => 3, 'why' => 'Menata timeline, dokumen, dan koordinasi proyek secara rapi.'),
+    array('title' => 'Peneliti', 'tags' => array('I', 'A'), 'zone' => 5, 'why' => 'Menyusun hipotesis, eksperimen, dan publikasi berbasis data.'),
+    array('title' => 'Mekanik Otomotif', 'tags' => array('R', 'C'), 'zone' => 2, 'why' => 'Memperbaiki kendaraan dengan pendekatan teknis dan prosedural.')
+);
+
+$weights = array();
+foreach ($topCodes as $idx => $code) {
+    $weights[$code] = 3 - $idx;
+}
+
+foreach ($careerCatalog as $idx => $career) {
+    $score = 0;
+    foreach ($career['tags'] as $tag) {
+        if (isset($weights[$tag])) {
+            $score += $weights[$tag];
+        }
+    }
+    $careerCatalog[$idx]['rank'] = $score;
+}
+
+usort($careerCatalog, function ($a, $b) {
+    if ($a['rank'] === $b['rank']) {
+        return $a['zone'] <=> $b['zone'];
+    }
+    return $b['rank'] <=> $a['rank'];
+});
+$careerRecommendations = array_slice($careerCatalog, 0, 12);
 ?>
 
-<div class="container py-5">
-  <div class="row justify-content-center">
-    <div class="col-lg-8">
-      <div class="card shadow-sm border-0">
-        <div class="card-body">
-          <?php 
-          getPersonalityTestResults(); 
-          
-          // Set session flag to indicate test completion
-          if (session_status() === PHP_SESSION_NONE) { session_start(); }
-          $_SESSION['test_completed'] = true;
-          $_SESSION['result_personality'] = $result_personality;
-          ?>
-          <div class="text-center mb-3">
-            <img src="jobi.png" alt="Maskot Jobi" class="img-fluid" style="max-width: 150px;">
-          </div>
-          <div class="alert alert-success text-center mb-4" role="alert">
-            <h4 class="alert-heading">Hasil Asesmen RIASEC Anda</h4>
-            <p class="mb-0">Berdasarkan hasil asesmen, tipe kepribadian Anda adalah <b><?php echo $result_personality ?></b></p>
-          </div>
-          <div class="mb-4">
-            <div id="chartContainer" style="height: 300px; width: 100%;"></div>
-          </div>
-          <div class="mb-4">
-            <div class="card bg-light border-0">
-              <div class="card-body p-3">
-                <h6 class="fw-bold mb-2">Keterangan Kode RIASEC:</h6>
-                <ul class="mb-0 ps-3">
-                  <li><b>R</b> = Realistic</li>
-                  <li><b>I</b> = Investigative</li>
-                  <li><b>A</b> = Artistic</li>
-                  <li><b>S</b> = Social</li>
-                  <li><b>E</b> = Enterprising</li>
-                  <li><b>C</b> = Conventional</li>
-                </ul>
-              </div>
-            </div>
-            <div class="text-center mt-3">
-              <a href="generate_pdf.php" class="btn btn-primary btn-lg px-4" target="_blank">
-                <i class="fas fa-download me-2"></i>Unduh Laporan Ini
-              </a>
-            </div>
-          </div>
-          <?php
-          // Ensure table for dynamic RIASEC paragraphs exists
-          $createParaTable = "CREATE TABLE IF NOT EXISTS riasec_paragraphs (
-            id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
-            code CHAR(1) NOT NULL,
-            position TINYINT UNSIGNED NOT NULL,
-            content TEXT NOT NULL,
-            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-            INDEX idx_code_position (code, position)
-          ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4";
-          mysqli_query($connection, $createParaTable);
+<?php $pageTitle = 'Hasil Profil RIASEC'; ?>
+<?php include 'includes/header.php'; ?>
 
-          // Seed default 4 paragraphs for code 'C' if empty
-          $countRes = mysqli_query($connection, "SELECT COUNT(*) AS c FROM riasec_paragraphs WHERE code='C'");
-          $rowC = $countRes ? mysqli_fetch_assoc($countRes) : null;
-          if (!$rowC || intval($rowC['c']) === 0) {
-            $defaults = array(
-              1 => 'Tipe Conventional (C) cenderung menyukai aktivitas yang terstruktur, detail, dan mengikuti aturan yang jelas. Mereka bekerja efektif dengan data, administrasi, dan prosedur yang rapi.',
-              2 => 'Orang dengan tipe C biasanya teliti, disiplin, dan dapat diandalkan. Mereka nyaman bekerja di lingkungan yang stabil dengan tanggung jawab yang jelas.',
-              3 => 'Contoh bidang pekerjaan yang sesuai: administrasi, akuntansi, arsip, sekretaris, data entry, dan pekerjaan perkantoran lainnya.',
-              4 => 'Kekuatan utama tipe C adalah ketelitian, ketertiban, dan konsistensi. Mereka unggul dalam menjaga sistem tetap berjalan dengan rapi dan efisien.'
-            );
-            foreach ($defaults as $pos => $content) {
-              $stmt = mysqli_prepare($connection, "INSERT INTO riasec_paragraphs (code, position, content) VALUES ('C', ?, ?)");
-              if ($stmt) {
-                mysqli_stmt_bind_param($stmt, 'is', $pos, $content);
-                mysqli_stmt_execute($stmt);
-                mysqli_stmt_close($stmt);
-              }
-            }
-          }
+<section class="page-wrap">
+  <div class="glass-card hero-card mb-3">
+    <p class="kicker mb-1">Hasil profil minatmu</p>
+    <h1 class="hero-title mb-2">Kode RIASEC: <?php echo htmlspecialchars($result_personality); ?></h1>
+    <p class="hero-subtitle mb-0">
+      Tiga minat dominan kamu: <strong><?php echo htmlspecialchars(implode(', ', $topCodes)); ?></strong>.
+      Gunakan hasil ini untuk mengeksplorasi jurusan, kegiatan pengembangan diri, dan opsi karier.
+    </p>
+  </div>
 
-          // Fetch paragraphs for the result personality type
-          $paras = array();
-          
-          // First try to get paragraphs for the actual result personality type
-          $res = mysqli_query($connection, "SELECT position, content FROM riasec_paragraphs WHERE code='" . mysqli_real_escape_string($connection, $result_personality) . "' ORDER BY position ASC");
-          if ($res && mysqli_num_rows($res) > 0) {
-            while ($r = mysqli_fetch_assoc($res)) {
-              $paras[] = $r['content'];
-            }
-          } else {
-            // If no paragraphs found for the result type, get paragraphs for 'C' as fallback
-            $res = mysqli_query($connection, "SELECT position, content FROM riasec_paragraphs WHERE code='C' ORDER BY position ASC");
-            if ($res) {
-              while ($r = mysqli_fetch_assoc($res)) {
-                $paras[] = $r['content'];
-              }
-            }
-          }
-          ?>
-          <div class="mb-4">
-            <h6 class="fw-bold mb-2">Penjelasan</h6>
-            <div class="text-muted">
-              <?php foreach ($paras as $p) { ?>
-                <div class="mb-3">
-                  <?php echo renderFormattedContent($p); ?>
-                </div>
-              <?php } ?>
-            </div>
-          </div>
-          <div class="text-center">
-            <a href="test_form.php" class="btn btn-success btn-lg px-5">Coba Tes Lagi</a>
-          </div>
+  <div class="results-grid mb-3">
+    <?php foreach ($topCodes as $code) { ?>
+      <div class="interest-pill">
+        <div class="d-flex justify-content-between align-items-center mb-1">
+          <strong><?php echo htmlspecialchars($code . ' - ' . $riasecInfo[$code]['name']); ?></strong>
+          <span class="badge text-bg-success"><?php echo floatval($scorePercentageList[$code]); ?>%</span>
         </div>
+        <div class="muted"><?php echo htmlspecialchars($riasecInfo[$code]['desc']); ?></div>
       </div>
+    <?php } ?>
+  </div>
+
+  <div class="glass-card app-form-card mb-3">
+    <h2 class="h5 fw-bold text-success mb-3">Distribusi skor minat</h2>
+    <ul class="score-list">
+      <?php foreach ($sortedScores as $code => $score) { ?>
+        <li class="score-item">
+          <div class="score-item-head">
+            <span><?php echo htmlspecialchars($code . ' - ' . $riasecInfo[$code]['name']); ?></span>
+            <span><?php echo floatval($score); ?>%</span>
+          </div>
+          <div class="score-track">
+            <div class="score-fill" style="width: <?php echo floatval($score); ?>%;"></div>
+          </div>
+        </li>
+      <?php } ?>
+    </ul>
+  </div>
+
+  <div class="glass-card app-form-card mb-3">
+    <div class="d-flex justify-content-between align-items-center flex-wrap gap-2 mb-3">
+      <h2 class="h5 fw-bold text-success mb-0">Rekomendasi karier eksplorasi</h2>
+      <span class="muted">Berdasarkan kombinasi profil <?php echo htmlspecialchars($result_personality); ?></span>
+    </div>
+    <div class="career-grid">
+      <?php foreach ($careerRecommendations as $career) { ?>
+        <article class="career-card">
+          <div class="d-flex justify-content-between align-items-center mb-1">
+            <strong><?php echo htmlspecialchars($career['title']); ?></strong>
+            <span class="badge-zone">Job Zone <?php echo intval($career['zone']); ?></span>
+          </div>
+          <div class="small mb-1">Tag minat: <?php echo htmlspecialchars(implode('-', $career['tags'])); ?></div>
+          <div class="muted small"><?php echo htmlspecialchars($career['why']); ?></div>
+        </article>
+      <?php } ?>
     </div>
   </div>
-</div>
 
-<!-- Evaluation Modal -->
-<div class="modal fade" id="evaluationModal" tabindex="-1" aria-labelledby="evaluationModalLabel" aria-hidden="true">
-  <div class="modal-dialog modal-dialog-centered">
-    <div class="modal-content">
-      <div class="modal-header">
-        <h5 class="modal-title" id="evaluationModalLabel">Evaluasi Asesmen Minat Karir RIASEC</h5>
-        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-      </div>
-      <div class="modal-body">
-        <p>Bantu kami untuk meningkatkan kualitas instrumen dan layanan konseling karir kami ke depan dengan mengisi form evaluasi singkat.</p>
-        <p>Masukan dari kamu akan sangat bermanfaat untuk meningkatkan kualitas pelayanan dan membantu dalam menemukan arah karir yang sesuai.</p>
-      </div>
-      <div class="modal-footer">
-        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Tutup</button>
-        <a href="https://forms.gle/ZKUi5JtxNQJZ6mpSA" target="_blank" class="btn btn-primary">Isi Survei</a>
-      </div>
+  <div class="glass-card app-form-card mb-3">
+    <h2 class="h5 fw-bold text-success mb-3">Panduan Job Zone</h2>
+    <div class="career-grid">
+      <?php foreach ($jobZones as $zone) { ?>
+        <article class="career-card">
+          <div class="d-flex justify-content-between align-items-center mb-1">
+            <strong>Zone <?php echo intval($zone['zone']); ?></strong>
+            <span class="badge-zone"><?php echo htmlspecialchars($zone['label']); ?></span>
+          </div>
+          <div class="muted small"><?php echo htmlspecialchars($zone['desc']); ?></div>
+        </article>
+      <?php } ?>
     </div>
   </div>
-</div>
 
-<script>
-document.addEventListener('DOMContentLoaded', function() {
-    setTimeout(function() {
-        var evaluationModal = new bootstrap.Modal(document.getElementById('evaluationModal'), {
-            keyboard: false
-        });
-        evaluationModal.show();
-    }, 5000); // 5 seconds
-});
-</script>
+  <div class="d-flex gap-2 flex-wrap">
+    <a href="test_form.php" class="btn btn-outline-soft">Ulangi asesmen</a>
+    <a href="generate_pdf.php" class="btn btn-primary-soft" target="_blank">Unduh laporan</a>
+    <a href="index.php" class="btn btn-outline-secondary">Kembali ke beranda</a>
+  </div>
+</section>
 
-<?php include 'includes/footer.php' ?>
+<?php include 'includes/footer.php'; ?>

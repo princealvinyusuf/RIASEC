@@ -1,13 +1,19 @@
-<?php include_once 'db.php' ?>
+<?php include_once 'db.php'; ?>
+<?php
+$pageTitle = isset($pageTitle) && is_string($pageTitle) && $pageTitle !== ''
+    ? $pageTitle
+    : 'Profiler Minat Karier RIASEC';
+?>
 <!DOCTYPE html>
 <html lang="id">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Riasec Test</title>
+    <title><?php echo htmlspecialchars($pageTitle); ?></title>
     <link rel="icon" href="jobi.png" type="image/png">
-    <!-- Bootstrap 5 CSS -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="css/style.css">
 </head>
-<body class="bg-light">
+<body class="app-shell">
+<main class="app-main">
    

@@ -69,14 +69,13 @@ session_start();
 $result_personality = '';
 
 // First try to get from session
-if (isset($_SESSION['result_personality'])) {
+if (isset($_SESSION['result_personality']) && is_string($_SESSION['result_personality'])) {
     $result_personality = $_SESSION['result_personality'];
 } else {
-    // Try to get the latest test result from database
-    $latestResult = null;
-    
-    // Get the most recent test result
-    $resultQuery = "SELECT result FROM personality_test_scores ORDER BY created_at DESC LIMIT 1";
+    $latestScoreId = isset($_SESSION['latest_score_id']) ? intval($_SESSION['latest_score_id']) : 0;
+    $resultQuery = $latestScoreId > 0
+        ? "SELECT result FROM personality_test_scores WHERE id = {$latestScoreId} LIMIT 1"
+        : "SELECT result FROM personality_test_scores ORDER BY created_at DESC LIMIT 1";
     $resultRes = mysqli_query($connection, $resultQuery);
     if ($resultRes && mysqli_num_rows($resultRes) > 0) {
         $latestScore = mysqli_fetch_assoc($resultRes);
@@ -100,8 +99,11 @@ if (empty($result_personality)) {
 // Get score percentages for the chart
 $scorePercentageList = array('R'=>'0','I'=>'0','A'=>'0','S'=>'0','E'=>'0','C'=>'0');
 
-// Get the latest test scores from database
-$scoreQuery = "SELECT realistic, investigative, artistic, social, enterprising, conventional FROM personality_test_scores ORDER BY created_at DESC LIMIT 1";
+// Get score percentages from the same score record if possible
+$latestScoreId = isset($_SESSION['latest_score_id']) ? intval($_SESSION['latest_score_id']) : 0;
+$scoreQuery = $latestScoreId > 0
+    ? "SELECT realistic, investigative, artistic, social, enterprising, conventional FROM personality_test_scores WHERE id = {$latestScoreId} LIMIT 1"
+    : "SELECT realistic, investigative, artistic, social, enterprising, conventional FROM personality_test_scores ORDER BY created_at DESC LIMIT 1";
 $scoreRes = mysqli_query($connection, $scoreQuery);
 if ($scoreRes && mysqli_num_rows($scoreRes) > 0) {
     $scoreData = mysqli_fetch_assoc($scoreRes);
