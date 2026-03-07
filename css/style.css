@@ -362,6 +362,50 @@ body.app-shell {
     color: var(--muted);
 }
 
+.stats-scroll {
+    max-height: 280px;
+    overflow: auto;
+    border: 1px solid var(--border);
+    border-radius: 12px;
+}
+
+.chart-stack {
+    display: grid;
+    gap: 0.7rem;
+}
+
+.chart-row {
+    display: grid;
+    grid-template-columns: 120px minmax(0, 1fr) 56px;
+    gap: 0.6rem;
+    align-items: center;
+}
+
+.chart-label {
+    font-size: 0.9rem;
+    font-weight: 700;
+    color: #1e3b2b;
+}
+
+.chart-track {
+    height: 12px;
+    background: #e7f0e8;
+    border-radius: 999px;
+    overflow: hidden;
+}
+
+.chart-fill {
+    height: 100%;
+    background: linear-gradient(90deg, #0a8f3d, #18bc58);
+}
+
+.chart-value {
+    text-align: right;
+    font-size: 0.85rem;
+    font-weight: 700;
+    color: #0d5b2b;
+}
+
 @media (max-width: 900px) {
     .test-layout {
         grid-template-columns: 1fr;

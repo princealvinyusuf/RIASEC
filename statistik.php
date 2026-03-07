@@ -45,11 +45,27 @@ if ($resCodes) {
     }
 }
 
+$maxRiasecCount = 0;
+foreach ($riasecDistribution as $row) {
+    $count = intval($row['total']);
+    if ($count > $maxRiasecCount) {
+        $maxRiasecCount = $count;
+    }
+}
+
 $classDistribution = array();
 $resClass = mysqli_query($connection, "SELECT class_level, COUNT(*) AS total FROM personal_info GROUP BY class_level ORDER BY class_level ASC");
 if ($resClass) {
     while ($row = mysqli_fetch_assoc($resClass)) {
         $classDistribution[] = $row;
+    }
+}
+
+$maxClassCount = 0;
+foreach ($classDistribution as $row) {
+    $count = intval($row['total']);
+    if ($count > $maxClassCount) {
+        $maxClassCount = $count;
     }
 }
 
@@ -135,9 +151,25 @@ if ($resTopSchools) {
     <div class="results-grid">
         <div class="glass-card app-form-card">
             <h2 class="h5 fw-bold text-success mb-3">Distribusi Kode Hasil</h2>
-            <div class="table-responsive">
-                <table class="table table-hover align-middle">
-                    <thead class="table-success">
+            <div class="chart-stack mb-3">
+                <?php if (!empty($riasecDistribution)) { ?>
+                    <?php foreach ($riasecDistribution as $row) {
+                        $count = intval($row['total']);
+                        $width = $maxRiasecCount > 0 ? round(($count / $maxRiasecCount) * 100, 1) : 0;
+                    ?>
+                        <div class="chart-row">
+                            <div class="chart-label"><?php echo htmlspecialchars($row['result']); ?></div>
+                            <div class="chart-track"><div class="chart-fill" style="width: <?php echo $width; ?>%;"></div></div>
+                            <div class="chart-value"><?php echo $count; ?></div>
+                        </div>
+                    <?php } ?>
+                <?php } else { ?>
+                    <div class="muted">Belum ada data.</div>
+                <?php } ?>
+            </div>
+            <div class="table-responsive stats-scroll">
+                <table class="table table-hover align-middle mb-0">
+                    <thead class="table-success" style="position: sticky; top: 0;">
                         <tr>
                             <th>Kode RIASEC</th>
                             <th>Jumlah</th>
@@ -161,6 +193,22 @@ if ($resTopSchools) {
 
         <div class="glass-card app-form-card">
             <h2 class="h5 fw-bold text-success mb-3">Distribusi Kelas</h2>
+            <div class="chart-stack mb-3">
+                <?php if (!empty($classDistribution)) { ?>
+                    <?php foreach ($classDistribution as $row) {
+                        $count = intval($row['total']);
+                        $width = $maxClassCount > 0 ? round(($count / $maxClassCount) * 100, 1) : 0;
+                    ?>
+                        <div class="chart-row">
+                            <div class="chart-label">Kelas <?php echo htmlspecialchars($row['class_level'] ?: '-'); ?></div>
+                            <div class="chart-track"><div class="chart-fill" style="width: <?php echo $width; ?>%;"></div></div>
+                            <div class="chart-value"><?php echo $count; ?></div>
+                        </div>
+                    <?php } ?>
+                <?php } else { ?>
+                    <div class="muted">Belum ada data.</div>
+                <?php } ?>
+            </div>
             <div class="table-responsive">
                 <table class="table table-hover align-middle">
                     <thead class="table-success">
