@@ -12,6 +12,7 @@
     </p>
     <div class="cta-row">
       <a href="personal_info.php" class="btn btn-primary-soft">Mulai Asesmen</a>
+      <a href="statistik.php" class="btn btn-outline-soft">Statistik</a>
       <a href="admin_login.php" class="btn btn-outline-soft">Masuk Admin</a>
     </div>
     <div class="steps-grid">
