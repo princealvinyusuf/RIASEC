@@ -63,8 +63,8 @@ $careerCatalog = array(
 
 $trainingCatalog = array(
     array(
-        'title' => 'Pembuatan Desain Grafis',
-        'focus' => 'Belajar prinsip desain, membuat materi visual, dan mengoperasikan tools desain dasar.',
+        'title' => 'Desain Grafis & Visual',
+        'focus' => 'Tema pelatihan untuk desain, visual communication, dan produksi materi kreatif.',
         'tags' => array('A', 'I'),
         'level' => 'Pemula',
         'delivery' => 'Gratis',
@@ -72,8 +72,8 @@ $trainingCatalog = array(
         'related_keywords' => array('graphic design', 'desainer grafis')
     ),
     array(
-        'title' => 'Desain Grafis di Canva bagi UMKM',
-        'focus' => 'Pelatihan desain cepat untuk konten promosi, branding visual, dan komunikasi digital.',
+        'title' => 'Konten Visual & Canva',
+        'focus' => 'Tema pelatihan untuk pembuatan konten promosi, Canva, dan desain cepat untuk media digital.',
         'tags' => array('A', 'E'),
         'level' => 'Pemula',
         'delivery' => 'Gratis',
@@ -81,8 +81,8 @@ $trainingCatalog = array(
         'related_keywords' => array('konten visual', 'social media design')
     ),
     array(
-        'title' => 'Administrative Assistant',
-        'focus' => 'Cocok untuk minat administrasi, dokumen, ketelitian, dan dukungan operasional kantor.',
+        'title' => 'Administrasi Kantor',
+        'focus' => 'Tema pelatihan untuk administrasi, dokumen, ketelitian, dan dukungan operasional perkantoran.',
         'tags' => array('C', 'E'),
         'level' => 'Pemula - Menengah',
         'delivery' => 'Gratis',
@@ -90,8 +90,8 @@ $trainingCatalog = array(
         'related_keywords' => array('administrative assistant', 'administrasi')
     ),
     array(
-        'title' => 'Practical Office Advance',
-        'focus' => 'Pendalaman aplikasi perkantoran untuk analisis data, administrasi, dan pekerjaan kantor modern.',
+        'title' => 'Aplikasi Perkantoran',
+        'focus' => 'Tema pelatihan untuk office tools, pengolahan data, dan administrasi digital.',
         'tags' => array('C', 'I'),
         'level' => 'Menengah',
         'delivery' => 'Gratis',
@@ -99,8 +99,8 @@ $trainingCatalog = array(
         'related_keywords' => array('practical office', 'aplikasi perkantoran')
     ),
     array(
-        'title' => 'Digital Marketing Dasar',
-        'focus' => 'Dasar strategi pemasaran digital, audiens, channel marketing, dan promosi online.',
+        'title' => 'Digital Marketing',
+        'focus' => 'Tema pelatihan untuk pemasaran digital, branding, promosi, dan channel online.',
         'tags' => array('E', 'A'),
         'level' => 'Pemula',
         'delivery' => 'Gratis',
@@ -108,8 +108,8 @@ $trainingCatalog = array(
         'related_keywords' => array('marketing', 'pemasaran digital')
     ),
     array(
-        'title' => 'Pembuatan Konten Visual Untuk Sosial Media',
-        'focus' => 'Pelatihan konten visual, social media, dan kreativitas digital yang relevan untuk promosi.',
+        'title' => 'Konten Sosial Media',
+        'focus' => 'Tema pelatihan untuk social media, content creation, dan kreativitas digital.',
         'tags' => array('A', 'E'),
         'level' => 'Menengah',
         'delivery' => 'Gratis',
@@ -117,8 +117,8 @@ $trainingCatalog = array(
         'related_keywords' => array('konten visual', 'social media')
     ),
     array(
-        'title' => 'Teknik Engine Tune Up Sepeda Motor Injeksi',
-        'focus' => 'Cocok untuk minat teknis, troubleshooting, praktik bengkel, dan logika mekanik.',
+        'title' => 'Otomotif Injeksi',
+        'focus' => 'Tema pelatihan untuk troubleshooting, servis motor, dan praktik otomotif teknis.',
         'tags' => array('R', 'I'),
         'level' => 'Pemula',
         'delivery' => 'Gratis',
@@ -126,8 +126,8 @@ $trainingCatalog = array(
         'related_keywords' => array('engine tune up', 'otomotif')
     ),
     array(
-        'title' => 'Servis Sepeda Motor Listrik Dasar',
-        'focus' => 'Pelatihan otomotif modern untuk perawatan, pemeriksaan, dan sistem kendaraan listrik.',
+        'title' => 'Otomotif Kendaraan Listrik',
+        'focus' => 'Tema pelatihan untuk perawatan kendaraan listrik dan otomotif modern.',
         'tags' => array('R', 'I'),
         'level' => 'Pemula',
         'delivery' => 'Gratis',
@@ -135,8 +135,8 @@ $trainingCatalog = array(
         'related_keywords' => array('servis motor', 'otomotif')
     ),
     array(
-        'title' => 'Juru Ukur/Surveyor (Kualifikasi 3)',
-        'focus' => 'Sangat relevan untuk minat lapangan, pengukuran, presisi, dan konstruksi.',
+        'title' => 'Surveyor & Pengukuran',
+        'focus' => 'Tema pelatihan untuk pengukuran lapangan, presisi, dan pekerjaan teknis konstruksi.',
         'tags' => array('R', 'C', 'I'),
         'level' => 'Menengah',
         'delivery' => 'Gratis',
@@ -144,8 +144,8 @@ $trainingCatalog = array(
         'related_keywords' => array('juru ukur', 'konstruksi')
     ),
     array(
-        'title' => 'Juru Gambar Bangunan Gedung (Kualifikasi 4)',
-        'focus' => 'Pelatihan yang memadukan visualisasi desain, gambar teknik, dan detail bangunan.',
+        'title' => 'Gambar Bangunan',
+        'focus' => 'Tema pelatihan untuk gambar teknik, visualisasi bangunan, dan detail arsitektural.',
         'tags' => array('A', 'R', 'C'),
         'level' => 'Menengah',
         'delivery' => 'Gratis',
@@ -153,8 +153,8 @@ $trainingCatalog = array(
         'related_keywords' => array('arsitektur', 'bangunan gedung')
     ),
     array(
-        'title' => 'Housekeeping',
-        'focus' => 'Relevan untuk minat layanan, ketelitian, kerapihan, dan standar kerja hospitality.',
+        'title' => 'Hospitality & Housekeeping',
+        'focus' => 'Tema pelatihan untuk layanan, kerapihan, etika kerja, dan standar hospitality.',
         'tags' => array('S', 'C', 'E'),
         'level' => 'Pemula',
         'delivery' => 'Gratis',
@@ -376,6 +376,10 @@ foreach ($trainingCatalog as $training) {
       <h2 class="h5 fw-bold text-success mb-0">Rekomendasi Pelatihan</h2>
       <span class="muted">Sumber data: SkillHub Kemnaker (berdasarkan profil <?php echo htmlspecialchars($result_personality); ?>)</span>
     </div>
+    <p class="muted small mb-3">
+      Rekomendasi ini menggunakan model hybrid dynamic: sistem memilih tema pelatihan yang cocok dengan hasil RIASEC,
+      lalu membuka hasil pencarian live di SkillHub menggunakan search URL resmi.
+    </p>
     <div class="career-grid">
       <?php if (!empty($trainingRecommendations)) { ?>
         <?php foreach ($trainingRecommendations as $training) { ?>
