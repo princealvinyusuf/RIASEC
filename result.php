@@ -160,6 +160,114 @@ $trainingCatalog = array(
         'delivery' => 'Gratis',
         'keyword' => 'housekeeping',
         'related_keywords' => array('hospitality', 'pariwisata')
+    ),
+    array(
+        'title' => 'Operator Komputer',
+        'focus' => 'Tema pelatihan untuk pengoperasian komputer, aplikasi kerja, dan dukungan administrasi digital.',
+        'tags' => array('C', 'I'),
+        'level' => 'Pemula',
+        'delivery' => 'Gratis',
+        'keyword' => 'computer operator',
+        'related_keywords' => array('operator komputer', 'komputer')
+    ),
+    array(
+        'title' => 'Data Science & Analitik',
+        'focus' => 'Tema pelatihan untuk analisis data, pengolahan dataset, logika, dan insight berbasis angka.',
+        'tags' => array('I', 'C'),
+        'level' => 'Menengah',
+        'delivery' => 'Gratis',
+        'keyword' => 'data scientist',
+        'related_keywords' => array('analisis data', 'data')
+    ),
+    array(
+        'title' => 'Video Editing',
+        'focus' => 'Tema pelatihan untuk editing video, produksi konten audio visual, dan storytelling digital.',
+        'tags' => array('A', 'I'),
+        'level' => 'Pemula - Menengah',
+        'delivery' => 'Gratis',
+        'keyword' => 'video editor',
+        'related_keywords' => array('videography', 'konten video')
+    ),
+    array(
+        'title' => 'Public Speaking & Presentasi',
+        'focus' => 'Tema pelatihan untuk komunikasi lisan, presentasi, negosiasi, dan membangun kepercayaan diri.',
+        'tags' => array('S', 'E'),
+        'level' => 'Pemula',
+        'delivery' => 'Gratis',
+        'keyword' => 'public speaking',
+        'related_keywords' => array('presentasi', 'komunikasi')
+    ),
+    array(
+        'title' => 'Bahasa untuk Dunia Kerja',
+        'focus' => 'Tema pelatihan bahasa kerja untuk komunikasi profesional, layanan, dan kesiapan industri.',
+        'tags' => array('S', 'A', 'E'),
+        'level' => 'Pemula - Menengah',
+        'delivery' => 'Gratis',
+        'keyword' => 'bahasa inggris',
+        'related_keywords' => array('bahasa', 'english')
+    ),
+    array(
+        'title' => 'Content Writing & Copywriting',
+        'focus' => 'Tema pelatihan menulis konten, copy promo, narasi brand, dan komunikasi pemasaran.',
+        'tags' => array('A', 'E'),
+        'level' => 'Pemula',
+        'delivery' => 'Gratis',
+        'keyword' => 'copywriter',
+        'related_keywords' => array('content creator', 'penulisan konten')
+    ),
+    array(
+        'title' => 'Layanan Pelanggan',
+        'focus' => 'Tema pelatihan untuk customer service, penanganan kebutuhan klien, dan komunikasi layanan.',
+        'tags' => array('S', 'E', 'C'),
+        'level' => 'Pemula',
+        'delivery' => 'Gratis',
+        'keyword' => 'layanan pelanggan',
+        'related_keywords' => array('customer service', 'service')
+    ),
+    array(
+        'title' => 'Kecantikan & Tata Rias',
+        'focus' => 'Tema pelatihan untuk tata kecantikan, layanan personal, ketelitian, dan sentuhan artistik.',
+        'tags' => array('A', 'S', 'E'),
+        'level' => 'Pemula',
+        'delivery' => 'Gratis',
+        'keyword' => 'tata kecantikan',
+        'related_keywords' => array('make up', 'beauty')
+    ),
+    array(
+        'title' => 'Menjahit & Tata Busana',
+        'focus' => 'Tema pelatihan untuk jahit dasar, desain pakaian, produksi busana, dan ketelitian detail.',
+        'tags' => array('A', 'C', 'R'),
+        'level' => 'Pemula - Menengah',
+        'delivery' => 'Gratis',
+        'keyword' => 'menjahit',
+        'related_keywords' => array('tata busana', 'fashion')
+    ),
+    array(
+        'title' => 'Listrik Bangunan',
+        'focus' => 'Tema pelatihan instalasi listrik, keselamatan kerja, dan keterampilan teknis bangunan.',
+        'tags' => array('R', 'I', 'C'),
+        'level' => 'Pemula - Menengah',
+        'delivery' => 'Gratis',
+        'keyword' => 'instalasi listrik',
+        'related_keywords' => array('listrik bangunan', 'teknik listrik')
+    ),
+    array(
+        'title' => 'Pengolahan Roti & Kue',
+        'focus' => 'Tema pelatihan produksi pangan, resep, prosedur kerja, dan kreativitas produk olahan.',
+        'tags' => array('R', 'A', 'C'),
+        'level' => 'Pemula',
+        'delivery' => 'Gratis',
+        'keyword' => 'roti dan kue',
+        'related_keywords' => array('tata boga', 'bakery')
+    ),
+    array(
+        'title' => 'Caregiver & Pendampingan',
+        'focus' => 'Tema pelatihan untuk pendampingan anak/lansia, empati, dan layanan berbasis kepedulian.',
+        'tags' => array('S', 'C'),
+        'level' => 'Pemula',
+        'delivery' => 'Gratis',
+        'keyword' => 'caregiver',
+        'related_keywords' => array('elderly caretaker', 'baby sitter')
     )
 );
 
@@ -267,11 +375,13 @@ usort($trainingCatalog, function ($a, $b) {
 
 $trainingRecommendations = array();
 foreach ($trainingCatalog as $training) {
-    $isRelevant = ($training['matches_primary'] && $training['rank'] >= 3) || $training['overlap_count'] >= 2;
+    $isRelevant = ($training['matches_primary'] && $training['rank'] >= 3)
+        || $training['overlap_count'] >= 2
+        || $training['rank'] >= 2;
     if ($isRelevant) {
         $trainingRecommendations[] = $training;
     }
-    if (count($trainingRecommendations) >= 4) {
+    if (count($trainingRecommendations) >= 8) {
         break;
     }
 }
