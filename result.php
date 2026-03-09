@@ -672,6 +672,22 @@ foreach ($trainingRecommendations as $training) {
     </div>
   </div>
 
+  <div class="glass-card app-form-card mb-3">
+    <div class="d-flex justify-content-between align-items-center flex-wrap gap-2 mb-3">
+      <h2 class="h5 fw-bold text-success mb-0">Program Terkait PaskerID</h2>
+      <span class="muted">Integrasi fase growth</span>
+    </div>
+    <div class="career-grid">
+      <article class="career-card">
+        <div class="d-flex justify-content-between align-items-center mb-1 gap-2 flex-wrap">
+          <strong>Career Boost Day</strong>
+          <span class="badge-zone">Career</span>
+        </div>
+        <div class="muted small">Ikut sesi konsultasi karier dan penguatan profil kerja.</div>
+      </article>
+    </div>
+  </div>
+
   <div class="d-flex gap-2 flex-wrap">
     <a href="test_form.php" class="btn btn-outline-soft">Ulangi asesmen</a>
     <a href="generate_pdf.php" class="btn btn-primary-soft" target="_blank">Unduh laporan</a>
