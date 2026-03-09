@@ -435,14 +435,14 @@ function getTrainingTier($training) {
         return array(
             'label' => 'Cocok',
             'class' => 'badge-tier-good',
-            'card_class' => ''
+            'card_class' => 'recommendation-good'
         );
     }
 
     return array(
         'label' => 'Eksplorasi Tambahan',
         'class' => 'badge-tier-alt',
-        'card_class' => ''
+        'card_class' => 'recommendation-alt'
     );
 }
 

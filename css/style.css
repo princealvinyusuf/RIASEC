@@ -350,8 +350,19 @@ body.app-shell {
 }
 
 .career-card.recommendation-top {
-    border-color: #92d1a1;
+    border-color: #7dc48f;
+    background: linear-gradient(180deg, #f4fff6 0%, #ecfbef 100%);
     box-shadow: 0 10px 24px rgba(10, 143, 61, 0.08);
+}
+
+.career-card.recommendation-good {
+    border-color: #b8ddc1;
+    background: linear-gradient(180deg, #fbfffb 0%, #f4fbf5 100%);
+}
+
+.career-card.recommendation-alt {
+    border-color: #d7deaa;
+    background: linear-gradient(180deg, #fffef7 0%, #fbf8e8 100%);
 }
 
 .badge-zone {
@@ -365,10 +376,15 @@ body.app-shell {
 
 .badge-tier {
     border-radius: 999px;
-    padding: 0.24rem 0.62rem;
-    font-size: 0.76rem;
+    padding: 0.38rem 0.8rem;
+    font-size: 0.78rem;
     font-weight: 800;
     border: 1px solid transparent;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 34px;
+    line-height: 1;
 }
 
 .badge-tier-top {
@@ -383,7 +399,7 @@ body.app-shell {
 }
 
 .badge-tier-alt {
-    background: #f5f7e8;
+    background: #f3f1cf;
     color: #5c6b11;
     border-color: #dde4b2;
 }
