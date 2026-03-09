@@ -349,6 +349,11 @@ body.app-shell {
     background: #fcfffc;
 }
 
+.career-card.recommendation-top {
+    border-color: #92d1a1;
+    box-shadow: 0 10px 24px rgba(10, 143, 61, 0.08);
+}
+
 .badge-zone {
     border-radius: 999px;
     padding: 0.2rem 0.55rem;
@@ -356,6 +361,43 @@ body.app-shell {
     font-weight: 700;
     background: #e6f5e8;
     color: var(--primary-dark);
+}
+
+.badge-tier {
+    border-radius: 999px;
+    padding: 0.24rem 0.62rem;
+    font-size: 0.76rem;
+    font-weight: 800;
+    border: 1px solid transparent;
+}
+
+.badge-tier-top {
+    background: #0a8f3d;
+    color: #fff;
+}
+
+.badge-tier-good {
+    background: #e6f5e8;
+    color: #0b5e29;
+    border-color: #b9e1c1;
+}
+
+.badge-tier-alt {
+    background: #f5f7e8;
+    color: #5c6b11;
+    border-color: #dde4b2;
+}
+
+.keyword-chip {
+    display: inline-flex;
+    align-items: center;
+    border-radius: 999px;
+    padding: 0.18rem 0.5rem;
+    font-size: 0.76rem;
+    font-weight: 700;
+    background: #f3faf4;
+    border: 1px solid var(--border);
+    color: #1f5330;
 }
 
 .muted {

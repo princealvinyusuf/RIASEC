@@ -422,6 +422,30 @@ function calculateTrainingRecommendation($training, $topCodes, $weights, $traini
     );
 }
 
+function getTrainingTier($training) {
+    if (!empty($training['matched_profile']) || floatval($training['rank']) >= 8) {
+        return array(
+            'label' => 'Sangat Direkomendasikan',
+            'class' => 'badge-tier-top',
+            'card_class' => 'recommendation-top'
+        );
+    }
+
+    if (!empty($training['matched_pair']) || floatval($training['rank']) >= 5) {
+        return array(
+            'label' => 'Cocok',
+            'class' => 'badge-tier-good',
+            'card_class' => ''
+        );
+    }
+
+    return array(
+        'label' => 'Eksplorasi Tambahan',
+        'class' => 'badge-tier-alt',
+        'card_class' => ''
+    );
+}
+
 $weights = array();
 foreach ($topCodes as $idx => $code) {
     $weights[$code] = 3 - $idx;
@@ -454,6 +478,7 @@ foreach ($trainingCatalog as $idx => $training) {
     $trainingCatalog[$idx]['matched_pair'] = $trainingRankData['matched_pair'];
     $trainingCatalog[$idx]['matched_profile'] = $trainingRankData['matched_profile'];
     $trainingCatalog[$idx]['reason'] = $trainingRankData['reason'];
+    $trainingCatalog[$idx]['tier'] = getTrainingTier($trainingCatalog[$idx]);
 }
 
 usort($trainingCatalog, function ($a, $b) {
@@ -478,6 +503,22 @@ foreach ($trainingCatalog as $training) {
     }
     if (count($trainingRecommendations) >= 8) {
         break;
+    }
+}
+
+$trainingTierSummary = array(
+    'top' => 0,
+    'good' => 0,
+    'alt' => 0
+);
+foreach ($trainingRecommendations as $training) {
+    $tierClass = isset($training['tier']['class']) ? $training['tier']['class'] : '';
+    if ($tierClass === 'badge-tier-top') {
+        $trainingTierSummary['top']++;
+    } elseif ($tierClass === 'badge-tier-good') {
+        $trainingTierSummary['good']++;
+    } else {
+        $trainingTierSummary['alt']++;
     }
 }
 ?>
@@ -585,18 +626,30 @@ foreach ($trainingCatalog as $training) {
       Rekomendasi ini menggunakan model hybrid dynamic: sistem memilih tema pelatihan yang cocok dengan hasil RIASEC,
       lalu membuka hasil pencarian live di SkillHub menggunakan search URL resmi.
     </p>
+    <div class="d-flex gap-2 flex-wrap mb-3">
+      <span class="badge-tier badge-tier-top"><?php echo intval($trainingTierSummary['top']); ?> Sangat Direkomendasikan</span>
+      <span class="badge-tier badge-tier-good"><?php echo intval($trainingTierSummary['good']); ?> Cocok</span>
+      <span class="badge-tier badge-tier-alt"><?php echo intval($trainingTierSummary['alt']); ?> Eksplorasi Tambahan</span>
+    </div>
     <div class="career-grid">
       <?php if (!empty($trainingRecommendations)) { ?>
         <?php foreach ($trainingRecommendations as $training) { ?>
-          <article class="career-card">
-            <div class="d-flex justify-content-between align-items-center mb-1">
+          <article class="career-card <?php echo htmlspecialchars($training['tier']['card_class']); ?>">
+            <div class="d-flex justify-content-between align-items-center gap-2 mb-1 flex-wrap">
               <strong><?php echo htmlspecialchars($training['title']); ?></strong>
-              <span class="badge-zone"><?php echo htmlspecialchars($training['delivery']); ?></span>
+              <div class="d-flex gap-2 flex-wrap">
+                <span class="badge-tier <?php echo htmlspecialchars($training['tier']['class']); ?>"><?php echo htmlspecialchars($training['tier']['label']); ?></span>
+                <span class="badge-zone"><?php echo htmlspecialchars($training['delivery']); ?></span>
+              </div>
             </div>
             <div class="small mb-1"><strong>Level:</strong> <?php echo htmlspecialchars($training['level']); ?></div>
             <div class="small mb-1"><strong>Kecocokan:</strong> <?php echo htmlspecialchars(!empty($training['matched_tags']) ? implode('-', $training['matched_tags']) : '-'); ?></div>
             <div class="muted small"><?php echo htmlspecialchars($training['focus']); ?></div>
             <div class="small mt-1" style="color:#0a6d31;"><strong>Alasan rekomendasi:</strong> <?php echo htmlspecialchars($training['reason']); ?></div>
+            <div class="mt-2 d-flex gap-2 flex-wrap">
+              <span class="keyword-chip">Kata kunci utama: <?php echo htmlspecialchars(getPrimaryTrainingKeyword($training)); ?></span>
+              <span class="keyword-chip">Alternatif: <?php echo htmlspecialchars(getRelatedTrainingKeyword($training)); ?></span>
+            </div>
             <div class="mt-2 d-flex gap-2 flex-wrap">
               <a
                 class="btn btn-sm btn-outline-success"
