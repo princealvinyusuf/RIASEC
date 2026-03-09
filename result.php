@@ -61,6 +61,72 @@ $careerCatalog = array(
     array('title' => 'Mekanik Otomotif', 'keyword' => 'mekanik otomotif', 'related_keywords' => array('teknisi otomotif', 'mekanik'), 'tags' => array('R', 'C'), 'zone' => 2, 'why' => 'Memperbaiki kendaraan dengan pendekatan teknis dan prosedural.')
 );
 
+$trainingCatalog = array(
+    array(
+        'title' => 'Pelatihan Digital & TIK',
+        'focus' => 'Desainer grafis, operator komputer, video editor, dan skill digital kerja.',
+        'tags' => array('I', 'A', 'C'),
+        'level' => 'Pemula - Menengah',
+        'delivery' => 'Online / Offline',
+        'vocational_name' => 'teknologi informasi dan komunikasi',
+        'vocational_id' => '3bacd8da-2eb7-4fbb-8c26-b0dd36feaca2'
+    ),
+    array(
+        'title' => 'Pelatihan Bisnis & Administrasi',
+        'focus' => 'Administrasi perkantoran, layanan bisnis, dan manajemen operasional.',
+        'tags' => array('E', 'C', 'S'),
+        'level' => 'Pemula - Menengah',
+        'delivery' => 'Blended / Offline',
+        'vocational_name' => 'bisnis dan manajemen',
+        'vocational_id' => '4e18e53c-bd7d-4ef1-a7b0-eabbe1eba07f'
+    ),
+    array(
+        'title' => 'Pelatihan Pariwisata & Layanan',
+        'focus' => 'Hospitality, layanan pelanggan, F&B service, dan komunikasi layanan.',
+        'tags' => array('S', 'E', 'A'),
+        'level' => 'Pemula',
+        'delivery' => 'Offline / Non Boarding',
+        'vocational_name' => 'Pariwisata',
+        'vocational_id' => 'd5744527-3d87-4fe4-b652-8832f9c5bef2'
+    ),
+    array(
+        'title' => 'Pelatihan Otomotif',
+        'focus' => 'Service sepeda motor injeksi, perawatan kendaraan, dan troubleshooting.',
+        'tags' => array('R', 'I', 'C'),
+        'level' => 'Pemula - Menengah',
+        'delivery' => 'Offline / Blended',
+        'vocational_name' => 'otomotif',
+        'vocational_id' => ''
+    ),
+    array(
+        'title' => 'Pelatihan Konstruksi & Survei',
+        'focus' => 'Juru ukur/surveyor, dasar konstruksi, dan praktik teknis lapangan.',
+        'tags' => array('R', 'C', 'I'),
+        'level' => 'Pemula - Menengah',
+        'delivery' => 'Offline',
+        'vocational_name' => 'konstruksi',
+        'vocational_id' => ''
+    ),
+    array(
+        'title' => 'Pelatihan Komunikasi & Kreatif',
+        'focus' => 'Produksi konten, public speaking, dan skill kreatif berbasis proyek.',
+        'tags' => array('A', 'S', 'E'),
+        'level' => 'Pemula',
+        'delivery' => 'Online / Blended',
+        'vocational_name' => 'industri kreatif',
+        'vocational_id' => ''
+    ),
+    array(
+        'title' => 'Pelatihan Kesehatan Dasar',
+        'focus' => 'Dasar layanan kesehatan, etika profesi, dan pendampingan layanan publik.',
+        'tags' => array('S', 'R', 'C'),
+        'level' => 'Pemula',
+        'delivery' => 'Offline',
+        'vocational_name' => 'kesehatan',
+        'vocational_id' => ''
+    )
+);
+
 function buildKarirhubSearchUrl($keyword) {
     $keyword = trim((string)$keyword);
     if ($keyword === '') {
@@ -90,6 +156,22 @@ function getRelatedCareerKeyword($career) {
     return getPrimaryCareerKeyword($career);
 }
 
+function buildSkillhubVocationalUrl($vocationalId, $vocationalName) {
+    $vocationalId = trim((string)$vocationalId);
+    $vocationalName = trim((string)$vocationalName);
+
+    if ($vocationalId === '' || $vocationalName === '') {
+        return 'https://skillhub.kemnaker.go.id/pelatihan/';
+    }
+
+    $filtersValue = 'vocational_id:' . $vocationalId . '#' . $vocationalName;
+    return 'https://skillhub.kemnaker.go.id/pelatihan/?filters=' . rawurlencode($filtersValue);
+}
+
+function buildSkillhubOnlineUrl() {
+    return 'https://skillhub.kemnaker.go.id/pelatihan?filters=' . rawurlencode('media:online#Webinar');
+}
+
 $weights = array();
 foreach ($topCodes as $idx => $code) {
     $weights[$code] = 3 - $idx;
@@ -112,6 +194,21 @@ usort($careerCatalog, function ($a, $b) {
     return $b['rank'] <=> $a['rank'];
 });
 $careerRecommendations = array_slice($careerCatalog, 0, 12);
+
+foreach ($trainingCatalog as $idx => $training) {
+    $score = 0;
+    foreach ($training['tags'] as $tag) {
+        if (isset($weights[$tag])) {
+            $score += $weights[$tag];
+        }
+    }
+    $trainingCatalog[$idx]['rank'] = $score;
+}
+
+usort($trainingCatalog, function ($a, $b) {
+    return $b['rank'] <=> $a['rank'];
+});
+$trainingRecommendations = array_slice($trainingCatalog, 0, 6);
 ?>
 
 <?php $pageTitle = 'Hasil Profil RIASEC'; ?>
@@ -203,6 +300,44 @@ $careerRecommendations = array_slice($careerCatalog, 0, 12);
             <span class="badge-zone"><?php echo htmlspecialchars($zone['label']); ?></span>
           </div>
           <div class="muted small"><?php echo htmlspecialchars($zone['desc']); ?></div>
+        </article>
+      <?php } ?>
+    </div>
+  </div>
+
+  <div class="glass-card app-form-card mb-3">
+    <div class="d-flex justify-content-between align-items-center flex-wrap gap-2 mb-3">
+      <h2 class="h5 fw-bold text-success mb-0">Rekomendasi Pelatihan</h2>
+      <span class="muted">Sumber data: SkillHub Kemnaker (berdasarkan profil <?php echo htmlspecialchars($result_personality); ?>)</span>
+    </div>
+    <div class="career-grid">
+      <?php foreach ($trainingRecommendations as $training) { ?>
+        <article class="career-card">
+          <div class="d-flex justify-content-between align-items-center mb-1">
+            <strong><?php echo htmlspecialchars($training['title']); ?></strong>
+            <span class="badge-zone"><?php echo htmlspecialchars($training['delivery']); ?></span>
+          </div>
+          <div class="small mb-1"><strong>Kejuruan:</strong> <?php echo htmlspecialchars($training['vocational_name']); ?></div>
+          <div class="small mb-1"><strong>Level:</strong> <?php echo htmlspecialchars($training['level']); ?></div>
+          <div class="muted small"><?php echo htmlspecialchars($training['focus']); ?></div>
+          <div class="mt-2 d-flex gap-2 flex-wrap">
+            <a
+              class="btn btn-sm btn-outline-success"
+              href="<?php echo htmlspecialchars(buildSkillhubVocationalUrl($training['vocational_id'], $training['vocational_name'])); ?>"
+              target="_blank"
+              rel="noopener noreferrer"
+            >
+              Lihat Pelatihan
+            </a>
+            <a
+              class="btn btn-sm btn-outline-secondary"
+              href="<?php echo htmlspecialchars(buildSkillhubOnlineUrl()); ?>"
+              target="_blank"
+              rel="noopener noreferrer"
+            >
+              Pelatihan Online
+            </a>
+          </div>
         </article>
       <?php } ?>
     </div>
