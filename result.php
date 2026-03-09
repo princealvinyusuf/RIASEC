@@ -271,6 +271,32 @@ $trainingCatalog = array(
     )
 );
 
+$trainingProfileBoosts = array(
+    'Desain Grafis & Visual' => array('primary' => array('A', 'I'), 'pairs' => array('AI', 'IA'), 'profiles' => array('AIE', 'AIS', 'RIA', 'IAR')),
+    'Konten Visual & Canva' => array('primary' => array('A', 'E'), 'pairs' => array('AE', 'EA'), 'profiles' => array('AES', 'EAS', 'AEC')),
+    'Administrasi Kantor' => array('primary' => array('C', 'E'), 'pairs' => array('CE', 'EC', 'CI'), 'profiles' => array('CEI', 'ECI', 'SEC', 'CIE')),
+    'Aplikasi Perkantoran' => array('primary' => array('C', 'I'), 'pairs' => array('CI', 'IC'), 'profiles' => array('CIE', 'ICE', 'RIC', 'SEC')),
+    'Digital Marketing' => array('primary' => array('E', 'A'), 'pairs' => array('EA', 'AE'), 'profiles' => array('EAS', 'AES', 'EAI')),
+    'Konten Sosial Media' => array('primary' => array('A', 'E'), 'pairs' => array('AE', 'EA', 'AS'), 'profiles' => array('AES', 'ASE', 'EAS')),
+    'Otomotif Injeksi' => array('primary' => array('R', 'I'), 'pairs' => array('RI', 'IR'), 'profiles' => array('RIA', 'RIC', 'IRC')),
+    'Otomotif Kendaraan Listrik' => array('primary' => array('R', 'I'), 'pairs' => array('RI', 'IR'), 'profiles' => array('RIA', 'RIC', 'IRC')),
+    'Surveyor & Pengukuran' => array('primary' => array('R', 'C'), 'pairs' => array('RC', 'CR', 'RI'), 'profiles' => array('RCI', 'RIC', 'CRI')),
+    'Gambar Bangunan' => array('primary' => array('A', 'R'), 'pairs' => array('AR', 'RA', 'AC'), 'profiles' => array('ARC', 'ARI', 'RAC')),
+    'Hospitality & Housekeeping' => array('primary' => array('S', 'C'), 'pairs' => array('SC', 'SE', 'CS'), 'profiles' => array('SEC', 'SCE', 'CSE')),
+    'Operator Komputer' => array('primary' => array('C', 'I'), 'pairs' => array('CI', 'IC', 'CE'), 'profiles' => array('CIE', 'ICE', 'CEI')),
+    'Data Science & Analitik' => array('primary' => array('I', 'C'), 'pairs' => array('IC', 'CI', 'IA'), 'profiles' => array('ICA', 'IAC', 'CIE')),
+    'Video Editing' => array('primary' => array('A', 'I'), 'pairs' => array('AI', 'IA', 'AE'), 'profiles' => array('AIE', 'IAE', 'AES')),
+    'Public Speaking & Presentasi' => array('primary' => array('S', 'E'), 'pairs' => array('SE', 'ES', 'SA'), 'profiles' => array('SEC', 'SEA', 'ESA')),
+    'Bahasa untuk Dunia Kerja' => array('primary' => array('S', 'E'), 'pairs' => array('SE', 'SA', 'AE'), 'profiles' => array('SEA', 'AES', 'SEC')),
+    'Content Writing & Copywriting' => array('primary' => array('A', 'E'), 'pairs' => array('AE', 'EA', 'AS'), 'profiles' => array('AES', 'AES', 'EAS')),
+    'Layanan Pelanggan' => array('primary' => array('S', 'E'), 'pairs' => array('SE', 'ES', 'SC'), 'profiles' => array('SEC', 'SCE', 'ESC')),
+    'Kecantikan & Tata Rias' => array('primary' => array('A', 'S'), 'pairs' => array('AS', 'SA', 'AE'), 'profiles' => array('ASE', 'AES', 'SAE')),
+    'Menjahit & Tata Busana' => array('primary' => array('A', 'C'), 'pairs' => array('AC', 'AR', 'CA'), 'profiles' => array('ACR', 'ARC', 'CAR')),
+    'Listrik Bangunan' => array('primary' => array('R', 'I'), 'pairs' => array('RI', 'RC', 'IR'), 'profiles' => array('RIC', 'RCI', 'IRC')),
+    'Pengolahan Roti & Kue' => array('primary' => array('R', 'A'), 'pairs' => array('RA', 'AC', 'AR'), 'profiles' => array('RAC', 'ARC', 'AEC')),
+    'Caregiver & Pendampingan' => array('primary' => array('S', 'C'), 'pairs' => array('SC', 'SR', 'SE'), 'profiles' => array('SEC', 'SRC', 'SCE'))
+);
+
 function buildKarirhubSearchUrl($keyword) {
     $keyword = trim((string)$keyword);
     if ($keyword === '') {
@@ -329,6 +355,73 @@ function getRelatedTrainingKeyword($training) {
     return getPrimaryTrainingKeyword($training);
 }
 
+function getTrainingBoostConfig($training, $trainingProfileBoosts) {
+    $title = isset($training['title']) ? $training['title'] : '';
+    if (isset($trainingProfileBoosts[$title])) {
+        return $trainingProfileBoosts[$title];
+    }
+    return array('primary' => array(), 'pairs' => array(), 'profiles' => array());
+}
+
+function calculateTrainingRecommendation($training, $topCodes, $weights, $trainingProfileBoosts) {
+    $score = 0;
+    $overlapCount = 0;
+    $matchedTags = array();
+
+    foreach ($training['tags'] as $tag) {
+        if (isset($weights[$tag])) {
+            $score += $weights[$tag];
+            $overlapCount++;
+            $matchedTags[] = $tag;
+        }
+    }
+
+    $boost = getTrainingBoostConfig($training, $trainingProfileBoosts);
+    $pairCode = isset($topCodes[0], $topCodes[1]) ? ($topCodes[0] . $topCodes[1]) : '';
+    $tripleCode = implode('', $topCodes);
+
+    $matchedPrimary = array();
+    foreach ($boost['primary'] as $code) {
+        if (isset($topCodes[0]) && $topCodes[0] === $code) {
+            $score += 2.5;
+            $matchedPrimary[] = $code;
+        }
+    }
+
+    $matchedPair = false;
+    if ($pairCode !== '' && in_array($pairCode, $boost['pairs'], true)) {
+        $score += 3;
+        $matchedPair = true;
+    }
+
+    $matchedProfile = false;
+    if ($tripleCode !== '' && in_array($tripleCode, $boost['profiles'], true)) {
+        $score += 4;
+        $matchedProfile = true;
+    }
+
+    $reasonParts = array();
+    if ($matchedProfile) {
+        $reasonParts[] = 'sangat selaras dengan profil ' . $tripleCode;
+    } elseif ($matchedPair) {
+        $reasonParts[] = 'kuat di kombinasi ' . $pairCode;
+    }
+
+    if (!empty($matchedTags)) {
+        $reasonParts[] = 'cocok dengan minat ' . implode('-', $matchedTags);
+    }
+
+    return array(
+        'rank' => $score,
+        'overlap_count' => $overlapCount,
+        'matches_primary' => in_array($topCodes[0], $training['tags'], true),
+        'matched_tags' => $matchedTags,
+        'matched_pair' => $matchedPair,
+        'matched_profile' => $matchedProfile,
+        'reason' => !empty($reasonParts) ? implode('; ', $reasonParts) : 'relevan dengan pola minatmu'
+    );
+}
+
 $weights = array();
 foreach ($topCodes as $idx => $code) {
     $weights[$code] = 3 - $idx;
@@ -353,21 +446,21 @@ usort($careerCatalog, function ($a, $b) {
 $careerRecommendations = array_slice($careerCatalog, 0, 12);
 
 foreach ($trainingCatalog as $idx => $training) {
-    $score = 0;
-    $overlapCount = 0;
-    foreach ($training['tags'] as $tag) {
-        if (isset($weights[$tag])) {
-            $score += $weights[$tag];
-            $overlapCount++;
-        }
-    }
-    $trainingCatalog[$idx]['rank'] = $score;
-    $trainingCatalog[$idx]['overlap_count'] = $overlapCount;
-    $trainingCatalog[$idx]['matches_primary'] = in_array($topCodes[0], $training['tags'], true);
+    $trainingRankData = calculateTrainingRecommendation($training, $topCodes, $weights, $trainingProfileBoosts);
+    $trainingCatalog[$idx]['rank'] = $trainingRankData['rank'];
+    $trainingCatalog[$idx]['overlap_count'] = $trainingRankData['overlap_count'];
+    $trainingCatalog[$idx]['matches_primary'] = $trainingRankData['matches_primary'];
+    $trainingCatalog[$idx]['matched_tags'] = $trainingRankData['matched_tags'];
+    $trainingCatalog[$idx]['matched_pair'] = $trainingRankData['matched_pair'];
+    $trainingCatalog[$idx]['matched_profile'] = $trainingRankData['matched_profile'];
+    $trainingCatalog[$idx]['reason'] = $trainingRankData['reason'];
 }
 
 usort($trainingCatalog, function ($a, $b) {
     if ($a['rank'] === $b['rank']) {
+        if ($a['overlap_count'] === $b['overlap_count']) {
+            return strcmp($a['title'], $b['title']);
+        }
         return $b['overlap_count'] <=> $a['overlap_count'];
     }
     return $b['rank'] <=> $a['rank'];
@@ -377,7 +470,9 @@ $trainingRecommendations = array();
 foreach ($trainingCatalog as $training) {
     $isRelevant = ($training['matches_primary'] && $training['rank'] >= 3)
         || $training['overlap_count'] >= 2
-        || $training['rank'] >= 2;
+        || $training['matched_pair']
+        || $training['matched_profile']
+        || $training['rank'] >= 2.5;
     if ($isRelevant) {
         $trainingRecommendations[] = $training;
     }
@@ -499,8 +594,9 @@ foreach ($trainingCatalog as $training) {
               <span class="badge-zone"><?php echo htmlspecialchars($training['delivery']); ?></span>
             </div>
             <div class="small mb-1"><strong>Level:</strong> <?php echo htmlspecialchars($training['level']); ?></div>
-            <div class="small mb-1"><strong>Kecocokan:</strong> <?php echo htmlspecialchars(implode('-', array_intersect($training['tags'], $topCodes))); ?></div>
+            <div class="small mb-1"><strong>Kecocokan:</strong> <?php echo htmlspecialchars(!empty($training['matched_tags']) ? implode('-', $training['matched_tags']) : '-'); ?></div>
             <div class="muted small"><?php echo htmlspecialchars($training['focus']); ?></div>
+            <div class="small mt-1" style="color:#0a6d31;"><strong>Alasan rekomendasi:</strong> <?php echo htmlspecialchars($training['reason']); ?></div>
             <div class="mt-2 d-flex gap-2 flex-wrap">
               <a
                 class="btn btn-sm btn-outline-success"
