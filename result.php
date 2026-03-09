@@ -68,8 +68,8 @@ $trainingCatalog = array(
         'tags' => array('A', 'I'),
         'level' => 'Pemula',
         'delivery' => 'Gratis',
-        'detail_url' => 'https://skillhub.kemnaker.go.id/pelatihan/pembuatan-desain-grafis-5a0931cc-ac69-47f9-96c0-3529066b460b',
-        'related_url' => 'https://skillhub.kemnaker.go.id/pelatihan/?filters=vocational_id%3A3bacd8da-2eb7-4fbb-8c26-b0dd36feaca2%23teknologi+informasi+dan+komunikasi'
+        'keyword' => 'desain grafis',
+        'related_keywords' => array('graphic design', 'desainer grafis')
     ),
     array(
         'title' => 'Desain Grafis di Canva bagi UMKM',
@@ -77,8 +77,8 @@ $trainingCatalog = array(
         'tags' => array('A', 'E'),
         'level' => 'Pemula',
         'delivery' => 'Gratis',
-        'detail_url' => 'https://skillhub.kemnaker.go.id/pelatihan/desain-grafis-di-canva-bagi-umkm-b9c949c5-3d03-4161-858c-132fafb1d912?catalogue=da65ff26-9507-4ad7-be67-9e803af7e3ca',
-        'related_url' => 'https://skillhub.kemnaker.go.id/pelatihan?filters=media%3Aonline%23Webinar'
+        'keyword' => 'canva',
+        'related_keywords' => array('konten visual', 'social media design')
     ),
     array(
         'title' => 'Administrative Assistant',
@@ -86,8 +86,8 @@ $trainingCatalog = array(
         'tags' => array('C', 'E'),
         'level' => 'Pemula - Menengah',
         'delivery' => 'Gratis',
-        'detail_url' => 'https://skillhub.kemnaker.go.id/pelatihan/administrative-assistant-90ffbd81-7930-4a0a-9330-60dc8293af49',
-        'related_url' => 'https://skillhub.kemnaker.go.id/pelatihan/?filters=vocational_id%3A4e18e53c-bd7d-4ef1-a7b0-eabbe1eba07f%23bisnis+dan+manajemen'
+        'keyword' => 'administrative',
+        'related_keywords' => array('administrative assistant', 'administrasi')
     ),
     array(
         'title' => 'Practical Office Advance',
@@ -95,8 +95,8 @@ $trainingCatalog = array(
         'tags' => array('C', 'I'),
         'level' => 'Menengah',
         'delivery' => 'Gratis',
-        'detail_url' => 'https://skillhub.kemnaker.go.id/pelatihan/practical-office-advance-95df3a51-317a-44c8-98e7-1266f9647c3b',
-        'related_url' => 'https://skillhub.kemnaker.go.id/pelatihan/?filters=vocational_id%3A4e18e53c-bd7d-4ef1-a7b0-eabbe1eba07f%23bisnis+dan+manajemen'
+        'keyword' => 'office',
+        'related_keywords' => array('practical office', 'aplikasi perkantoran')
     ),
     array(
         'title' => 'Digital Marketing Dasar',
@@ -104,8 +104,8 @@ $trainingCatalog = array(
         'tags' => array('E', 'A'),
         'level' => 'Pemula',
         'delivery' => 'Gratis',
-        'detail_url' => 'https://skillhub.kemnaker.go.id/pelatihan/digital-marketing-dasar-b5a79bd7-b9b2-464e-bd8c-7ea4f6767d1b?catalogue=2650b6b7-cf54-4aff-aeae-05a99f96231a',
-        'related_url' => 'https://skillhub.kemnaker.go.id/pelatihan/?filters=vocational_id%3A4e18e53c-bd7d-4ef1-a7b0-eabbe1eba07f%23bisnis+dan+manajemen'
+        'keyword' => 'digital marketing',
+        'related_keywords' => array('marketing', 'pemasaran digital')
     ),
     array(
         'title' => 'Pembuatan Konten Visual Untuk Sosial Media',
@@ -113,8 +113,8 @@ $trainingCatalog = array(
         'tags' => array('A', 'E'),
         'level' => 'Menengah',
         'delivery' => 'Gratis',
-        'detail_url' => 'https://skillhub.kemnaker.go.id/pelatihan/pembuatan-konten-visual-untuk-sosial-media-1c6479d7-c698-4cb4-a9e1-937b8fb544b2?catalogue=378884cd-2c44-4e9b-aeb9-b2171193e5ac',
-        'related_url' => 'https://skillhub.kemnaker.go.id/pelatihan?filters=media%3Aonline%23Webinar'
+        'keyword' => 'sosial media',
+        'related_keywords' => array('konten visual', 'social media')
     ),
     array(
         'title' => 'Teknik Engine Tune Up Sepeda Motor Injeksi',
@@ -122,8 +122,8 @@ $trainingCatalog = array(
         'tags' => array('R', 'I'),
         'level' => 'Pemula',
         'delivery' => 'Gratis',
-        'detail_url' => 'https://skillhub.kemnaker.go.id/pelatihan/teknik-engine-tune-up-sepeda-motor-injeksi-58d3cc4b-4b87-4fd3-afac-3c7cbf60b549',
-        'related_url' => 'https://skillhub.kemnaker.go.id/pelatihan/'
+        'keyword' => 'sepeda motor injeksi',
+        'related_keywords' => array('engine tune up', 'otomotif')
     ),
     array(
         'title' => 'Servis Sepeda Motor Listrik Dasar',
@@ -131,8 +131,8 @@ $trainingCatalog = array(
         'tags' => array('R', 'I'),
         'level' => 'Pemula',
         'delivery' => 'Gratis',
-        'detail_url' => 'https://skillhub.kemnaker.go.id/pelatihan/servis-sepeda-motor-listrik-dasar-55dd5041-35b6-48ad-b553-c65ec077d287',
-        'related_url' => 'https://skillhub.kemnaker.go.id/pelatihan/'
+        'keyword' => 'motor listrik',
+        'related_keywords' => array('servis motor', 'otomotif')
     ),
     array(
         'title' => 'Juru Ukur/Surveyor (Kualifikasi 3)',
@@ -140,8 +140,8 @@ $trainingCatalog = array(
         'tags' => array('R', 'C', 'I'),
         'level' => 'Menengah',
         'delivery' => 'Gratis',
-        'detail_url' => 'https://skillhub.kemnaker.go.id/pelatihan/juru-ukursurveyor-kualifikasi-3-8115168f-170a-480c-ac82-1ef1e985441b?catalogue=ac42d723-11fa-4e1d-81bd-2c5c65962f46',
-        'related_url' => 'https://skillhub.kemnaker.go.id/pelatihan/'
+        'keyword' => 'surveyor',
+        'related_keywords' => array('juru ukur', 'konstruksi')
     ),
     array(
         'title' => 'Juru Gambar Bangunan Gedung (Kualifikasi 4)',
@@ -149,8 +149,8 @@ $trainingCatalog = array(
         'tags' => array('A', 'R', 'C'),
         'level' => 'Menengah',
         'delivery' => 'Gratis',
-        'detail_url' => 'https://skillhub.kemnaker.go.id/pelatihan/juru-gambar-bangunan-gedung-984cd329-dd31-4fe0-9079-6f4f1f025307',
-        'related_url' => 'https://skillhub.kemnaker.go.id/pelatihan/'
+        'keyword' => 'gambar bangunan',
+        'related_keywords' => array('arsitektur', 'bangunan gedung')
     ),
     array(
         'title' => 'Housekeeping',
@@ -158,8 +158,8 @@ $trainingCatalog = array(
         'tags' => array('S', 'C', 'E'),
         'level' => 'Pemula',
         'delivery' => 'Gratis',
-        'detail_url' => 'https://skillhub.kemnaker.go.id/pelatihan/housekeeping-4efdf3e4-b3d5-4541-bb55-7d85c3583e96?catalogue=5d543f17-319c-476c-941b-0583e368c566',
-        'related_url' => 'https://skillhub.kemnaker.go.id/pelatihan/?filters=vocational_id%3Ad5744527-3d87-4fe4-b652-8832f9c5bef2%23Pariwisata'
+        'keyword' => 'housekeeping',
+        'related_keywords' => array('hospitality', 'pariwisata')
     )
 );
 
@@ -190,6 +190,35 @@ function getRelatedCareerKeyword($career) {
         }
     }
     return getPrimaryCareerKeyword($career);
+}
+
+function buildSkillhubSearchUrl($keyword) {
+    $keyword = trim((string)$keyword);
+    if ($keyword === '') {
+        return 'https://skillhub.kemnaker.go.id/pelatihan/vokasi-nasional/jadwal';
+    }
+
+    $filtersValue = 'keyword:' . $keyword . '#' . $keyword;
+    return 'https://skillhub.kemnaker.go.id/pelatihan/vokasi-nasional/jadwal?keyword=' . rawurlencode($keyword) . '&filters=' . rawurlencode($filtersValue);
+}
+
+function getPrimaryTrainingKeyword($training) {
+    if (isset($training['keyword']) && trim((string)$training['keyword']) !== '') {
+        return trim((string)$training['keyword']);
+    }
+    return trim((string)$training['title']);
+}
+
+function getRelatedTrainingKeyword($training) {
+    if (isset($training['related_keywords']) && is_array($training['related_keywords'])) {
+        foreach ($training['related_keywords'] as $kw) {
+            $kw = trim((string)$kw);
+            if ($kw !== '') {
+                return $kw;
+            }
+        }
+    }
+    return getPrimaryTrainingKeyword($training);
 }
 
 $weights = array();
@@ -361,15 +390,15 @@ foreach ($trainingCatalog as $training) {
             <div class="mt-2 d-flex gap-2 flex-wrap">
               <a
                 class="btn btn-sm btn-outline-success"
-                href="<?php echo htmlspecialchars($training['detail_url']); ?>"
+                href="<?php echo htmlspecialchars(buildSkillhubSearchUrl(getPrimaryTrainingKeyword($training))); ?>"
                 target="_blank"
                 rel="noopener noreferrer"
               >
-                Lihat Detail Pelatihan
+                Cari Pelatihan
               </a>
               <a
                 class="btn btn-sm btn-outline-secondary"
-                href="<?php echo htmlspecialchars($training['related_url']); ?>"
+                href="<?php echo htmlspecialchars(buildSkillhubSearchUrl(getRelatedTrainingKeyword($training))); ?>"
                 target="_blank"
                 rel="noopener noreferrer"
               >
