@@ -622,10 +622,6 @@ foreach ($trainingRecommendations as $training) {
       <h2 class="h5 fw-bold text-success mb-0">Rekomendasi Pelatihan</h2>
       <span class="muted">Sumber data: SkillHub Kemnaker (berdasarkan profil <?php echo htmlspecialchars($result_personality); ?>)</span>
     </div>
-    <p class="muted small mb-3">
-      Rekomendasi ini menggunakan model hybrid dynamic: sistem memilih tema pelatihan yang cocok dengan hasil RIASEC,
-      lalu membuka hasil pencarian live di SkillHub menggunakan search URL resmi.
-    </p>
     <div class="d-flex gap-2 flex-wrap mb-3">
       <span class="badge-tier badge-tier-top"><?php echo intval($trainingTierSummary['top']); ?> Sangat Direkomendasikan</span>
       <span class="badge-tier badge-tier-good"><?php echo intval($trainingTierSummary['good']); ?> Cocok</span>
