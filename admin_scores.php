@@ -82,6 +82,9 @@ if (!empty($whereClauses)) {
     $whereSql = 'WHERE ' . implode(' AND ', $whereClauses);
 }
 
+$returnQuery = $_SERVER['QUERY_STRING'] ?? '';
+$deletedCount = isset($_GET['deleted']) ? intval($_GET['deleted']) : 0;
+
 $query = "SELECT pts.id AS score_id,
                  pts.result,
                  pts.realistic, pts.investigative, pts.artistic,
@@ -164,6 +167,12 @@ $filteredTotal = $scores ? mysqli_num_rows($scores) : 0;
       <span class="badge text-bg-light border">Menampilkan <?php echo $filteredTotal; ?> data</span>
     </div>
 
+    <?php if ($deletedCount > 0) { ?>
+      <div class="alert alert-success" role="alert">
+        <?php echo $deletedCount; ?> data berhasil dihapus.
+      </div>
+    <?php } ?>
+
     <form method="get" action="admin_scores.php" class="mb-3">
       <div class="row g-2">
         <div class="col-lg-3 col-md-6">
@@ -217,61 +226,133 @@ $filteredTotal = $scores ? mysqli_num_rows($scores) : 0;
       </div>
     </form>
 
-    <div class="table-responsive">
-      <table class="table table-hover align-middle">
-        <thead class="table-success">
-          <tr>
-            <th>#</th>
-            <th>Nama</th>
-            <th>Email</th>
-            <th>Kelas</th>
-            <th>Sekolah</th>
-            <th>Kode</th>
-            <th>R</th>
-            <th>I</th>
-            <th>A</th>
-            <th>S</th>
-            <th>E</th>
-            <th>C</th>
-            <th>Tanggal Tes</th>
-            <th>Aksi</th>
-          </tr>
-        </thead>
-        <tbody>
-          <?php if ($scores && mysqli_num_rows($scores) > 0) { $rowNum = 1; ?>
-            <?php while ($row = mysqli_fetch_assoc($scores)) { ?>
+    <form method="post" action="admin_delete_score.php" id="bulkDeleteForm">
+      <input type="hidden" name="return_query" value="<?php echo htmlspecialchars($returnQuery); ?>">
+      <div class="d-flex justify-content-between align-items-center flex-wrap gap-2 mb-3">
+        <div class="form-check">
+          <input class="form-check-input" type="checkbox" value="1" id="selectAllRows">
+          <label class="form-check-label" for="selectAllRows">Pilih semua data di halaman ini</label>
+        </div>
+        <button
+          type="submit"
+          class="btn btn-outline-danger"
+          id="bulkDeleteBtn"
+          disabled
+          onclick="return confirm('Apakah Anda yakin ingin menghapus semua data yang dipilih?');"
+        >
+          Hapus data terpilih
+        </button>
+      </div>
+
+      <div class="table-responsive">
+        <table class="table table-hover align-middle">
+          <thead class="table-success">
+            <tr>
+              <th><input class="form-check-input" type="checkbox" value="1" id="selectAllRowsHeader"></th>
+              <th>#</th>
+              <th>Nama</th>
+              <th>Email</th>
+              <th>Kelas</th>
+              <th>Sekolah</th>
+              <th>Kode</th>
+              <th>R</th>
+              <th>I</th>
+              <th>A</th>
+              <th>S</th>
+              <th>E</th>
+              <th>C</th>
+              <th>Tanggal Tes</th>
+              <th>Aksi</th>
+            </tr>
+          </thead>
+          <tbody>
+            <?php if ($scores && mysqli_num_rows($scores) > 0) { $rowNum = 1; ?>
+              <?php while ($row = mysqli_fetch_assoc($scores)) { ?>
+                <tr>
+                  <td>
+                    <input
+                      class="form-check-input row-checkbox"
+                      type="checkbox"
+                      name="score_ids[]"
+                      value="<?php echo intval($row['score_id']); ?>"
+                    >
+                  </td>
+                  <td><?php echo $rowNum++; ?></td>
+                  <td><?php echo htmlspecialchars($row['full_name'] ?? '-'); ?></td>
+                  <td><?php echo htmlspecialchars($row['email'] ?? '-'); ?></td>
+                  <td><?php echo htmlspecialchars($row['class_level'] ?? '-'); ?></td>
+                  <td><?php echo htmlspecialchars($row['school_name'] ?? '-'); ?></td>
+                  <td><span class="badge text-bg-success"><?php echo htmlspecialchars($row['result']); ?></span></td>
+                  <td><?php echo floatval($row['realistic']); ?>%</td>
+                  <td><?php echo floatval($row['investigative']); ?>%</td>
+                  <td><?php echo floatval($row['artistic']); ?>%</td>
+                  <td><?php echo floatval($row['social']); ?>%</td>
+                  <td><?php echo floatval($row['enterprising']); ?>%</td>
+                  <td><?php echo floatval($row['conventional']); ?>%</td>
+                  <td><?php echo htmlspecialchars($row['created_at']); ?></td>
+                  <td>
+                    <div class="d-flex flex-column gap-1">
+                      <a href="admin_score_detail.php?score_id=<?php echo intval($row['score_id']); ?>" class="btn btn-sm btn-outline-success">Detail</a>
+                      <a href="admin_delete_score.php?score_id=<?php echo intval($row['score_id']); ?>&return_query=<?php echo urlencode($returnQuery); ?>" class="btn btn-sm btn-outline-danger" onclick="return confirm('Apakah Anda yakin ingin menghapus hasil tes ini?');">Hapus</a>
+                    </div>
+                  </td>
+                </tr>
+              <?php } ?>
+            <?php } else { ?>
               <tr>
-                <td><?php echo $rowNum++; ?></td>
-                <td><?php echo htmlspecialchars($row['full_name'] ?? '-'); ?></td>
-                <td><?php echo htmlspecialchars($row['email'] ?? '-'); ?></td>
-                <td><?php echo htmlspecialchars($row['class_level'] ?? '-'); ?></td>
-                <td><?php echo htmlspecialchars($row['school_name'] ?? '-'); ?></td>
-                <td><span class="badge text-bg-success"><?php echo htmlspecialchars($row['result']); ?></span></td>
-                <td><?php echo floatval($row['realistic']); ?>%</td>
-                <td><?php echo floatval($row['investigative']); ?>%</td>
-                <td><?php echo floatval($row['artistic']); ?>%</td>
-                <td><?php echo floatval($row['social']); ?>%</td>
-                <td><?php echo floatval($row['enterprising']); ?>%</td>
-                <td><?php echo floatval($row['conventional']); ?>%</td>
-                <td><?php echo htmlspecialchars($row['created_at']); ?></td>
-                <td>
-                  <div class="d-flex flex-column gap-1">
-                    <a href="admin_score_detail.php?score_id=<?php echo intval($row['score_id']); ?>" class="btn btn-sm btn-outline-success">Detail</a>
-                    <a href="admin_delete_score.php?score_id=<?php echo intval($row['score_id']); ?>" class="btn btn-sm btn-outline-danger" onclick="return confirm('Apakah Anda yakin ingin menghapus hasil tes ini?');">Hapus</a>
-                  </div>
-                </td>
+                <td colspan="15" class="text-center muted">Belum ada data hasil tes.</td>
               </tr>
             <?php } ?>
-          <?php } else { ?>
-            <tr>
-              <td colspan="14" class="text-center muted">Belum ada data hasil tes.</td>
-            </tr>
-          <?php } ?>
-        </tbody>
-      </table>
-    </div>
+          </tbody>
+        </table>
+      </div>
+    </form>
   </div>
 </section>
+
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+  const rowCheckboxes = Array.from(document.querySelectorAll('.row-checkbox'));
+  const selectAllRows = document.getElementById('selectAllRows');
+  const selectAllRowsHeader = document.getElementById('selectAllRowsHeader');
+  const bulkDeleteBtn = document.getElementById('bulkDeleteBtn');
+
+  if (!rowCheckboxes.length || !selectAllRows || !selectAllRowsHeader || !bulkDeleteBtn) {
+    return;
+  }
+
+  function syncBulkControls() {
+    const checkedCount = rowCheckboxes.filter((checkbox) => checkbox.checked).length;
+    const allChecked = checkedCount > 0 && checkedCount === rowCheckboxes.length;
+    bulkDeleteBtn.disabled = checkedCount === 0;
+    selectAllRows.checked = allChecked;
+    selectAllRowsHeader.checked = allChecked;
+    selectAllRows.indeterminate = checkedCount > 0 && !allChecked;
+    selectAllRowsHeader.indeterminate = checkedCount > 0 && !allChecked;
+  }
+
+  function toggleAllRows(checked) {
+    rowCheckboxes.forEach((checkbox) => {
+      checkbox.checked = checked;
+    });
+    syncBulkControls();
+  }
+
+  selectAllRows.addEventListener('change', function () {
+    toggleAllRows(this.checked);
+  });
+
+  selectAllRowsHeader.addEventListener('change', function () {
+    toggleAllRows(this.checked);
+  });
+
+  rowCheckboxes.forEach((checkbox) => {
+    checkbox.addEventListener('change', syncBulkControls);
+  });
+
+  syncBulkControls();
+});
+</script>
 
 <?php include 'includes/footer.php'; ?>
 
