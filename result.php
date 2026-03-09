@@ -678,13 +678,20 @@ foreach ($trainingRecommendations as $training) {
       <span class="muted">Integrasi fase growth</span>
     </div>
     <div class="career-grid">
-      <article class="career-card">
-        <div class="d-flex justify-content-between align-items-center mb-1 gap-2 flex-wrap">
-          <strong>Career Boost Day</strong>
-          <span class="badge-zone">Career</span>
-        </div>
-        <div class="muted small">Ikut sesi konsultasi karier dan penguatan profil kerja.</div>
-      </article>
+      <a
+        href="https://paskerid.kemnaker.go.id/career-boostday"
+        target="_blank"
+        rel="noopener noreferrer"
+        class="text-decoration-none text-reset"
+      >
+        <article class="career-card">
+          <div class="d-flex justify-content-between align-items-center mb-1 gap-2 flex-wrap">
+            <strong>Career Boost Day</strong>
+            <span class="badge-zone">Career</span>
+          </div>
+          <div class="muted small">Ikut sesi konsultasi karier dan penguatan profil kerja.</div>
+        </article>
+      </a>
     </div>
   </div>
 
