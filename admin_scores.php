@@ -110,6 +110,7 @@ $filteredTotal = $scores ? mysqli_num_rows($scores) : 0;
       </div>
       <div class="d-flex gap-2 flex-wrap">
         <a href="generate_excel.php" class="btn btn-outline-soft">Export CSV</a>
+        <button type="button" class="btn btn-outline-soft" id="exportExcelBtn">Export to Excel</button>
         <a href="admin_logout.php" class="btn btn-outline-danger">Logout</a>
       </div>
     </div>
@@ -310,47 +311,78 @@ $filteredTotal = $scores ? mysqli_num_rows($scores) : 0;
   </div>
 </section>
 
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 <script>
 document.addEventListener('DOMContentLoaded', function () {
   const rowCheckboxes = Array.from(document.querySelectorAll('.row-checkbox'));
   const selectAllRows = document.getElementById('selectAllRows');
   const selectAllRowsHeader = document.getElementById('selectAllRowsHeader');
   const bulkDeleteBtn = document.getElementById('bulkDeleteBtn');
+  const exportExcelBtn = document.getElementById('exportExcelBtn');
+  const scoresTable = document.querySelector('table.table');
 
-  if (!rowCheckboxes.length || !selectAllRows || !selectAllRowsHeader || !bulkDeleteBtn) {
-    return;
-  }
+  if (rowCheckboxes.length && selectAllRows && selectAllRowsHeader && bulkDeleteBtn) {
+    function syncBulkControls() {
+      const checkedCount = rowCheckboxes.filter((checkbox) => checkbox.checked).length;
+      const allChecked = checkedCount > 0 && checkedCount === rowCheckboxes.length;
+      bulkDeleteBtn.disabled = checkedCount === 0;
+      selectAllRows.checked = allChecked;
+      selectAllRowsHeader.checked = allChecked;
+      selectAllRows.indeterminate = checkedCount > 0 && !allChecked;
+      selectAllRowsHeader.indeterminate = checkedCount > 0 && !allChecked;
+    }
 
-  function syncBulkControls() {
-    const checkedCount = rowCheckboxes.filter((checkbox) => checkbox.checked).length;
-    const allChecked = checkedCount > 0 && checkedCount === rowCheckboxes.length;
-    bulkDeleteBtn.disabled = checkedCount === 0;
-    selectAllRows.checked = allChecked;
-    selectAllRowsHeader.checked = allChecked;
-    selectAllRows.indeterminate = checkedCount > 0 && !allChecked;
-    selectAllRowsHeader.indeterminate = checkedCount > 0 && !allChecked;
-  }
+    function toggleAllRows(checked) {
+      rowCheckboxes.forEach((checkbox) => {
+        checkbox.checked = checked;
+      });
+      syncBulkControls();
+    }
 
-  function toggleAllRows(checked) {
-    rowCheckboxes.forEach((checkbox) => {
-      checkbox.checked = checked;
+    selectAllRows.addEventListener('change', function () {
+      toggleAllRows(this.checked);
     });
+
+    selectAllRowsHeader.addEventListener('change', function () {
+      toggleAllRows(this.checked);
+    });
+
+    rowCheckboxes.forEach((checkbox) => {
+      checkbox.addEventListener('change', syncBulkControls);
+    });
+
     syncBulkControls();
   }
 
-  selectAllRows.addEventListener('change', function () {
-    toggleAllRows(this.checked);
-  });
+  if (exportExcelBtn && scoresTable) {
+    exportExcelBtn.addEventListener('click', function () {
+      if (typeof XLSX === 'undefined') {
+        alert('Library Excel belum tersedia. Silakan refresh halaman.');
+        return;
+      }
 
-  selectAllRowsHeader.addEventListener('change', function () {
-    toggleAllRows(this.checked);
-  });
+      const rows = Array.from(scoresTable.querySelectorAll('tr'));
+      const data = rows.map((row) => {
+        const cells = Array.from(row.querySelectorAll('th, td'));
+        return cells
+          .slice(1, -1) // Skip checkbox and action columns.
+          .map((cell) => cell.innerText.trim());
+      }).filter((rowData) => rowData.length > 0);
 
-  rowCheckboxes.forEach((checkbox) => {
-    checkbox.addEventListener('change', syncBulkControls);
-  });
+      if (data.length <= 1) {
+        alert('Tidak ada data untuk diekspor.');
+        return;
+      }
 
-  syncBulkControls();
+      const worksheet = XLSX.utils.aoa_to_sheet(data);
+      const workbook = XLSX.utils.book_new();
+      XLSX.utils.book_append_sheet(workbook, worksheet, 'Hasil RIASEC');
+
+      const now = new Date();
+      const dateStamp = now.toISOString().slice(0, 10);
+      XLSX.writeFile(workbook, 'hasil_riasec_' + dateStamp + '.xlsx');
+    });
+  }
 });
 </script>
 
