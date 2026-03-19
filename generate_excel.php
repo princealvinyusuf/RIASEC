@@ -1,7 +1,7 @@
 <?php
 if (session_status() === PHP_SESSION_NONE) { session_start(); }
 if (empty($_SESSION['is_admin'])) {
-  header('Location: admin_login.php');
+  header('Location: admin_login');
   exit;
 }
 
@@ -59,7 +59,7 @@ if ($scores && mysqli_num_rows($scores) > 0) {
     exit;
 } else {
     // Optional: handle case with no data
-    header('Location: admin_scores.php'); // Redirect or show a message
+    header('Location: admin_scores'); // Redirect or show a message
     exit;
 }
 ?>

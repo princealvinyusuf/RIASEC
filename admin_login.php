@@ -9,7 +9,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
     if ($username === 'arifa_pasker' && $password === 'PusatpasarKerj4') {
         $_SESSION['is_admin'] = true;
-        header('Location: admin_scores.php');
+        header('Location: admin_scores');
         exit;
     } else {
         $error = 'Username atau password salah.';
@@ -31,7 +31,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
           <div class="alert alert-danger" role="alert"><?php echo htmlspecialchars($error); ?></div>
         <?php } ?>
 
-        <form method="post" action="admin_login.php">
+        <form method="post" action="admin_login">
           <div class="mb-3">
             <label class="form-label fw-semibold">Username</label>
             <input type="text" name="username" class="form-control form-control-lg" required>
@@ -41,7 +41,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             <input type="password" name="password" class="form-control form-control-lg" required>
           </div>
           <div class="d-flex gap-2 flex-wrap">
-            <a href="index.php" class="btn btn-outline-secondary">Kembali ke beranda</a>
+            <a href="index" class="btn btn-outline-secondary">Kembali ke beranda</a>
             <button type="submit" class="btn btn-primary-soft">Masuk</button>
           </div>
         </form>

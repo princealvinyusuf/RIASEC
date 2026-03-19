@@ -92,7 +92,7 @@ if (empty($result_personality) && isset($_POST['submit'])) {
 
 // If still no result, redirect to test form
 if (empty($result_personality)) {
-    header("Location: test_form.php?message=REQ");
+    header("Location: test_form?message=REQ");
     exit;
 }
 

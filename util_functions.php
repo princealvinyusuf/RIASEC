@@ -48,7 +48,7 @@ function getPersonalityTestResults() {
     global $scoreList, $result_personality, $scorePercentageList;
 
     if (!isset($_POST['submit']) || !isSubmissionComplete()) {
-        header("Location: test_form.php?message=REQ");
+        header("Location: test_form?message=REQ");
         exit;
     }
 

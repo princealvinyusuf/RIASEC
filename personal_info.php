@@ -122,7 +122,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             if ($ok) {
                 $insertedId = mysqli_insert_id($connection);
                 $_SESSION['personal_info_id'] = $insertedId;
-                header('Location: test_form.php');
+                header('Location: test_form');
                 exit;
             } else {
                 $errors[] = 'Gagal menyimpan data. Silakan coba lagi.';
@@ -140,7 +140,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 <section class="page-wrap">
   <div class="glass-card app-form-card">
     <div class="form-header mb-4">
-      <p class="mb-2"><a href="index.php" class="text-decoration-none">&larr; Kembali ke beranda</a></p>
+      <p class="mb-2"><a href="index" class="text-decoration-none">&larr; Kembali ke beranda</a></p>
       <h1 class="fw-bold text-success">Data awal peserta</h1>
       <p>Lengkapi data berikut untuk memulai asesmen minat karier.</p>
     </div>
@@ -155,7 +155,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
       </div>
     <?php } ?>
 
-    <form action="personal_info.php" method="post" novalidate>
+    <form action="personal_info" method="post" novalidate>
       <div class="row g-3">
         <div class="col-md-6">
           <label class="form-label">Nama lengkap</label>
@@ -197,7 +197,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
       </div>
 
       <div class="question-nav mt-4">
-        <a href="index.php" class="btn btn-outline-secondary">Kembali</a>
+        <a href="index" class="btn btn-outline-secondary">Kembali</a>
         <button type="submit" class="btn btn-primary-soft">Lanjut ke pertanyaan</button>
       </div>
     </form>

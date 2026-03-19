@@ -1,7 +1,7 @@
 <?php
 if (session_status() === PHP_SESSION_NONE) { session_start(); }
 if (empty($_SESSION['is_admin'])) {
-  header('Location: admin_login.php');
+  header('Location: admin_login');
   exit;
 }
 include_once __DIR__ . '/includes/db.php';
@@ -49,7 +49,7 @@ $detailRes = mysqli_query($connection, $detailSql);
         <h1 class="hero-title h2 mb-1">Informasi peserta & jawaban</h1>
         <p class="hero-subtitle mb-0">Lihat profil skor RIASEC dan jawaban per butir untuk sesi tes ini.</p>
       </div>
-      <a href="admin_scores.php" class="btn btn-outline-soft">&larr; Kembali ke daftar</a>
+      <a href="admin_scores" class="btn btn-outline-soft">&larr; Kembali ke daftar</a>
     </div>
   </div>
 

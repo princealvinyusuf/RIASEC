@@ -8,7 +8,7 @@ include 'util_functions.php';
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['submit'])) {
     getPersonalityTestResults();
 } elseif (!isset($_SESSION['result_personality']) || !isset($_SESSION['score_percentage_list'])) {
-    header('Location: test_form.php');
+    header('Location: test_form');
     exit;
 } else {
     $result_personality = $_SESSION['result_personality'];
@@ -696,9 +696,9 @@ foreach ($trainingRecommendations as $training) {
   </div>
 
   <div class="d-flex gap-2 flex-wrap">
-    <a href="test_form.php" class="btn btn-outline-soft">Ulangi asesmen</a>
-    <a href="generate_pdf.php" class="btn btn-primary-soft" target="_blank">Unduh laporan</a>
-    <a href="index.php" class="btn btn-outline-secondary">Kembali ke beranda</a>
+    <a href="test_form" class="btn btn-outline-soft">Ulangi asesmen</a>
+    <a href="generate_pdf" class="btn btn-primary-soft" target="_blank">Unduh laporan</a>
+    <a href="index" class="btn btn-outline-secondary">Kembali ke beranda</a>
   </div>
 </section>
 

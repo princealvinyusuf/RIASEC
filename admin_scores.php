@@ -1,7 +1,7 @@
 <?php
 if (session_status() === PHP_SESSION_NONE) { session_start(); }
 if (empty($_SESSION['is_admin'])) {
-  header('Location: admin_login.php');
+  header('Location: admin_login');
   exit;
 }
 ?>
@@ -109,9 +109,9 @@ $filteredTotal = $scores ? mysqli_num_rows($scores) : 0;
         <p class="hero-subtitle mb-0">Pantau distribusi minat karier peserta dan akses detail jawaban per tes.</p>
       </div>
       <div class="d-flex gap-2 flex-wrap">
-        <a href="generate_excel.php" class="btn btn-outline-soft">Export CSV</a>
+        <a href="generate_excel" class="btn btn-outline-soft">Export CSV</a>
         <button type="button" class="btn btn-outline-soft" id="exportExcelBtn">Export to Excel</button>
-        <a href="admin_logout.php" class="btn btn-outline-danger">Logout</a>
+        <a href="admin_logout" class="btn btn-outline-danger">Logout</a>
       </div>
     </div>
   </div>
@@ -174,7 +174,7 @@ $filteredTotal = $scores ? mysqli_num_rows($scores) : 0;
       </div>
     <?php } ?>
 
-    <form method="get" action="admin_scores.php" class="mb-3">
+    <form method="get" action="admin_scores" class="mb-3">
       <div class="row g-2">
         <div class="col-lg-3 col-md-6">
           <label class="form-label small mb-1">Cari (nama/email/sekolah)</label>
@@ -223,11 +223,11 @@ $filteredTotal = $scores ? mysqli_num_rows($scores) : 0;
       </div>
       <div class="d-flex gap-2 mt-3">
         <button type="submit" class="btn btn-primary-soft">Terapkan filter</button>
-        <a href="admin_scores.php" class="btn btn-outline-secondary">Reset</a>
+        <a href="admin_scores" class="btn btn-outline-secondary">Reset</a>
       </div>
     </form>
 
-    <form method="post" action="admin_delete_score.php" id="bulkDeleteForm">
+    <form method="post" action="admin_delete_score" id="bulkDeleteForm">
       <input type="hidden" name="return_query" value="<?php echo htmlspecialchars($returnQuery); ?>">
       <div class="d-flex justify-content-between align-items-center flex-wrap gap-2 mb-3">
         <div class="form-check">
@@ -293,8 +293,8 @@ $filteredTotal = $scores ? mysqli_num_rows($scores) : 0;
                   <td><?php echo htmlspecialchars($row['created_at']); ?></td>
                   <td>
                     <div class="d-flex flex-column gap-1">
-                      <a href="admin_score_detail.php?score_id=<?php echo intval($row['score_id']); ?>" class="btn btn-sm btn-outline-success">Detail</a>
-                      <a href="admin_delete_score.php?score_id=<?php echo intval($row['score_id']); ?>&return_query=<?php echo urlencode($returnQuery); ?>" class="btn btn-sm btn-outline-danger" onclick="return confirm('Apakah Anda yakin ingin menghapus hasil tes ini?');">Hapus</a>
+                      <a href="admin_score_detail?score_id=<?php echo intval($row['score_id']); ?>" class="btn btn-sm btn-outline-success">Detail</a>
+                      <a href="admin_delete_score?score_id=<?php echo intval($row['score_id']); ?>&return_query=<?php echo urlencode($returnQuery); ?>" class="btn btn-sm btn-outline-danger" onclick="return confirm('Apakah Anda yakin ingin menghapus hasil tes ini?');">Hapus</a>
                     </div>
                   </td>
                 </tr>

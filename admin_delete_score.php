@@ -1,7 +1,7 @@
 <?php
 if (session_status() === PHP_SESSION_NONE) { session_start(); }
 if (empty($_SESSION['is_admin'])) {
-  header('Location: admin_login.php');
+  header('Location: admin_login');
   exit;
 }
 
@@ -60,7 +60,7 @@ if (!empty($scoreIds)) {
     }
 }
 
-$redirectUrl = 'admin_scores.php';
+$redirectUrl = 'admin_scores';
 $params = array();
 if ($deletedCount > 0) {
     $params['deleted'] = $deletedCount;

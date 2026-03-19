@@ -1,7 +1,7 @@
 <?php
 if (session_status() === PHP_SESSION_NONE) { session_start(); }
 if (!isset($_SESSION['personal_info_id'])) {
-  header('Location: personal_info.php');
+  header('Location: personal_info');
   exit;
 }
 include_once __DIR__ . '/includes/db.php';
@@ -23,7 +23,7 @@ if ($statementSelectQuery) {
   <div class="glass-card app-form-card">
     <div class="d-flex justify-content-between align-items-start flex-wrap gap-2 mb-3">
       <div>
-        <p class="mb-1"><a href="personal_info.php" class="text-decoration-none">&larr; Kembali ke data peserta</a></p>
+        <p class="mb-1"><a href="personal_info" class="text-decoration-none">&larr; Kembali ke data peserta</a></p>
         <h1 class="h3 fw-bold text-success mb-1">Activity Questions</h1>
         <p class="muted mb-0">Nilai seberapa kamu ingin melakukan aktivitas ini jika menjadi bagian dari pekerjaanmu.</p>
       </div>
@@ -39,7 +39,7 @@ if ($statementSelectQuery) {
     <?php if (empty($questions)) { ?>
       <div class="alert alert-warning mb-0">Belum ada data pernyataan pada tabel <code>statements</code>.</div>
     <?php } else { ?>
-      <form action="result.php" method="post" id="riasecForm">
+      <form action="result" method="post" id="riasecForm">
         <div class="test-layout">
           <div class="question-shell">
             <div class="progress-top">

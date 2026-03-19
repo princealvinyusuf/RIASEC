@@ -114,7 +114,7 @@ if ($resTopSchools) {
                 <h1 class="hero-title h2 mb-1">Ringkasan data asesmen RIASEC</h1>
                 <p class="hero-subtitle mb-0">Gambaran umum hasil tes berdasarkan data yang sudah terkumpul di sistem.</p>
             </div>
-            <a href="index.php" class="btn btn-outline-soft">&larr; Kembali ke beranda</a>
+            <a href="index" class="btn btn-outline-soft">&larr; Kembali ke beranda</a>
         </div>
     </div>
 
