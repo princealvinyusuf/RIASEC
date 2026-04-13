@@ -1,4 +1,5 @@
 <?php
+include_once __DIR__ . '/includes/riasec_core.php';
 $scoreList = array('R' => 0, 'I' => 0, 'A' => 0, 'S' => 0, 'E' => 0, 'C' => 0);
 $scorePercentageList = array('R' => 0, 'I' => 0, 'A' => 0, 'S' => 0, 'E' => 0, 'C' => 0);
 $result_personality = '';
@@ -15,32 +16,7 @@ function getRiasecLabels() {
 }
 
 function extractAnswersFromPost() {
-    $answers = array();
-    foreach ($_POST as $key => $value) {
-        if (!is_string($key)) {
-            continue;
-        }
-        if (!preg_match('/^([RIASEC])(\d+)$/', $key, $matches)) {
-            continue;
-        }
-
-        $category = $matches[1];
-        $statementId = intval($matches[2]);
-        $answer = intval($value);
-
-        if ($statementId <= 0 || $answer < 1 || $answer > 5) {
-            continue;
-        }
-
-        $answers[] = array(
-            'key' => $key,
-            'category' => $category,
-            'statement_id' => $statementId,
-            'answer' => $answer
-        );
-    }
-
-    return $answers;
+    return extractRiasecAnswersFromSource($_POST);
 }
 
 /* for RIASEC test result */
@@ -52,33 +28,11 @@ function getPersonalityTestResults() {
         exit;
     }
 
-    $scoreList = array('R' => 0, 'I' => 0, 'A' => 0, 'S' => 0, 'E' => 0, 'C' => 0);
+    $scoreList = getDefaultRiasecScoreList();
     $answers = extractAnswersFromPost();
-
-    foreach ($answers as $item) {
-        $scoreList[$item['category']] += $item['answer'];
-    }
-
-    // Keep O*NET-style ordering predictable when values are equal.
-    uksort($scoreList, function ($a, $b) use ($scoreList) {
-        if ($scoreList[$a] === $scoreList[$b]) {
-            $order = array('R' => 1, 'I' => 2, 'A' => 3, 'S' => 4, 'E' => 5, 'C' => 6);
-            return $order[$a] <=> $order[$b];
-        }
-        return $scoreList[$b] <=> $scoreList[$a];
-    });
-
+    $scoreList = sortRiasecScoresStable(calculateRiasecScoresFromAnswers($answers));
     calculateScoreInPercentage($scoreList);
-
-    $result_personality = '';
-    $counter = 0;
-    foreach ($scoreList as $key => $value) {
-        $result_personality .= $key;
-        $counter++;
-        if ($counter >= 3) {
-            break;
-        }
-    }
+    $result_personality = buildRiasecTopCode($scoreList, 3);
 
     if (isset($_POST['can_save_data']) && $_POST['can_save_data'] === 'true') {
         insertTestResults($result_personality, $answers);
@@ -94,47 +48,13 @@ function getPersonalityTestResults() {
 
 function isSubmissionComplete() {
     global $connection;
-
-    if (!isset($_POST['can_save_data']) || $_POST['can_save_data'] !== 'true') {
-        return false;
-    }
-
-    $requiredKeys = array();
-    $res = mysqli_query($connection, "SELECT statement_id, statement_category FROM statements");
-    if (!$res) {
-        return false;
-    }
-
-    while ($row = mysqli_fetch_assoc($res)) {
-        $requiredKeys[] = $row['statement_category'] . intval($row['statement_id']);
-    }
-
-    foreach ($requiredKeys as $name) {
-        if (!isset($_POST[$name])) {
-            return false;
-        }
-        $val = intval($_POST[$name]);
-        if ($val < 1 || $val > 5) {
-            return false;
-        }
-    }
-    return true;
+    return hasCompleteRiasecSubmission($connection, $_POST);
 }
 
 /* for calculating percentage scores of each personality */
 function calculateScoreInPercentage($scores) {
     global $scorePercentageList;
-    $sum = array_sum($scores);
-
-    if ($sum <= 0) {
-        $scorePercentageList = array('R' => 0, 'I' => 0, 'A' => 0, 'S' => 0, 'E' => 0, 'C' => 0);
-        return;
-    }
-
-    $scorePercentageList = array();
-    foreach ($scores as $key => $value) {
-        $scorePercentageList[$key] = round(($value / $sum) * 100, 2);
-    }
+    $scorePercentageList = calculateRiasecPercentages($scores);
 }
 
 // To insert data into database for research purposes
