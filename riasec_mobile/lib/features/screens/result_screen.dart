@@ -23,57 +23,117 @@ class ResultScreen extends StatelessWidget {
 
         return Scaffold(
           appBar: AppBar(title: const Text('Hasil RIASEC')),
-          body: ListView(
-            padding: const EdgeInsets.all(16),
-            children: [
-              Text(
-                'Kode RIASEC: ${result.resultPersonality}',
-                style: const TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
+          body: Container(
+            decoration: const BoxDecoration(
+              gradient: LinearGradient(
+                begin: Alignment.topCenter,
+                end: Alignment.bottomCenter,
+                colors: [Color(0xFFE9F8F2), Color(0xFFF4F8F6)],
               ),
-              const SizedBox(height: 12),
-              ...scores.map(
-                (entry) => ListTile(
-                  contentPadding: EdgeInsets.zero,
-                  title: Text(entry.key),
-                  trailing: Text('${entry.value.toStringAsFixed(2)}%'),
-                ),
-              ),
-              const SizedBox(height: 12),
-              if (recommendation != null) ...[
-                const Text(
-                  'Rekomendasi Karier',
-                  style: TextStyle(fontSize: 18, fontWeight: FontWeight.w600),
-                ),
-                const SizedBox(height: 8),
-                ...recommendation.careerRecommendations.take(5).map(
-                      (item) => Card(
-                        child: ListTile(
-                          title: Text((item['title'] ?? '-').toString()),
-                          subtitle: Text((item['why'] ?? '').toString()),
+            ),
+            child: ListView(
+              padding: const EdgeInsets.all(16),
+              children: [
+                Card(
+                  child: Padding(
+                    padding: const EdgeInsets.all(18),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        const Text('Profil Minat Dominan', style: TextStyle(fontWeight: FontWeight.w600)),
+                        const SizedBox(height: 8),
+                        Text(
+                          result.resultPersonality,
+                          style: const TextStyle(fontSize: 34, fontWeight: FontWeight.w800, letterSpacing: 2),
                         ),
-                      ),
+                      ],
                     ),
+                  ),
+                ),
                 const SizedBox(height: 12),
-                const Text(
-                  'Rekomendasi Pelatihan',
-                  style: TextStyle(fontSize: 18, fontWeight: FontWeight.w600),
+                Card(
+                  child: Padding(
+                    padding: const EdgeInsets.all(16),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        const Text('Distribusi Skor', style: TextStyle(fontWeight: FontWeight.w600)),
+                        const SizedBox(height: 8),
+                        ...scores.map(
+                          (entry) => Padding(
+                            padding: const EdgeInsets.only(bottom: 10),
+                            child: Column(
+                              children: [
+                                Row(
+                                  children: [
+                                    Text(entry.key, style: const TextStyle(fontWeight: FontWeight.w700)),
+                                    const Spacer(),
+                                    Text('${entry.value.toStringAsFixed(2)}%'),
+                                  ],
+                                ),
+                                const SizedBox(height: 5),
+                                LinearProgressIndicator(
+                                  value: (entry.value / 100).clamp(0, 1),
+                                  minHeight: 7,
+                                  borderRadius: BorderRadius.circular(99),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
                 ),
-                const SizedBox(height: 8),
-                ...recommendation.trainingRecommendations.take(5).map(
-                      (item) => Card(
-                        child: ListTile(
-                          title: Text((item['title'] ?? '-').toString()),
-                          subtitle: Text((item['reason'] ?? '').toString()),
+                const SizedBox(height: 12),
+                if (recommendation != null) ...[
+                  const Padding(
+                    padding: EdgeInsets.symmetric(vertical: 6),
+                    child: Text(
+                      'Rekomendasi Karier',
+                      style: TextStyle(fontSize: 18, fontWeight: FontWeight.w700),
+                    ),
+                  ),
+                  ...recommendation.careerRecommendations.take(5).map(
+                        (item) => Card(
+                          child: ListTile(
+                            leading: const CircleAvatar(
+                              backgroundColor: Color(0xFFD8F3E8),
+                              child: Icon(Icons.work_outline, color: Color(0xFF0B8B6A)),
+                            ),
+                            title: Text((item['title'] ?? '-').toString()),
+                            subtitle: Text((item['why'] ?? '').toString()),
+                          ),
                         ),
                       ),
+                  const Padding(
+                    padding: EdgeInsets.symmetric(vertical: 6),
+                    child: Text(
+                      'Rekomendasi Pelatihan',
+                      style: TextStyle(fontSize: 18, fontWeight: FontWeight.w700),
                     ),
+                  ),
+                  ...recommendation.trainingRecommendations.take(5).map(
+                        (item) => Card(
+                          child: ListTile(
+                            leading: const CircleAvatar(
+                              backgroundColor: Color(0xFFD8F3E8),
+                              child: Icon(Icons.school_outlined, color: Color(0xFF0B8B6A)),
+                            ),
+                            title: Text((item['title'] ?? '-').toString()),
+                            subtitle: Text((item['reason'] ?? '').toString()),
+                          ),
+                        ),
+                      ),
+                ],
+                const SizedBox(height: 20),
+                ElevatedButton.icon(
+                  onPressed: onRestart,
+                  icon: const Icon(Icons.refresh),
+                  label: const Text('Ulangi Asesmen'),
+                ),
               ],
-              const SizedBox(height: 20),
-              ElevatedButton(
-                onPressed: onRestart,
-                child: const Text('Ulangi Asesmen'),
-              ),
-            ],
+            ),
           ),
         );
       },

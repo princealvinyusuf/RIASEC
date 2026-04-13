@@ -15,6 +15,7 @@ class AppState extends ChangeNotifier {
 
   bool initializing = true;
   bool loading = false;
+  bool onboardingSeen = false;
   String? errorMessage;
 
   String? accessToken;
@@ -29,6 +30,7 @@ class AppState extends ChangeNotifier {
     accessToken = await _sessionStore.getToken();
     participantId = await _sessionStore.getParticipantId();
     currentScoreId = await _sessionStore.getLastScoreId();
+    onboardingSeen = await _sessionStore.getOnboardingSeen();
 
     if (accessToken != null && currentScoreId != null) {
       try {
@@ -45,6 +47,12 @@ class AppState extends ChangeNotifier {
       }
     }
     initializing = false;
+    notifyListeners();
+  }
+
+  Future<void> markOnboardingSeen() async {
+    onboardingSeen = true;
+    await _sessionStore.setOnboardingSeen();
     notifyListeners();
   }
 

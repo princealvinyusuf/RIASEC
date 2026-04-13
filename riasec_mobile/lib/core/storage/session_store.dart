@@ -4,6 +4,7 @@ class SessionStore {
   static const _tokenKey = 'access_token';
   static const _participantIdKey = 'participant_id';
   static const _lastScoreIdKey = 'last_score_id';
+  static const _onboardingSeenKey = 'onboarding_seen';
 
   Future<void> saveSession({
     required String accessToken,
@@ -32,5 +33,15 @@ class SessionStore {
   Future<int?> getLastScoreId() async {
     final prefs = await SharedPreferences.getInstance();
     return prefs.getInt(_lastScoreIdKey);
+  }
+
+  Future<bool> getOnboardingSeen() async {
+    final prefs = await SharedPreferences.getInstance();
+    return prefs.getBool(_onboardingSeenKey) ?? false;
+  }
+
+  Future<void> setOnboardingSeen() async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setBool(_onboardingSeenKey, true);
   }
 }

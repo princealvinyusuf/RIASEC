@@ -16,7 +16,7 @@ import 'package:riasec_mobile/features/app_state.dart';
 import 'package:riasec_mobile/features/riasec_repository.dart';
 
 void main() {
-  testWidgets('Shows welcome title', (WidgetTester tester) async {
+  testWidgets('Shows onboarding title', (WidgetTester tester) async {
     final appState = AppState(
       repository: RiasecRepository(ApiClient(baseUrl: AppConfig.apiBaseUrl)),
       sessionStore: SessionStore(),
@@ -29,6 +29,6 @@ void main() {
         child: const RiasecMobileApp(),
       ),
     );
-    expect(find.text('RIASEC Mobile'), findsOneWidget);
+    expect(find.text('Temukan Arah Karier yang Tepat'), findsOneWidget);
   });
 }
