@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 import '../app_state.dart';
 
@@ -97,12 +98,26 @@ class ResultScreen extends StatelessWidget {
                   ...recommendation.careerRecommendations.take(5).map(
                         (item) => Card(
                           child: ListTile(
+                            onTap: () => _openExternalLink(
+                              context,
+                              _buildKarirhubSearchUrl(_getPrimaryKeyword(item)),
+                            ),
                             leading: const CircleAvatar(
                               backgroundColor: Color(0xFFD8F3E8),
                               child: Icon(Icons.work_outline, color: Color(0xFF0B8B6A)),
                             ),
                             title: Text((item['title'] ?? '-').toString()),
-                            subtitle: Text((item['why'] ?? '').toString()),
+                            subtitle: Text(
+                              '${(item['why'] ?? '').toString()}\nTap untuk lihat lowongan.',
+                            ),
+                            isThreeLine: true,
+                            trailing: IconButton(
+                              icon: const Icon(Icons.open_in_new),
+                              onPressed: () => _openExternalLink(
+                                context,
+                                _buildKarirhubSearchUrl(_getPrimaryKeyword(item)),
+                              ),
+                            ),
                           ),
                         ),
                       ),
@@ -116,12 +131,26 @@ class ResultScreen extends StatelessWidget {
                   ...recommendation.trainingRecommendations.take(5).map(
                         (item) => Card(
                           child: ListTile(
+                            onTap: () => _openExternalLink(
+                              context,
+                              _buildSkillhubSearchUrl(_getPrimaryKeyword(item)),
+                            ),
                             leading: const CircleAvatar(
                               backgroundColor: Color(0xFFD8F3E8),
                               child: Icon(Icons.school_outlined, color: Color(0xFF0B8B6A)),
                             ),
                             title: Text((item['title'] ?? '-').toString()),
-                            subtitle: Text((item['reason'] ?? '').toString()),
+                            subtitle: Text(
+                              '${(item['reason'] ?? '').toString()}\nTap untuk cari pelatihan.',
+                            ),
+                            isThreeLine: true,
+                            trailing: IconButton(
+                              icon: const Icon(Icons.open_in_new),
+                              onPressed: () => _openExternalLink(
+                                context,
+                                _buildSkillhubSearchUrl(_getPrimaryKeyword(item)),
+                              ),
+                            ),
                           ),
                         ),
                       ),
@@ -137,6 +166,51 @@ class ResultScreen extends StatelessWidget {
           ),
         );
       },
+    );
+  }
+
+  static String _getPrimaryKeyword(Map<String, dynamic> item) {
+    final rawKeyword = (item['keyword'] ?? '').toString().trim();
+    if (rawKeyword.isNotEmpty) {
+      return rawKeyword;
+    }
+    return (item['title'] ?? '').toString().trim();
+  }
+
+  static String _buildKarirhubSearchUrl(String keyword) {
+    if (keyword.isEmpty) {
+      return 'https://karirhub.kemnaker.go.id/lowongan-dalam-negeri/lowongan';
+    }
+    final filtersValue = 'keyword:$keyword#$keyword';
+    return 'https://karirhub.kemnaker.go.id/lowongan-dalam-negeri/lowongan?filters=${Uri.encodeComponent(filtersValue)}';
+  }
+
+  static String _buildSkillhubSearchUrl(String keyword) {
+    if (keyword.isEmpty) {
+      return 'https://skillhub.kemnaker.go.id/pelatihan/vokasi-nasional/jadwal';
+    }
+    final filtersValue = 'keyword:$keyword#$keyword';
+    return 'https://skillhub.kemnaker.go.id/pelatihan/vokasi-nasional/jadwal?keyword=${Uri.encodeComponent(keyword)}&filters=${Uri.encodeComponent(filtersValue)}';
+  }
+
+  static Future<void> _openExternalLink(BuildContext context, String url) async {
+    final uri = Uri.tryParse(url);
+    if (uri == null) {
+      _showLinkError(context);
+      return;
+    }
+
+    final launched = await launchUrl(uri, mode: LaunchMode.externalApplication);
+    if (!launched && context.mounted) {
+      _showLinkError(context);
+    }
+  }
+
+  static void _showLinkError(BuildContext context) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(
+        content: Text('Gagal membuka link. Coba lagi beberapa saat.'),
+      ),
     );
   }
 }
