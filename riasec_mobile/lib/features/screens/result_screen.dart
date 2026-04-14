@@ -96,27 +96,32 @@ class ResultScreen extends StatelessWidget {
                     ),
                   ),
                   ...recommendation.careerRecommendations.take(5).map(
-                        (item) => Card(
-                          child: ListTile(
-                            onTap: () => _openExternalLink(
-                              context,
-                              _buildKarirhubSearchUrl(_getPrimaryKeyword(item)),
-                            ),
-                            leading: const CircleAvatar(
-                              backgroundColor: Color(0xFFD8F3E8),
-                              child: Icon(Icons.work_outline, color: Color(0xFF0B8B6A)),
-                            ),
-                            title: Text((item['title'] ?? '-').toString()),
-                            subtitle: Text(
-                              '${(item['why'] ?? '').toString()}\nTap untuk lihat lowongan.',
-                            ),
-                            isThreeLine: true,
-                            trailing: IconButton(
-                              icon: const Icon(Icons.open_in_new),
-                              onPressed: () => _openExternalLink(
+                        (item) => Padding(
+                          padding: const EdgeInsets.only(bottom: 10),
+                          child: Card(
+                            child: ListTile(
+                              onTap: () => _openExternalLink(
                                 context,
                                 _buildKarirhubSearchUrl(_getPrimaryKeyword(item)),
                               ),
+                              contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+                              minVerticalPadding: 10,
+                              leading: const CircleAvatar(
+                                backgroundColor: Color(0xFFD8F3E8),
+                                child: Icon(Icons.work_outline, color: Color(0xFF0B8B6A)),
+                              ),
+                              title: Text(
+                                (item['title'] ?? '-').toString(),
+                                style: const TextStyle(fontWeight: FontWeight.w700),
+                              ),
+                              subtitle: Padding(
+                                padding: const EdgeInsets.only(top: 4),
+                                child: Text(
+                                  '${(item['why'] ?? '').toString()}\nTap untuk lihat lowongan.',
+                                  style: const TextStyle(height: 1.4),
+                                ),
+                              ),
+                              isThreeLine: true,
                             ),
                           ),
                         ),
@@ -129,27 +134,32 @@ class ResultScreen extends StatelessWidget {
                     ),
                   ),
                   ...recommendation.trainingRecommendations.take(5).map(
-                        (item) => Card(
-                          child: ListTile(
-                            onTap: () => _openExternalLink(
-                              context,
-                              _buildSkillhubSearchUrl(_getPrimaryKeyword(item)),
-                            ),
-                            leading: const CircleAvatar(
-                              backgroundColor: Color(0xFFD8F3E8),
-                              child: Icon(Icons.school_outlined, color: Color(0xFF0B8B6A)),
-                            ),
-                            title: Text((item['title'] ?? '-').toString()),
-                            subtitle: Text(
-                              '${(item['reason'] ?? '').toString()}\nTap untuk cari pelatihan.',
-                            ),
-                            isThreeLine: true,
-                            trailing: IconButton(
-                              icon: const Icon(Icons.open_in_new),
-                              onPressed: () => _openExternalLink(
+                        (item) => Padding(
+                          padding: const EdgeInsets.only(bottom: 10),
+                          child: Card(
+                            child: ListTile(
+                              onTap: () => _openExternalLink(
                                 context,
                                 _buildSkillhubSearchUrl(_getPrimaryKeyword(item)),
                               ),
+                              contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+                              minVerticalPadding: 10,
+                              leading: const CircleAvatar(
+                                backgroundColor: Color(0xFFD8F3E8),
+                                child: Icon(Icons.school_outlined, color: Color(0xFF0B8B6A)),
+                              ),
+                              title: Text(
+                                (item['title'] ?? '-').toString(),
+                                style: const TextStyle(fontWeight: FontWeight.w700),
+                              ),
+                              subtitle: Padding(
+                                padding: const EdgeInsets.only(top: 4),
+                                child: Text(
+                                  '${(item['reason'] ?? '').toString()}\nTap untuk cari pelatihan.',
+                                  style: const TextStyle(height: 1.4),
+                                ),
+                              ),
+                              isThreeLine: true,
                             ),
                           ),
                         ),
