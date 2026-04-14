@@ -181,8 +181,7 @@ class ResultScreen extends StatelessWidget {
     if (keyword.isEmpty) {
       return 'https://karirhub.kemnaker.go.id/lowongan-dalam-negeri/lowongan';
     }
-    final filtersValue = 'keyword:$keyword#$keyword';
-    return 'https://karirhub.kemnaker.go.id/lowongan-dalam-negeri/lowongan?filters=${Uri.encodeComponent(filtersValue)}';
+    return 'https://karirhub.kemnaker.go.id/lowongan-dalam-negeri/lowongan?keyword=${Uri.encodeComponent(keyword)}';
   }
 
   static String _buildSkillhubSearchUrl(String keyword) {
