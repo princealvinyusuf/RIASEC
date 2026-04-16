@@ -65,6 +65,9 @@ $jobZones = $recommendationPayload['job_zones'];
         <p class="kicker mb-1">Detail Hasil Tes</p>
         <h1 class="hero-title h2 mb-1">Informasi peserta & jawaban</h1>
         <p class="hero-subtitle mb-0">Lihat profil skor RIASEC dan jawaban per butir untuk sesi tes ini.</p>
+        <div class="mt-2">
+          <a href="generate_pdf?score_id=<?php echo intval($scoreId); ?>" class="btn btn-primary-soft btn-sm" target="_blank">Unduh Laporan</a>
+        </div>
       </div>
       <a href="admin_scores" class="btn btn-outline-soft">&larr; Kembali ke daftar</a>
     </div>
@@ -215,9 +218,6 @@ $jobZones = $recommendationPayload['job_zones'];
         </div>
       </div>
 
-      <div class="d-flex gap-2 flex-wrap">
-        <a href="generate_pdf?score_id=<?php echo intval($scoreId); ?>" class="btn btn-primary-soft" target="_blank">Unduh Laporan</a>
-      </div>
     <?php } else { ?>
       <div class="alert alert-warning mb-0">Data tidak ditemukan.</div>
     <?php } ?>
