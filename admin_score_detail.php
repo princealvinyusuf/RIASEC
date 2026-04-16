@@ -5,6 +5,7 @@ if (empty($_SESSION['is_admin'])) {
   exit;
 }
 include_once __DIR__ . '/includes/db.php';
+include_once __DIR__ . '/includes/riasec_recommendations.php';
 ?>
 <?php
 $scoreId = isset($_GET['score_id']) ? intval($_GET['score_id']) : 0;
@@ -37,6 +38,22 @@ $detailSql = "SELECT ta.statement_id, ta.statement_category, ta.answer, s.statem
               WHERE ta.score_id = $scoreId
               ORDER BY ta.statement_category, ta.statement_id";
 $detailRes = mysqli_query($connection, $detailSql);
+
+$resultPersonality = $header['result'] ?? '';
+$scorePercentageList = array(
+    'R' => floatval($header['realistic'] ?? 0),
+    'I' => floatval($header['investigative'] ?? 0),
+    'A' => floatval($header['artistic'] ?? 0),
+    'S' => floatval($header['social'] ?? 0),
+    'E' => floatval($header['enterprising'] ?? 0),
+    'C' => floatval($header['conventional'] ?? 0),
+);
+$recommendationPayload = getRiasecRecommendationPayload($resultPersonality, $scorePercentageList);
+$topCodes = $recommendationPayload['top_codes'];
+$careerRecommendations = $recommendationPayload['career_recommendations'];
+$trainingRecommendations = $recommendationPayload['training_recommendations'];
+$trainingTierSummary = $recommendationPayload['training_tier_summary'];
+$jobZones = $recommendationPayload['job_zones'];
 ?>
 <?php $pageTitle = 'Detail Tes - Admin'; ?>
 <?php include 'includes/header.php'; ?>
@@ -94,6 +111,113 @@ $detailRes = mysqli_query($connection, $detailSql);
           <div class="score-track"><div class="score-fill" style="width: <?php echo floatval($header['conventional']); ?>%;"></div></div>
         </li>
       </ul>
+
+      <div class="glass-card app-form-card mt-3 mb-3">
+        <div class="d-flex justify-content-between align-items-center flex-wrap gap-2 mb-3">
+          <h2 class="h5 fw-bold text-success mb-0">Rekomendasi karier eksplorasi</h2>
+          <span class="muted">Berdasarkan kombinasi profil <?php echo htmlspecialchars($resultPersonality); ?></span>
+        </div>
+        <div class="career-grid">
+          <?php foreach ($careerRecommendations as $career) { ?>
+            <article class="career-card">
+              <div class="d-flex justify-content-between align-items-center mb-1">
+                <strong><?php echo htmlspecialchars($career['title']); ?></strong>
+                <span class="badge-zone">Job Zone <?php echo intval($career['zone']); ?></span>
+              </div>
+              <div class="small mb-1">Tag minat: <?php echo htmlspecialchars(implode('-', $career['tags'])); ?></div>
+              <div class="muted small"><?php echo htmlspecialchars($career['why']); ?></div>
+              <div class="mt-2 d-flex gap-2 flex-wrap">
+                <a
+                  class="btn btn-sm btn-outline-success"
+                  href="<?php echo htmlspecialchars(buildKarirhubSearchUrl(getPrimaryCareerKeyword($career))); ?>"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                >
+                  Lihat Pekerjaan
+                </a>
+                <a
+                  class="btn btn-sm btn-outline-secondary"
+                  href="<?php echo htmlspecialchars(buildKarirhubSearchUrl(getRelatedCareerKeyword($career))); ?>"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                >
+                  Lihat Lowongan Serupa
+                </a>
+              </div>
+            </article>
+          <?php } ?>
+        </div>
+      </div>
+
+      <div class="glass-card app-form-card mb-3">
+        <h2 class="h5 fw-bold text-success mb-3">Panduan Job Zone</h2>
+        <div class="career-grid">
+          <?php foreach ($jobZones as $zone) { ?>
+            <article class="career-card">
+              <div class="d-flex justify-content-between align-items-center mb-1">
+                <strong>Zone <?php echo intval($zone['zone']); ?></strong>
+                <span class="badge-zone"><?php echo htmlspecialchars($zone['label']); ?></span>
+              </div>
+              <div class="muted small"><?php echo htmlspecialchars($zone['desc']); ?></div>
+            </article>
+          <?php } ?>
+        </div>
+      </div>
+
+      <div class="glass-card app-form-card mb-3">
+        <div class="d-flex justify-content-between align-items-center flex-wrap gap-2 mb-3">
+          <h2 class="h5 fw-bold text-success mb-0">Rekomendasi Pelatihan</h2>
+          <span class="muted">Sumber data: SkillHub Kemnaker (profil <?php echo htmlspecialchars($resultPersonality); ?>)</span>
+        </div>
+        <div class="d-flex gap-2 flex-wrap mb-3">
+          <span class="badge-tier badge-tier-top"><?php echo intval($trainingTierSummary['top']); ?> Sangat Direkomendasikan</span>
+          <span class="badge-tier badge-tier-good"><?php echo intval($trainingTierSummary['good']); ?> Cocok</span>
+          <span class="badge-tier badge-tier-alt"><?php echo intval($trainingTierSummary['alt']); ?> Eksplorasi Tambahan</span>
+        </div>
+        <div class="career-grid">
+          <?php if (!empty($trainingRecommendations)) { ?>
+            <?php foreach ($trainingRecommendations as $training) { ?>
+              <article class="career-card <?php echo htmlspecialchars($training['tier']['card_class']); ?>">
+                <div class="d-flex justify-content-between align-items-center gap-2 mb-1 flex-wrap">
+                  <strong><?php echo htmlspecialchars($training['title']); ?></strong>
+                  <div class="d-flex gap-2 flex-wrap">
+                    <span class="badge-tier <?php echo htmlspecialchars($training['tier']['class']); ?>"><?php echo htmlspecialchars($training['tier']['label']); ?></span>
+                    <span class="badge-zone"><?php echo htmlspecialchars($training['delivery']); ?></span>
+                  </div>
+                </div>
+                <div class="small mb-1"><strong>Level:</strong> <?php echo htmlspecialchars($training['level']); ?></div>
+                <div class="small mb-1"><strong>Kecocokan:</strong> <?php echo htmlspecialchars(!empty($training['matched_tags']) ? implode('-', $training['matched_tags']) : '-'); ?></div>
+                <div class="muted small"><?php echo htmlspecialchars($training['focus']); ?></div>
+                <div class="small mt-1" style="color:#0a6d31;"><strong>Alasan rekomendasi:</strong> <?php echo htmlspecialchars($training['reason']); ?></div>
+                <div class="mt-2 d-flex gap-2 flex-wrap">
+                  <a
+                    class="btn btn-sm btn-outline-success"
+                    href="<?php echo htmlspecialchars(buildSkillhubSearchUrl(getPrimaryTrainingKeyword($training))); ?>"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                  >
+                    Cari Pelatihan
+                  </a>
+                  <a
+                    class="btn btn-sm btn-outline-secondary"
+                    href="<?php echo htmlspecialchars(buildSkillhubSearchUrl(getRelatedTrainingKeyword($training))); ?>"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                  >
+                    Pelatihan Serupa
+                  </a>
+                </div>
+              </article>
+            <?php } ?>
+          <?php } else { ?>
+            <div class="muted">Belum ada pelatihan SkillHub yang sangat spesifik untuk kombinasi profil ini.</div>
+          <?php } ?>
+        </div>
+      </div>
+
+      <div class="d-flex gap-2 flex-wrap">
+        <a href="generate_pdf?score_id=<?php echo intval($scoreId); ?>" class="btn btn-primary-soft" target="_blank">Unduh Laporan</a>
+      </div>
     <?php } else { ?>
       <div class="alert alert-warning mb-0">Data tidak ditemukan.</div>
     <?php } ?>

@@ -2,6 +2,7 @@
 // Include required files
 include 'includes/db.php';
 include 'util_functions.php';
+include_once __DIR__ . '/includes/riasec_recommendations.php';
 
 // Check if mPDF is available, if not, we'll use a fallback
 $mpdf_available = false;
@@ -67,19 +68,44 @@ session_start();
 
 // Initialize result_personality
 $result_personality = '';
+$scorePercentageList = array('R'=>'0','I'=>'0','A'=>'0','S'=>'0','E'=>'0','C'=>'0');
+$sourceScoreId = 0;
+$requestedScoreId = isset($_GET['score_id']) ? intval($_GET['score_id']) : 0;
 
-// First try to get from session
-if (isset($_SESSION['result_personality']) && is_string($_SESSION['result_personality'])) {
-    $result_personality = $_SESSION['result_personality'];
-} else {
-    $latestScoreId = isset($_SESSION['latest_score_id']) ? intval($_SESSION['latest_score_id']) : 0;
-    $resultQuery = $latestScoreId > 0
-        ? "SELECT result FROM personality_test_scores WHERE id = {$latestScoreId} LIMIT 1"
-        : "SELECT result FROM personality_test_scores ORDER BY created_at DESC LIMIT 1";
-    $resultRes = mysqli_query($connection, $resultQuery);
-    if ($resultRes && mysqli_num_rows($resultRes) > 0) {
-        $latestScore = mysqli_fetch_assoc($resultRes);
-        $result_personality = $latestScore['result'];
+// Admin can explicitly download report by score id.
+if ($requestedScoreId > 0 && !empty($_SESSION['is_admin'])) {
+    $scoreSql = "SELECT id, result, realistic, investigative, artistic, social, enterprising, conventional
+                 FROM personality_test_scores
+                 WHERE id = {$requestedScoreId}
+                 LIMIT 1";
+    $scoreRes = mysqli_query($connection, $scoreSql);
+    if ($scoreRes && mysqli_num_rows($scoreRes) > 0) {
+        $scoreData = mysqli_fetch_assoc($scoreRes);
+        $sourceScoreId = intval($scoreData['id']);
+        $result_personality = (string)$scoreData['result'];
+        $scorePercentageList['R'] = $scoreData['realistic'];
+        $scorePercentageList['I'] = $scoreData['investigative'];
+        $scorePercentageList['A'] = $scoreData['artistic'];
+        $scorePercentageList['S'] = $scoreData['social'];
+        $scorePercentageList['E'] = $scoreData['enterprising'];
+        $scorePercentageList['C'] = $scoreData['conventional'];
+    }
+}
+
+// Fallback to current session result flow for regular users.
+if ($result_personality === '') {
+    if (isset($_SESSION['result_personality']) && is_string($_SESSION['result_personality'])) {
+        $result_personality = $_SESSION['result_personality'];
+    } else {
+        $latestScoreId = isset($_SESSION['latest_score_id']) ? intval($_SESSION['latest_score_id']) : 0;
+        $resultQuery = $latestScoreId > 0
+            ? "SELECT result FROM personality_test_scores WHERE id = {$latestScoreId} LIMIT 1"
+            : "SELECT result FROM personality_test_scores ORDER BY created_at DESC LIMIT 1";
+        $resultRes = mysqli_query($connection, $resultQuery);
+        if ($resultRes && mysqli_num_rows($resultRes) > 0) {
+            $latestScore = mysqli_fetch_assoc($resultRes);
+            $result_personality = $latestScore['result'];
+        }
     }
 }
 
@@ -97,22 +123,22 @@ if (empty($result_personality)) {
 }
 
 // Get score percentages for the chart
-$scorePercentageList = array('R'=>'0','I'=>'0','A'=>'0','S'=>'0','E'=>'0','C'=>'0');
-
-// Get score percentages from the same score record if possible
-$latestScoreId = isset($_SESSION['latest_score_id']) ? intval($_SESSION['latest_score_id']) : 0;
-$scoreQuery = $latestScoreId > 0
-    ? "SELECT realistic, investigative, artistic, social, enterprising, conventional FROM personality_test_scores WHERE id = {$latestScoreId} LIMIT 1"
-    : "SELECT realistic, investigative, artistic, social, enterprising, conventional FROM personality_test_scores ORDER BY created_at DESC LIMIT 1";
-$scoreRes = mysqli_query($connection, $scoreQuery);
-if ($scoreRes && mysqli_num_rows($scoreRes) > 0) {
-    $scoreData = mysqli_fetch_assoc($scoreRes);
-    $scorePercentageList['R'] = $scoreData['realistic'];
-    $scorePercentageList['I'] = $scoreData['investigative'];
-    $scorePercentageList['A'] = $scoreData['artistic'];
-    $scorePercentageList['S'] = $scoreData['social'];
-    $scorePercentageList['E'] = $scoreData['enterprising'];
-    $scorePercentageList['C'] = $scoreData['conventional'];
+if ($sourceScoreId === 0) {
+    $latestScoreId = isset($_SESSION['latest_score_id']) ? intval($_SESSION['latest_score_id']) : 0;
+    $scoreQuery = $latestScoreId > 0
+        ? "SELECT id, realistic, investigative, artistic, social, enterprising, conventional FROM personality_test_scores WHERE id = {$latestScoreId} LIMIT 1"
+        : "SELECT id, realistic, investigative, artistic, social, enterprising, conventional FROM personality_test_scores ORDER BY created_at DESC LIMIT 1";
+    $scoreRes = mysqli_query($connection, $scoreQuery);
+    if ($scoreRes && mysqli_num_rows($scoreRes) > 0) {
+        $scoreData = mysqli_fetch_assoc($scoreRes);
+        $sourceScoreId = intval($scoreData['id']);
+        $scorePercentageList['R'] = $scoreData['realistic'];
+        $scorePercentageList['I'] = $scoreData['investigative'];
+        $scorePercentageList['A'] = $scoreData['artistic'];
+        $scorePercentageList['S'] = $scoreData['social'];
+        $scorePercentageList['E'] = $scoreData['enterprising'];
+        $scorePercentageList['C'] = $scoreData['conventional'];
+    }
 }
 
 // Fetch paragraphs for the result personality type
@@ -162,6 +188,12 @@ $top3Text = '';
 foreach ($top3 as $item) {
     $top3Text .= $item['code'];
 }
+
+$recommendationPayload = getRiasecRecommendationPayload($result_personality, $scorePercentageList);
+$careerRecommendations = array_slice($recommendationPayload['career_recommendations'], 0, 8);
+$trainingRecommendations = array_slice($recommendationPayload['training_recommendations'], 0, 6);
+$jobZones = $recommendationPayload['job_zones'];
+$trainingTierSummary = $recommendationPayload['training_tier_summary'];
 
 // Create HTML content for PDF
 $html = '
@@ -302,6 +334,30 @@ $html = '
             margin: 0;
             padding-left: 16px;
         }
+        .recommendation-table th {
+            background: #e5f6ea;
+            color: #0b5e29;
+            border: 1px solid #d6eadb;
+            padding: 7px;
+            font-size: 10px;
+            text-align: left;
+        }
+        .recommendation-table td {
+            border: 1px solid #e1ece3;
+            padding: 7px;
+            vertical-align: top;
+            font-size: 10px;
+        }
+        .tier-chip {
+            display: inline-block;
+            border: 1px solid #b7ddc2;
+            border-radius: 999px;
+            padding: 2px 7px;
+            margin-right: 5px;
+            font-size: 10px;
+            color: #0b5e29;
+            background: #eff8f1;
+        }
         .footer {
             margin-top: 16px;
             padding-top: 10px;
@@ -415,6 +471,91 @@ if (!empty($paras)) {
         $html .= '</div>';
     }
 }
+
+$html .= '<div class="card">
+    <h2 class="section-title">Rekomendasi Karier Eksplorasi</h2>
+    <table class="recommendation-table">
+        <thead>
+            <tr>
+                <th style="width: 26%;">Karier</th>
+                <th style="width: 14%;">Tag</th>
+                <th style="width: 12%;">Job Zone</th>
+                <th>Catatan</th>
+            </tr>
+        </thead>
+        <tbody>';
+
+foreach ($careerRecommendations as $career) {
+    $html .= '<tr>
+        <td><strong>' . htmlspecialchars($career['title']) . '</strong></td>
+        <td>' . htmlspecialchars(implode('-', $career['tags'])) . '</td>
+        <td>Zone ' . intval($career['zone']) . '</td>
+        <td>' . htmlspecialchars($career['why']) . '</td>
+    </tr>';
+}
+
+$html .= '</tbody>
+    </table>
+</div>';
+
+$html .= '<div class="card">
+    <h2 class="section-title">Panduan Job Zone</h2>
+    <table class="recommendation-table">
+        <thead>
+            <tr>
+                <th style="width: 16%;">Zone</th>
+                <th style="width: 28%;">Label</th>
+                <th>Deskripsi</th>
+            </tr>
+        </thead>
+        <tbody>';
+
+foreach ($jobZones as $zone) {
+    $html .= '<tr>
+        <td><strong>Zone ' . intval($zone['zone']) . '</strong></td>
+        <td>' . htmlspecialchars($zone['label']) . '</td>
+        <td>' . htmlspecialchars($zone['desc']) . '</td>
+    </tr>';
+}
+
+$html .= '</tbody>
+    </table>
+</div>';
+
+$html .= '<div class="card">
+    <h2 class="section-title">Rekomendasi Pelatihan</h2>
+    <div style="margin-bottom:8px;">
+        <span class="tier-chip">' . intval($trainingTierSummary['top']) . ' Sangat Direkomendasikan</span>
+        <span class="tier-chip">' . intval($trainingTierSummary['good']) . ' Cocok</span>
+        <span class="tier-chip">' . intval($trainingTierSummary['alt']) . ' Eksplorasi Tambahan</span>
+    </div>
+    <table class="recommendation-table">
+        <thead>
+            <tr>
+                <th style="width: 24%;">Pelatihan</th>
+                <th style="width: 14%;">Level</th>
+                <th style="width: 17%;">Kategori</th>
+                <th>Alasan</th>
+            </tr>
+        </thead>
+        <tbody>';
+
+if (!empty($trainingRecommendations)) {
+    foreach ($trainingRecommendations as $training) {
+        $html .= '<tr>
+            <td><strong>' . htmlspecialchars($training['title']) . '</strong></td>
+            <td>' . htmlspecialchars($training['level']) . '</td>
+            <td>' . htmlspecialchars($training['tier']['label']) . '</td>
+            <td>' . htmlspecialchars($training['reason']) . '</td>
+        </tr>';
+    }
+} else {
+    $html .= '<tr><td colspan="4">Belum ada pelatihan spesifik untuk kombinasi profil ini.</td></tr>';
+}
+
+$html .= '</tbody>
+    </table>
+</div>';
 
 $html .= '
     <div class="footer">
