@@ -33,6 +33,7 @@ function ensureMobileApiTables($connection) {
 
 function validateParticipantPayload($payload) {
     $errors = array();
+    $allowedEducationLevels = array('10', '11', '12', 'Universitas');
 
     $full_name = apiNormalizeInputText(apiGetInputValue($payload, 'full_name'));
     $birth_date = trim((string)apiGetInputValue($payload, 'birth_date'));
@@ -47,8 +48,8 @@ function validateParticipantPayload($payload) {
     if ($birth_date === '') { $errors['birth_date'] = 'Tanggal Lahir wajib diisi.'; }
     if ($phone === '') { $errors['phone'] = 'No. HP wajib diisi.'; }
     if ($email === '') { $errors['email'] = 'E-mail wajib diisi.'; }
-    if ($class_level === '') { $errors['class_level'] = 'Kelas wajib dipilih.'; }
-    if ($school_name === '') { $errors['school_name'] = 'Nama Sekolah wajib diisi.'; }
+    if ($class_level === '') { $errors['class_level'] = 'Jenjang Pendidikan wajib dipilih.'; }
+    if ($school_name === '') { $errors['school_name'] = 'Nama Sekolah/Institusi/Universitas wajib diisi.'; }
     if ($extracurricular === '') { $errors['extracurricular'] = 'Ekstrakurikuler wajib diisi.'; }
     if ($organization === '') { $errors['organization'] = 'Organisasi wajib diisi.'; }
 
@@ -56,7 +57,7 @@ function validateParticipantPayload($payload) {
         $errors['full_name'] = 'Nama Lengkap tidak valid.';
     }
     if ($school_name !== '' && !apiIsMeaningfulText($school_name, 3)) {
-        $errors['school_name'] = 'Nama Sekolah tidak valid.';
+        $errors['school_name'] = 'Nama Sekolah/Institusi/Universitas tidak valid.';
     }
     if ($extracurricular !== '' && !apiIsMeaningfulText($extracurricular, 3)) {
         $errors['extracurricular'] = 'Ekstrakurikuler tidak valid.';
@@ -77,8 +78,8 @@ function validateParticipantPayload($payload) {
         }
     }
 
-    if ($class_level !== '' && !in_array($class_level, array('10', '11', '12'), true)) {
-        $errors['class_level'] = 'Kelas tidak valid.';
+    if ($class_level !== '' && !in_array($class_level, $allowedEducationLevels, true)) {
+        $errors['class_level'] = 'Jenjang Pendidikan tidak valid.';
     }
 
     if ($birth_date !== '') {
@@ -113,6 +114,7 @@ function validateParticipantPayload($payload) {
 
 function createParticipantWithToken($connection, $payload) {
     ensureMobileApiTables($connection);
+    mysqli_query($connection, "ALTER TABLE personal_info MODIFY class_level ENUM('10','11','12','Universitas') NOT NULL");
     $validation = validateParticipantPayload($payload);
     if (!empty($validation['errors'])) {
         return array('errors' => $validation['errors']);

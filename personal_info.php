@@ -5,6 +5,8 @@ if (session_status() === PHP_SESSION_NONE) {
 }
 include 'includes/db.php';
 
+$educationLevels = array('10', '11', '12', 'Universitas');
+
 function normalizeInputText($value) {
     $value = trim((string)$value);
     $value = preg_replace('/\s+/', ' ', $value);
@@ -33,13 +35,14 @@ $createTableSql = "CREATE TABLE IF NOT EXISTS personal_info (
     birth_date DATE NOT NULL,
     phone VARCHAR(30) NOT NULL,
     email VARCHAR(150) NOT NULL,
-    class_level ENUM('10','11','12') NOT NULL,
+    class_level ENUM('10','11','12','Universitas') NOT NULL,
     school_name VARCHAR(150) NOT NULL,
     extracurricular TEXT NOT NULL,
     organization TEXT NOT NULL,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4";
 mysqli_query($connection, $createTableSql);
+mysqli_query($connection, "ALTER TABLE personal_info MODIFY class_level ENUM('10','11','12','Universitas') NOT NULL");
 
 $errors = array();
 
@@ -57,8 +60,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     if ($birth_date === '') { $errors[] = 'Tanggal Lahir wajib diisi.'; }
     if ($phone === '') { $errors[] = 'No. HP wajib diisi.'; }
     if ($email === '') { $errors[] = 'E-mail wajib diisi.'; }
-    if ($class_level === '') { $errors[] = 'Kelas wajib dipilih.'; }
-    if ($school_name === '') { $errors[] = 'Nama Sekolah wajib diisi.'; }
+    if ($class_level === '') { $errors[] = 'Jenjang Pendidikan wajib dipilih.'; }
+    if ($school_name === '') { $errors[] = 'Nama Sekolah/Institusi/Universitas wajib diisi.'; }
     if ($extracurricular === '') { $errors[] = 'Ekstrakurikuler yang diikuti wajib diisi.'; }
     if ($organization === '') { $errors[] = 'Organisasi yang diikuti wajib diisi.'; }
 
@@ -67,7 +70,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     }
 
     if ($school_name !== '' && !isMeaningfulText($school_name, 3)) {
-        $errors[] = 'Nama Sekolah tidak valid.';
+        $errors[] = 'Nama Sekolah/Institusi/Universitas tidak valid.';
     }
 
     if ($extracurricular !== '' && !isMeaningfulText($extracurricular, 3)) {
@@ -91,8 +94,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         }
     }
 
-    if ($class_level !== '' && !in_array($class_level, array('10','11','12'), true)) {
-        $errors[] = 'Kelas tidak valid.';
+    if ($class_level !== '' && !in_array($class_level, $educationLevels, true)) {
+        $errors[] = 'Jenjang Pendidikan tidak valid.';
     }
 
     if ($birth_date !== '') {
@@ -174,16 +177,17 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
           <input type="email" name="email" class="form-control" required maxlength="150" value="<?php echo isset($email) ? htmlspecialchars($email) : ''; ?>">
         </div>
         <div class="col-md-6">
-          <label class="form-label">Kelas</label>
+          <label class="form-label">Jenjang Pendidikan</label>
           <select name="class_level" class="form-select" required>
-            <option value="" disabled <?php echo !isset($class_level) || $class_level === '' ? 'selected' : ''; ?>>Pilih kelas</option>
+            <option value="" disabled <?php echo !isset($class_level) || $class_level === '' ? 'selected' : ''; ?>>Pilih jenjang pendidikan</option>
             <option value="10" <?php echo (isset($class_level) && $class_level === '10') ? 'selected' : ''; ?>>10</option>
             <option value="11" <?php echo (isset($class_level) && $class_level === '11') ? 'selected' : ''; ?>>11</option>
             <option value="12" <?php echo (isset($class_level) && $class_level === '12') ? 'selected' : ''; ?>>12</option>
+            <option value="Universitas" <?php echo (isset($class_level) && $class_level === 'Universitas') ? 'selected' : ''; ?>>Universitas</option>
           </select>
         </div>
         <div class="col-md-6">
-          <label class="form-label">Nama sekolah</label>
+          <label class="form-label">Nama Sekolah/Institusi/Universitas</label>
           <input type="text" name="school_name" class="form-control" required minlength="3" maxlength="150" value="<?php echo isset($school_name) ? htmlspecialchars($school_name) : ''; ?>">
         </div>
         <div class="col-12">
