@@ -6,6 +6,22 @@ if (empty($_SESSION['is_admin'])) {
 }
 include_once __DIR__ . '/includes/db.php';
 include_once __DIR__ . '/includes/riasec_recommendations.php';
+
+if (!function_exists('adminDetailColumnExists')) {
+  function adminDetailColumnExists($connection, $tableName, $columnName) {
+    $safeTable = mysqli_real_escape_string($connection, $tableName);
+    $safeColumn = mysqli_real_escape_string($connection, $columnName);
+    $sql = "SHOW COLUMNS FROM `{$safeTable}` LIKE '{$safeColumn}'";
+    $res = mysqli_query($connection, $sql);
+    return $res && mysqli_num_rows($res) > 0;
+  }
+}
+if (!adminDetailColumnExists($connection, 'personal_info', 'province')) {
+  mysqli_query($connection, "ALTER TABLE personal_info ADD COLUMN province VARCHAR(100) NULL AFTER school_name");
+}
+if (!adminDetailColumnExists($connection, 'personal_info', 'city')) {
+  mysqli_query($connection, "ALTER TABLE personal_info ADD COLUMN city VARCHAR(120) NULL AFTER province");
+}
 ?>
 <?php
 $scoreId = isset($_GET['score_id']) ? intval($_GET['score_id']) : 0;
@@ -23,7 +39,7 @@ $headerSql = "SELECT pts.id AS score_id, pts.result,
                      pts.social, pts.enterprising, pts.conventional,
                      pts.created_at,
                      pi.full_name, pi.email, pi.class_level, pi.school_name,
-                     pi.birth_date, pi.phone, pi.extracurricular, pi.organization
+                     pi.birth_date, pi.phone, pi.province, pi.city, pi.extracurricular, pi.organization
               FROM personality_test_scores pts
               LEFT JOIN personal_info pi ON pi.id = pts.personal_info_id
               WHERE pts.id = $scoreId";
@@ -80,6 +96,8 @@ $jobZones = $recommendationPayload['job_zones'];
         <div class="interest-pill"><div class="muted small">Email</div><strong><?php echo htmlspecialchars($header['email'] ?? '-'); ?></strong></div>
         <div class="interest-pill"><div class="muted small">Jenjang Pendidikan</div><strong><?php echo htmlspecialchars($header['class_level'] ?? '-'); ?></strong></div>
         <div class="interest-pill"><div class="muted small">Sekolah/Institusi/Universitas</div><strong><?php echo htmlspecialchars($header['school_name'] ?? '-'); ?></strong></div>
+        <div class="interest-pill"><div class="muted small">Provinsi</div><strong><?php echo htmlspecialchars($header['province'] ?? '-'); ?></strong></div>
+        <div class="interest-pill"><div class="muted small">Kota</div><strong><?php echo htmlspecialchars($header['city'] ?? '-'); ?></strong></div>
         <div class="interest-pill"><div class="muted small">No. HP</div><strong><?php echo htmlspecialchars($header['phone'] ?? '-'); ?></strong></div>
         <div class="interest-pill"><div class="muted small">Tanggal Tes</div><strong><?php echo htmlspecialchars($header['created_at'] ?? '-'); ?></strong></div>
       </div>

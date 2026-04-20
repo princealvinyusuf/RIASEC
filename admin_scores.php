@@ -9,6 +9,21 @@ if (empty($_SESSION['is_admin'])) {
 $pageTitle = 'Dashboard Admin - RIASEC';
 include 'includes/header.php';
 
+function adminColumnExists($connection, $tableName, $columnName) {
+    $safeTable = mysqli_real_escape_string($connection, $tableName);
+    $safeColumn = mysqli_real_escape_string($connection, $columnName);
+    $sql = "SHOW COLUMNS FROM `{$safeTable}` LIKE '{$safeColumn}'";
+    $res = mysqli_query($connection, $sql);
+    return $res && mysqli_num_rows($res) > 0;
+}
+
+if (!adminColumnExists($connection, 'personal_info', 'province')) {
+    mysqli_query($connection, "ALTER TABLE personal_info ADD COLUMN province VARCHAR(100) NULL AFTER school_name");
+}
+if (!adminColumnExists($connection, 'personal_info', 'city')) {
+    mysqli_query($connection, "ALTER TABLE personal_info ADD COLUMN city VARCHAR(120) NULL AFTER province");
+}
+
 // Analytics Queries
 $total_tests_query = "SELECT COUNT(*) as total FROM personality_test_scores";
 $total_tests_result = mysqli_query($connection, $total_tests_query);
@@ -49,11 +64,29 @@ if ($schoolOptionRes) {
     }
 }
 
+$provinceOptions = array();
+$provinceOptionRes = mysqli_query($connection, "SELECT DISTINCT province FROM personal_info WHERE province IS NOT NULL AND TRIM(province) NOT IN ('', '-') ORDER BY province ASC");
+if ($provinceOptionRes) {
+    while ($provinceRow = mysqli_fetch_assoc($provinceOptionRes)) {
+        $provinceOptions[] = $provinceRow['province'];
+    }
+}
+
+$cityOptions = array();
+$cityOptionRes = mysqli_query($connection, "SELECT DISTINCT city FROM personal_info WHERE city IS NOT NULL AND TRIM(city) NOT IN ('', '-') ORDER BY city ASC");
+if ($cityOptionRes) {
+    while ($cityRow = mysqli_fetch_assoc($cityOptionRes)) {
+        $cityOptions[] = $cityRow['city'];
+    }
+}
+
 // Current filter values
 $filterSearch = isset($_GET['q']) ? trim($_GET['q']) : '';
 $filterClass = isset($_GET['class_level']) ? trim($_GET['class_level']) : '';
 $filterResult = isset($_GET['result_code']) ? strtoupper(trim($_GET['result_code'])) : '';
 $filterSchool = isset($_GET['school_name']) ? trim($_GET['school_name']) : '';
+$filterProvince = isset($_GET['province']) ? trim($_GET['province']) : '';
+$filterCity = isset($_GET['city']) ? trim($_GET['city']) : '';
 $filterDateFrom = isset($_GET['date_from']) ? trim($_GET['date_from']) : '';
 $filterDateTo = isset($_GET['date_to']) ? trim($_GET['date_to']) : '';
 
@@ -77,6 +110,14 @@ if (preg_match('/^[RIASEC]{1,3}$/', $filterResult)) {
 if ($filterSchool !== '') {
     $safeSchool = mysqli_real_escape_string($connection, $filterSchool);
     $whereClauses[] = "pi.school_name = '{$safeSchool}'";
+}
+if ($filterProvince !== '') {
+    $safeProvince = mysqli_real_escape_string($connection, $filterProvince);
+    $whereClauses[] = "pi.province = '{$safeProvince}'";
+}
+if ($filterCity !== '') {
+    $safeCity = mysqli_real_escape_string($connection, $filterCity);
+    $whereClauses[] = "pi.city = '{$safeCity}'";
 }
 
 if ($filterDateFrom !== '' && preg_match('/^\d{4}-\d{2}-\d{2}$/', $filterDateFrom)) {
@@ -117,7 +158,8 @@ $query = "SELECT pts.id AS score_id,
                  pts.social, pts.enterprising, pts.conventional,
                  pts.created_at,
                  pi.id AS person_id, pi.full_name, pi.birth_date, pi.phone, pi.email,
-                 pi.class_level, pi.school_name, pi.extracurricular, pi.organization, pi.created_at AS person_created
+                 pi.class_level, pi.school_name, pi.province, pi.city,
+                 pi.extracurricular, pi.organization, pi.created_at AS person_created
           FROM personality_test_scores pts
           LEFT JOIN personal_info pi ON pi.id = pts.personal_info_id
           {$whereSql}
@@ -244,6 +286,28 @@ $filteredTotal = $scores ? mysqli_num_rows($scores) : 0;
             <?php } ?>
           </select>
         </div>
+        <div class="col-lg-3 col-md-6">
+          <label class="form-label small mb-1">Provinsi</label>
+          <select class="form-select" name="province">
+            <option value="">Semua provinsi</option>
+            <?php foreach ($provinceOptions as $provinceName) { ?>
+              <option value="<?php echo htmlspecialchars($provinceName); ?>" <?php echo $filterProvince === $provinceName ? 'selected' : ''; ?>>
+                <?php echo htmlspecialchars($provinceName); ?>
+              </option>
+            <?php } ?>
+          </select>
+        </div>
+        <div class="col-lg-3 col-md-6">
+          <label class="form-label small mb-1">Kota</label>
+          <select class="form-select" name="city">
+            <option value="">Semua kota</option>
+            <?php foreach ($cityOptions as $cityName) { ?>
+              <option value="<?php echo htmlspecialchars($cityName); ?>" <?php echo $filterCity === $cityName ? 'selected' : ''; ?>>
+                <?php echo htmlspecialchars($cityName); ?>
+              </option>
+            <?php } ?>
+          </select>
+        </div>
         <div class="col-lg-2 col-md-6">
           <label class="form-label small mb-1">Dari tanggal</label>
           <input type="date" class="form-control" name="date_from" value="<?php echo htmlspecialchars($filterDateFrom); ?>">
@@ -301,6 +365,8 @@ $filteredTotal = $scores ? mysqli_num_rows($scores) : 0;
               <th>Email</th>
               <th>Jenjang Pendidikan</th>
               <th>Sekolah/Institusi/Universitas</th>
+              <th>Provinsi</th>
+              <th>Kota</th>
               <th>Kode</th>
               <th>R</th>
               <th>I</th>
@@ -329,6 +395,8 @@ $filteredTotal = $scores ? mysqli_num_rows($scores) : 0;
                   <td><?php echo htmlspecialchars($row['email'] ?? '-'); ?></td>
                   <td><?php echo htmlspecialchars($row['class_level'] ?? '-'); ?></td>
                   <td><?php echo htmlspecialchars($row['school_name'] ?? '-'); ?></td>
+                  <td><?php echo htmlspecialchars($row['province'] ?? '-'); ?></td>
+                  <td><?php echo htmlspecialchars($row['city'] ?? '-'); ?></td>
                   <td><span class="badge text-bg-success"><?php echo htmlspecialchars($row['result']); ?></span></td>
                   <td><?php echo floatval($row['realistic']); ?>%</td>
                   <td><?php echo floatval($row['investigative']); ?>%</td>
@@ -347,7 +415,7 @@ $filteredTotal = $scores ? mysqli_num_rows($scores) : 0;
               <?php } ?>
             <?php } else { ?>
               <tr>
-                <td colspan="15" class="text-center muted">Belum ada data hasil tes.</td>
+                <td colspan="17" class="text-center muted">Belum ada data hasil tes.</td>
               </tr>
             <?php } ?>
           </tbody>
