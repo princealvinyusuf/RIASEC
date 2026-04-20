@@ -242,6 +242,7 @@ $filterResult = isset($_GET['result_code']) ? strtoupper(trim($_GET['result_code
 $filterSchool = isset($_GET['school_name']) ? trim($_GET['school_name']) : '';
 $filterProvince = isset($_GET['province']) ? trim($_GET['province']) : '';
 $filterCity = isset($_GET['city']) ? trim($_GET['city']) : '';
+$filterEmptyCity = isset($_GET['empty_city']) && $_GET['empty_city'] === '1';
 $filterDateFrom = isset($_GET['date_from']) ? trim($_GET['date_from']) : '';
 $filterDateTo = isset($_GET['date_to']) ? trim($_GET['date_to']) : '';
 
@@ -273,6 +274,9 @@ if ($filterProvince !== '') {
 if ($filterCity !== '') {
     $safeCity = mysqli_real_escape_string($connection, $filterCity);
     $whereClauses[] = "pi.city = '{$safeCity}'";
+}
+if ($filterEmptyCity) {
+    $whereClauses[] = "TRIM(COALESCE(pi.city, '')) = ''";
 }
 
 if ($filterDateFrom !== '' && preg_match('/^\d{4}-\d{2}-\d{2}$/', $filterDateFrom)) {
@@ -313,6 +317,22 @@ $unknownCountSql = "SELECT COUNT(*) AS total
 $unknownCountRes = mysqli_query($connection, $unknownCountSql);
 $unknownCountRow = $unknownCountRes ? mysqli_fetch_assoc($unknownCountRes) : array('total' => 0);
 $unknownCount = intval($unknownCountRow['total']);
+
+$emptyCityCountSql = "SELECT COUNT(*) AS total
+                      FROM personality_test_scores pts
+                      LEFT JOIN personal_info pi ON pi.id = pts.personal_info_id
+                      WHERE TRIM(COALESCE(pi.city, '')) = ''";
+$emptyCityCountRes = mysqli_query($connection, $emptyCityCountSql);
+$emptyCityCountRow = $emptyCityCountRes ? mysqli_fetch_assoc($emptyCityCountRes) : array('total' => 0);
+$emptyCityCount = intval($emptyCityCountRow['total']);
+
+$showEmptyCityParams = $_GET;
+$showEmptyCityParams['empty_city'] = '1';
+$showEmptyCityUrl = 'admin_scores?' . http_build_query($showEmptyCityParams);
+
+$showAllCityParams = $_GET;
+unset($showAllCityParams['empty_city']);
+$showAllCityUrl = 'admin_scores' . (!empty($showAllCityParams) ? ('?' . http_build_query($showAllCityParams)) : '');
 
 $query = "SELECT pts.id AS score_id,
                  pts.result,
@@ -423,6 +443,11 @@ $filteredTotal = $scores ? mysqli_num_rows($scores) : 0;
         <?php } else { ?>
           Tidak ada data Sekolah/Institusi/Universitas yang cocok dengan pencarian "<?php echo htmlspecialchars($patchKeyword); ?>".
         <?php } ?>
+      </div>
+    <?php } ?>
+    <?php if ($filterEmptyCity) { ?>
+      <div class="alert alert-warning" role="alert">
+        Filter aktif: menampilkan data dengan Kota kosong.
       </div>
     <?php } ?>
 
@@ -554,6 +579,10 @@ $filteredTotal = $scores ? mysqli_num_rows($scores) : 0;
       </div>
       <div class="d-flex gap-2 mt-3">
         <button type="submit" class="btn btn-primary-soft">Terapkan filter</button>
+        <a href="<?php echo htmlspecialchars($showEmptyCityUrl); ?>" class="btn btn-outline-warning">Show Empty Kota (<?php echo $emptyCityCount; ?>)</a>
+        <?php if ($filterEmptyCity) { ?>
+          <a href="<?php echo htmlspecialchars($showAllCityUrl); ?>" class="btn btn-outline-secondary">Show Semua Kota</a>
+        <?php } ?>
         <a href="admin_scores" class="btn btn-outline-secondary">Reset</a>
       </div>
     </form>
