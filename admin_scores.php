@@ -64,7 +64,7 @@ if ($filterSearch !== '') {
     $whereClauses[] = "(pi.full_name LIKE '%{$safeSearch}%' OR pi.email LIKE '%{$safeSearch}%' OR pi.school_name LIKE '%{$safeSearch}%')";
 }
 
-if (in_array($filterClass, array('10', '11', '12'), true)) {
+if (in_array($filterClass, array('10', '11', '12', 'Universitas'), true)) {
     $safeClass = mysqli_real_escape_string($connection, $filterClass);
     $whereClauses[] = "pi.class_level = '{$safeClass}'";
 }
@@ -212,12 +212,13 @@ $filteredTotal = $scores ? mysqli_num_rows($scores) : 0;
           <input type="text" class="form-control" name="q" value="<?php echo htmlspecialchars($filterSearch); ?>" placeholder="Ketik kata kunci">
         </div>
         <div class="col-lg-2 col-md-6">
-          <label class="form-label small mb-1">Kelas</label>
+          <label class="form-label small mb-1">Jenjang Pendidikan</label>
           <select class="form-select" name="class_level">
             <option value="">Semua</option>
             <option value="10" <?php echo $filterClass === '10' ? 'selected' : ''; ?>>10</option>
             <option value="11" <?php echo $filterClass === '11' ? 'selected' : ''; ?>>11</option>
             <option value="12" <?php echo $filterClass === '12' ? 'selected' : ''; ?>>12</option>
+            <option value="Universitas" <?php echo $filterClass === 'Universitas' ? 'selected' : ''; ?>>Universitas</option>
           </select>
         </div>
         <div class="col-lg-2 col-md-6">
@@ -233,7 +234,7 @@ $filteredTotal = $scores ? mysqli_num_rows($scores) : 0;
           </select>
         </div>
         <div class="col-lg-3 col-md-6">
-          <label class="form-label small mb-1">Sekolah</label>
+          <label class="form-label small mb-1">Sekolah/Institusi/Universitas</label>
           <select class="form-select" name="school_name">
             <option value="">Semua sekolah</option>
             <?php foreach ($schoolOptions as $schoolName) { ?>
@@ -298,8 +299,8 @@ $filteredTotal = $scores ? mysqli_num_rows($scores) : 0;
               <th>#</th>
               <th>Nama</th>
               <th>Email</th>
-              <th>Kelas</th>
-              <th>Sekolah</th>
+              <th>Jenjang Pendidikan</th>
+              <th>Sekolah/Institusi/Universitas</th>
               <th>Kode</th>
               <th>R</th>
               <th>I</th>

@@ -28,7 +28,7 @@ if ($scores && mysqli_num_rows($scores) > 0) {
 
     // Add column headers
     fputcsv($output, [
-        'Nama Lengkap', 'Email', 'Kelas', 'Sekolah', 'Hasil (Kode)',
+        'Nama Lengkap', 'Email', 'Jenjang Pendidikan', 'Sekolah/Institusi/Universitas', 'Hasil (Kode)',
         'Realistic', 'Investigative', 'Artistic', 'Social', 'Enterprising', 'Conventional',
         'Tanggal Tes', 'Tanggal Lahir', 'No. HP', 'Ekstrakurikuler', 'Organisasi'
     ]);

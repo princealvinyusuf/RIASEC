@@ -78,8 +78,8 @@ $jobZones = $recommendationPayload['job_zones'];
       <div class="results-grid mb-3">
         <div class="interest-pill"><div class="muted small">Nama</div><strong><?php echo htmlspecialchars($header['full_name'] ?? '-'); ?></strong></div>
         <div class="interest-pill"><div class="muted small">Email</div><strong><?php echo htmlspecialchars($header['email'] ?? '-'); ?></strong></div>
-        <div class="interest-pill"><div class="muted small">Kelas</div><strong><?php echo htmlspecialchars($header['class_level'] ?? '-'); ?></strong></div>
-        <div class="interest-pill"><div class="muted small">Sekolah</div><strong><?php echo htmlspecialchars($header['school_name'] ?? '-'); ?></strong></div>
+        <div class="interest-pill"><div class="muted small">Jenjang Pendidikan</div><strong><?php echo htmlspecialchars($header['class_level'] ?? '-'); ?></strong></div>
+        <div class="interest-pill"><div class="muted small">Sekolah/Institusi/Universitas</div><strong><?php echo htmlspecialchars($header['school_name'] ?? '-'); ?></strong></div>
         <div class="interest-pill"><div class="muted small">No. HP</div><strong><?php echo htmlspecialchars($header['phone'] ?? '-'); ?></strong></div>
         <div class="interest-pill"><div class="muted small">Tanggal Tes</div><strong><?php echo htmlspecialchars($header['created_at'] ?? '-'); ?></strong></div>
       </div>
