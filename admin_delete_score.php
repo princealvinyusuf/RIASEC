@@ -9,6 +9,7 @@ include 'includes/db.php';
 
 $scoreIds = array();
 $returnQuery = '';
+$deleteUnknown = isset($_POST['delete_unknown']) && $_POST['delete_unknown'] === '1';
 
 if (isset($_GET['return_query'])) {
     $returnQuery = trim((string)$_GET['return_query']);
@@ -32,6 +33,30 @@ if (isset($_POST['score_ids']) && is_array($_POST['score_ids'])) {
     }
 }
 
+$unknownDeletedCount = 0;
+if ($deleteUnknown) {
+    $unknownIds = array();
+    $unknownSql = "SELECT pts.id AS score_id
+                   FROM personality_test_scores pts
+                   LEFT JOIN personal_info pi ON pi.id = pts.personal_info_id
+                   WHERE
+                     pi.id IS NULL
+                     OR TRIM(COALESCE(pi.full_name, '')) IN ('', '-')
+                     OR TRIM(COALESCE(pi.email, '')) IN ('', '-')
+                     OR TRIM(COALESCE(pi.class_level, '')) IN ('', '-')
+                     OR TRIM(COALESCE(pi.school_name, '')) IN ('', '-')";
+    $unknownRes = mysqli_query($connection, $unknownSql);
+    if ($unknownRes) {
+        while ($unknownRow = mysqli_fetch_assoc($unknownRes)) {
+            $unknownId = intval($unknownRow['score_id']);
+            if ($unknownId > 0) {
+                $unknownIds[] = $unknownId;
+            }
+        }
+    }
+    $scoreIds = array_merge($scoreIds, $unknownIds);
+}
+
 $scoreIds = array_values(array_unique($scoreIds));
 $deletedCount = 0;
 
@@ -48,7 +73,11 @@ if (!empty($scoreIds)) {
 
             mysqli_stmt_bind_param($deleteScoresStmt, "i", $scoreId);
             mysqli_stmt_execute($deleteScoresStmt);
-            $deletedCount += mysqli_stmt_affected_rows($deleteScoresStmt) > 0 ? 1 : 0;
+            $isDeleted = mysqli_stmt_affected_rows($deleteScoresStmt) > 0;
+            $deletedCount += $isDeleted ? 1 : 0;
+            if ($deleteUnknown && $isDeleted) {
+                $unknownDeletedCount++;
+            }
         }
     }
 
@@ -64,6 +93,9 @@ $redirectUrl = 'admin_scores';
 $params = array();
 if ($deletedCount > 0) {
     $params['deleted'] = $deletedCount;
+}
+if ($unknownDeletedCount > 0) {
+    $params['deleted_unknown'] = $unknownDeletedCount;
 }
 if ($returnQuery !== '') {
     parse_str($returnQuery, $parsedReturnQuery);

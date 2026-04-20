@@ -84,6 +84,20 @@ if (!empty($whereClauses)) {
 
 $returnQuery = $_SERVER['QUERY_STRING'] ?? '';
 $deletedCount = isset($_GET['deleted']) ? intval($_GET['deleted']) : 0;
+$deletedUnknownCount = isset($_GET['deleted_unknown']) ? intval($_GET['deleted_unknown']) : 0;
+
+$unknownCountSql = "SELECT COUNT(*) AS total
+                    FROM personality_test_scores pts
+                    LEFT JOIN personal_info pi ON pi.id = pts.personal_info_id
+                    WHERE
+                      pi.id IS NULL
+                      OR TRIM(COALESCE(pi.full_name, '')) IN ('', '-')
+                      OR TRIM(COALESCE(pi.email, '')) IN ('', '-')
+                      OR TRIM(COALESCE(pi.class_level, '')) IN ('', '-')
+                      OR TRIM(COALESCE(pi.school_name, '')) IN ('', '-')";
+$unknownCountRes = mysqli_query($connection, $unknownCountSql);
+$unknownCountRow = $unknownCountRes ? mysqli_fetch_assoc($unknownCountRes) : array('total' => 0);
+$unknownCount = intval($unknownCountRow['total']);
 
 $query = "SELECT pts.id AS score_id,
                  pts.result,
@@ -173,6 +187,11 @@ $filteredTotal = $scores ? mysqli_num_rows($scores) : 0;
         <?php echo $deletedCount; ?> data berhasil dihapus.
       </div>
     <?php } ?>
+    <?php if ($deletedUnknownCount > 0) { ?>
+      <div class="alert alert-success" role="alert">
+        <?php echo $deletedUnknownCount; ?> data unknown (bernilai "-"/kosong) berhasil dihapus.
+      </div>
+    <?php } ?>
 
     <form method="get" action="admin_scores" class="mb-3">
       <div class="row g-2">
@@ -234,15 +253,29 @@ $filteredTotal = $scores ? mysqli_num_rows($scores) : 0;
           <input class="form-check-input" type="checkbox" value="1" id="selectAllRows">
           <label class="form-check-label" for="selectAllRows">Pilih semua data di halaman ini</label>
         </div>
-        <button
-          type="submit"
-          class="btn btn-outline-danger"
-          id="bulkDeleteBtn"
-          disabled
-          onclick="return confirm('Apakah Anda yakin ingin menghapus semua data yang dipilih?');"
-        >
-          Hapus data terpilih
-        </button>
+        <div class="d-flex gap-2 flex-wrap">
+          <button
+            type="submit"
+            formaction="admin_delete_score"
+            formmethod="post"
+            name="delete_unknown"
+            value="1"
+            class="btn btn-warning"
+            <?php echo $unknownCount <= 0 ? 'disabled' : ''; ?>
+            onclick="return confirm('Apakah Anda yakin ingin menghapus semua data unknown (nilai \"-\" atau kosong)?');"
+          >
+            Remove Unknown data (<?php echo $unknownCount; ?>)
+          </button>
+          <button
+            type="submit"
+            class="btn btn-outline-danger"
+            id="bulkDeleteBtn"
+            disabled
+            onclick="return confirm('Apakah Anda yakin ingin menghapus semua data yang dipilih?');"
+          >
+            Hapus data terpilih
+          </button>
+        </div>
       </div>
 
       <div class="table-responsive">
