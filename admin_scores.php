@@ -15,7 +15,15 @@ $total_tests_result = mysqli_query($connection, $total_tests_query);
 $total_tests_row = $total_tests_result ? mysqli_fetch_assoc($total_tests_result) : array('total' => 0);
 $total_tests = intval($total_tests_row['total']);
 
-$top_code_query = "SELECT result, COUNT(*) as count FROM personality_test_scores GROUP BY result ORDER BY count DESC LIMIT 1";
+$top_code_query = "SELECT result, COUNT(*) as count
+                   FROM personality_test_scores
+                   WHERE result IS NOT NULL
+                     AND TRIM(result) != ''
+                     AND TRIM(result) != '-'
+                     AND TRIM(result) REGEXP '^[RIASEC]{1,3}$'
+                   GROUP BY result
+                   ORDER BY count DESC, result ASC
+                   LIMIT 1";
 $top_code_result = mysqli_query($connection, $top_code_query);
 $top_code = $top_code_result ? mysqli_fetch_assoc($top_code_result) : null;
 
@@ -23,7 +31,11 @@ $avg_scores_query = "SELECT AVG(realistic) as avg_r, AVG(investigative) as avg_i
 $avg_scores_result = mysqli_query($connection, $avg_scores_query);
 $avg_scores = $avg_scores_result ? mysqli_fetch_assoc($avg_scores_result) : array();
 
-$schools_query = "SELECT COUNT(DISTINCT school_name) as total_schools FROM personal_info WHERE school_name IS NOT NULL AND school_name != ''";
+$schools_query = "SELECT COUNT(DISTINCT TRIM(pi.school_name)) as total_schools
+                  FROM personality_test_scores pts
+                  INNER JOIN personal_info pi ON pi.id = pts.personal_info_id
+                  WHERE pi.school_name IS NOT NULL
+                    AND TRIM(pi.school_name) NOT IN ('', '-')";
 $schools_result = mysqli_query($connection, $schools_query);
 $schools_row = $schools_result ? mysqli_fetch_assoc($schools_result) : array('total_schools' => 0);
 $total_schools = intval($schools_row['total_schools']);
