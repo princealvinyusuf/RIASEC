@@ -151,27 +151,81 @@ if ($resTopSchools) {
 
     <div class="results-grid mb-3">
         <div class="interest-pill">
-            <div class="muted small">Total Tes Selesai</div>
+            <div class="muted small d-flex align-items-center gap-1">
+                <span>Total Tes Selesai</span>
+                <span
+                    class="d-inline-flex align-items-center justify-content-center rounded-circle border border-secondary-subtle text-secondary"
+                    style="width:16px;height:16px;font-size:11px;line-height:1;cursor:help;"
+                    data-bs-toggle="tooltip"
+                    data-bs-placement="top"
+                    title="Jumlah seluruh sesi tes yang berhasil disimpan sebagai hasil selesai. Satu peserta bisa menyumbang lebih dari satu tes jika mengulang."
+                >i</span>
+            </div>
             <div class="display-6 fw-bold text-success"><?php echo $totalTests; ?></div>
         </div>
         <div class="interest-pill">
-            <div class="muted small">Total Peserta Terdaftar</div>
+            <div class="muted small d-flex align-items-center gap-1">
+                <span>Total Peserta Terdaftar</span>
+                <span
+                    class="d-inline-flex align-items-center justify-content-center rounded-circle border border-secondary-subtle text-secondary"
+                    style="width:16px;height:16px;font-size:11px;line-height:1;cursor:help;"
+                    data-bs-toggle="tooltip"
+                    data-bs-placement="top"
+                    title="Jumlah peserta dengan data identitas valid (nama, email, kelas, sekolah tidak kosong atau '-')."
+                >i</span>
+            </div>
             <div class="display-6 fw-bold text-success"><?php echo $totalParticipants; ?></div>
         </div>
         <div class="interest-pill">
-            <div class="muted small">Peserta Sudah Selesai</div>
+            <div class="muted small d-flex align-items-center gap-1">
+                <span>Peserta Sudah Selesai</span>
+                <span
+                    class="d-inline-flex align-items-center justify-content-center rounded-circle border border-secondary-subtle text-secondary"
+                    style="width:16px;height:16px;font-size:11px;line-height:1;cursor:help;"
+                    data-bs-toggle="tooltip"
+                    data-bs-placement="top"
+                    title="Jumlah peserta unik dengan data valid yang sudah memiliki minimal satu hasil tes selesai."
+                >i</span>
+            </div>
             <div class="display-6 fw-bold text-success"><?php echo $totalParticipantsCompleted; ?></div>
         </div>
         <div class="interest-pill">
-            <div class="muted small">Peserta Belum Selesai</div>
+            <div class="muted small d-flex align-items-center gap-1">
+                <span>Peserta Belum Selesai</span>
+                <span
+                    class="d-inline-flex align-items-center justify-content-center rounded-circle border border-secondary-subtle text-secondary"
+                    style="width:16px;height:16px;font-size:11px;line-height:1;cursor:help;"
+                    data-bs-toggle="tooltip"
+                    data-bs-placement="top"
+                    title="Jumlah peserta valid yang sudah terdaftar tetapi belum memiliki hasil tes selesai."
+                >i</span>
+            </div>
             <div class="display-6 fw-bold text-success"><?php echo $totalParticipantsIncomplete; ?></div>
         </div>
         <div class="interest-pill">
-            <div class="muted small">Partisipasi Sekolah</div>
+            <div class="muted small d-flex align-items-center gap-1">
+                <span>Partisipasi Sekolah</span>
+                <span
+                    class="d-inline-flex align-items-center justify-content-center rounded-circle border border-secondary-subtle text-secondary"
+                    style="width:16px;height:16px;font-size:11px;line-height:1;cursor:help;"
+                    data-bs-toggle="tooltip"
+                    data-bs-placement="top"
+                    title="Jumlah sekolah unik dari peserta valid yang sudah memiliki hasil tes selesai."
+                >i</span>
+            </div>
             <div class="display-6 fw-bold text-success"><?php echo $totalSchools; ?></div>
         </div>
         <div class="interest-pill">
-            <div class="muted small">Tes Terakhir</div>
+            <div class="muted small d-flex align-items-center gap-1">
+                <span>Tes Terakhir</span>
+                <span
+                    class="d-inline-flex align-items-center justify-content-center rounded-circle border border-secondary-subtle text-secondary"
+                    style="width:16px;height:16px;font-size:11px;line-height:1;cursor:help;"
+                    data-bs-toggle="tooltip"
+                    data-bs-placement="top"
+                    title="Waktu terbaru ketika sistem menerima dan menyimpan hasil tes selesai."
+                >i</span>
+            </div>
             <div class="fw-semibold"><?php echo htmlspecialchars($latestTestDate); ?></div>
         </div>
     </div>
@@ -282,5 +336,14 @@ if ($resTopSchools) {
         </div>
     </div>
 </section>
+
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+    var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
+    tooltipTriggerList.forEach(function (tooltipTriggerEl) {
+        new bootstrap.Tooltip(tooltipTriggerEl);
+    });
+});
+</script>
 
 <?php include 'includes/footer.php'; ?>
