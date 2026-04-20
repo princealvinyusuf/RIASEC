@@ -19,13 +19,30 @@ if ($resTotal) {
     $totalTests = intval($row['total']);
 }
 
-$resParticipants = mysqli_query($connection, "SELECT COUNT(*) AS total FROM personal_info");
+$resParticipants = mysqli_query($connection, "
+    SELECT COUNT(*) AS total
+    FROM personal_info
+    WHERE
+      TRIM(COALESCE(full_name, '')) NOT IN ('', '-')
+      AND TRIM(COALESCE(email, '')) NOT IN ('', '-')
+      AND TRIM(COALESCE(class_level, '')) NOT IN ('', '-')
+      AND TRIM(COALESCE(school_name, '')) NOT IN ('', '-')
+");
 if ($resParticipants) {
     $row = mysqli_fetch_assoc($resParticipants);
     $totalParticipants = intval($row['total']);
 }
 
-$resParticipantsCompleted = mysqli_query($connection, "SELECT COUNT(DISTINCT personal_info_id) AS total FROM personality_test_scores WHERE personal_info_id IS NOT NULL");
+$resParticipantsCompleted = mysqli_query($connection, "
+    SELECT COUNT(DISTINCT pi.id) AS total
+    FROM personal_info pi
+    INNER JOIN personality_test_scores pts ON pts.personal_info_id = pi.id
+    WHERE
+      TRIM(COALESCE(pi.full_name, '')) NOT IN ('', '-')
+      AND TRIM(COALESCE(pi.email, '')) NOT IN ('', '-')
+      AND TRIM(COALESCE(pi.class_level, '')) NOT IN ('', '-')
+      AND TRIM(COALESCE(pi.school_name, '')) NOT IN ('', '-')
+");
 if ($resParticipantsCompleted) {
     $row = mysqli_fetch_assoc($resParticipantsCompleted);
     $totalParticipantsCompleted = intval($row['total']);
@@ -35,14 +52,28 @@ $resParticipantsIncomplete = mysqli_query($connection, "
     SELECT COUNT(*) AS total
     FROM personal_info pi
     LEFT JOIN personality_test_scores pts ON pts.personal_info_id = pi.id
-    WHERE pts.id IS NULL
+    WHERE
+      pts.id IS NULL
+      AND TRIM(COALESCE(pi.full_name, '')) NOT IN ('', '-')
+      AND TRIM(COALESCE(pi.email, '')) NOT IN ('', '-')
+      AND TRIM(COALESCE(pi.class_level, '')) NOT IN ('', '-')
+      AND TRIM(COALESCE(pi.school_name, '')) NOT IN ('', '-')
 ");
 if ($resParticipantsIncomplete) {
     $row = mysqli_fetch_assoc($resParticipantsIncomplete);
     $totalParticipantsIncomplete = intval($row['total']);
 }
 
-$resSchools = mysqli_query($connection, "SELECT COUNT(DISTINCT school_name) AS total FROM personal_info WHERE school_name IS NOT NULL AND school_name != ''");
+$resSchools = mysqli_query($connection, "
+    SELECT COUNT(DISTINCT TRIM(pi.school_name)) AS total
+    FROM personality_test_scores pts
+    INNER JOIN personal_info pi ON pi.id = pts.personal_info_id
+    WHERE
+      TRIM(COALESCE(pi.school_name, '')) NOT IN ('', '-')
+      AND TRIM(COALESCE(pi.full_name, '')) NOT IN ('', '-')
+      AND TRIM(COALESCE(pi.email, '')) NOT IN ('', '-')
+      AND TRIM(COALESCE(pi.class_level, '')) NOT IN ('', '-')
+");
 if ($resSchools) {
     $row = mysqli_fetch_assoc($resSchools);
     $totalSchools = intval($row['total']);
