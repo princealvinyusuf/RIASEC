@@ -4,10 +4,165 @@ if (empty($_SESSION['is_admin'])) {
   header('Location: admin_login');
   exit;
 }
+include_once __DIR__ . '/includes/db.php';
 ?>
 <?php
 $pageTitle = 'Dashboard Admin - RIASEC';
-include 'includes/header.php';
+
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['patch_region_submit'])) {
+    $returnQueryRaw = isset($_POST['return_query']) ? trim((string)$_POST['return_query']) : '';
+    $schoolKeyword = isset($_POST['school_keyword']) ? trim((string)$_POST['school_keyword']) : '';
+    $patchProvince = isset($_POST['patch_province']) ? trim((string)$_POST['patch_province']) : '';
+    $patchCity = isset($_POST['patch_city']) ? trim((string)$_POST['patch_city']) : '';
+
+    $redirectParams = array();
+    if ($returnQueryRaw !== '') {
+        parse_str($returnQueryRaw, $parsedReturnQuery);
+        if (is_array($parsedReturnQuery)) {
+            $redirectParams = array_merge($redirectParams, $parsedReturnQuery);
+        }
+    }
+    $redirectParams['show_patch'] = '1';
+
+    if ($schoolKeyword === '') {
+        $redirectParams['patch_error'] = 'Kata kunci pencarian Sekolah/Institusi/Universitas wajib diisi.';
+        $redirectParams['patch_province'] = $patchProvince;
+        $redirectParams['patch_city'] = $patchCity;
+        header('Location: admin_scores?' . http_build_query($redirectParams));
+        exit;
+    }
+    if ($patchProvince === '' || $patchCity === '') {
+        $redirectParams['patch_error'] = 'Provinsi dan Kota wajib diisi untuk patching data.';
+        $redirectParams['patch_keyword'] = $schoolKeyword;
+        $redirectParams['patch_province'] = $patchProvince;
+        $redirectParams['patch_city'] = $patchCity;
+        header('Location: admin_scores?' . http_build_query($redirectParams));
+        exit;
+    }
+
+    $likeKeyword = '%' . $schoolKeyword . '%';
+    $matchedCount = 0;
+    $matchedStmt = mysqli_prepare(
+        $connection,
+        "SELECT COUNT(*) AS total
+         FROM personal_info
+         WHERE school_name IS NOT NULL
+           AND TRIM(school_name) NOT IN ('', '-')
+           AND school_name LIKE ?"
+    );
+    if ($matchedStmt) {
+        mysqli_stmt_bind_param($matchedStmt, 's', $likeKeyword);
+        mysqli_stmt_execute($matchedStmt);
+        mysqli_stmt_bind_result($matchedStmt, $totalMatched);
+        if (mysqli_stmt_fetch($matchedStmt)) {
+            $matchedCount = intval($totalMatched);
+        }
+        mysqli_stmt_close($matchedStmt);
+    }
+
+    $updatedCount = 0;
+    if ($matchedCount > 0) {
+        $updateStmt = mysqli_prepare(
+            $connection,
+            "UPDATE personal_info
+             SET province = ?, city = ?
+             WHERE school_name IS NOT NULL
+               AND TRIM(school_name) NOT IN ('', '-')
+               AND school_name LIKE ?"
+        );
+        if ($updateStmt) {
+            mysqli_stmt_bind_param($updateStmt, 'sss', $patchProvince, $patchCity, $likeKeyword);
+            mysqli_stmt_execute($updateStmt);
+            $updatedCount = intval(mysqli_stmt_affected_rows($updateStmt));
+            mysqli_stmt_close($updateStmt);
+        } else {
+            $redirectParams['patch_error'] = 'Gagal menyiapkan proses patching data.';
+            $redirectParams['patch_keyword'] = $schoolKeyword;
+            $redirectParams['patch_province'] = $patchProvince;
+            $redirectParams['patch_city'] = $patchCity;
+            header('Location: admin_scores?' . http_build_query($redirectParams));
+            exit;
+        }
+    }
+
+    $redirectParams['patched'] = $updatedCount;
+    $redirectParams['matched'] = $matchedCount;
+    $redirectParams['patch_keyword'] = $schoolKeyword;
+    $redirectParams['patch_province'] = $patchProvince;
+    $redirectParams['patch_city'] = $patchCity;
+    header('Location: admin_scores?' . http_build_query($redirectParams));
+    exit;
+}
+
+if (isset($_GET['patch_preview']) && $_GET['patch_preview'] === '1') {
+    header('Content-Type: application/json; charset=utf-8');
+
+    $keyword = isset($_GET['school_keyword']) ? trim((string)$_GET['school_keyword']) : '';
+    if ($keyword === '') {
+        echo json_encode(array(
+            'ok' => false,
+            'message' => 'Kata kunci pencarian wajib diisi.',
+            'items' => array(),
+            'total' => 0
+        ));
+        exit;
+    }
+
+    $likeKeyword = '%' . $keyword . '%';
+    $items = array();
+    $total = 0;
+
+    $totalStmt = mysqli_prepare(
+        $connection,
+        "SELECT COUNT(*) AS total
+         FROM personal_info
+         WHERE school_name IS NOT NULL
+           AND TRIM(school_name) NOT IN ('', '-')
+           AND school_name LIKE ?"
+    );
+    if ($totalStmt) {
+        mysqli_stmt_bind_param($totalStmt, 's', $likeKeyword);
+        mysqli_stmt_execute($totalStmt);
+        mysqli_stmt_bind_result($totalStmt, $totalRows);
+        if (mysqli_stmt_fetch($totalStmt)) {
+            $total = intval($totalRows);
+        }
+        mysqli_stmt_close($totalStmt);
+    }
+
+    $previewStmt = mysqli_prepare(
+        $connection,
+        "SELECT school_name, COUNT(*) AS total
+         FROM personal_info
+         WHERE school_name IS NOT NULL
+           AND TRIM(school_name) NOT IN ('', '-')
+           AND school_name LIKE ?
+         GROUP BY school_name
+         ORDER BY total DESC, school_name ASC
+         LIMIT 30"
+    );
+
+    if ($previewStmt) {
+        mysqli_stmt_bind_param($previewStmt, 's', $likeKeyword);
+        mysqli_stmt_execute($previewStmt);
+        mysqli_stmt_bind_result($previewStmt, $schoolName, $countBySchool);
+        while (mysqli_stmt_fetch($previewStmt)) {
+            $items[] = array(
+                'school_name' => (string)$schoolName,
+                'total' => intval($countBySchool)
+            );
+        }
+        mysqli_stmt_close($previewStmt);
+    }
+
+    echo json_encode(array(
+        'ok' => true,
+        'message' => '',
+        'items' => $items,
+        'total' => $total
+    ));
+    exit;
+}
 
 function adminColumnExists($connection, $tableName, $columnName) {
     $safeTable = mysqli_real_escape_string($connection, $tableName);
@@ -138,6 +293,13 @@ if (!empty($whereClauses)) {
 $returnQuery = $_SERVER['QUERY_STRING'] ?? '';
 $deletedCount = isset($_GET['deleted']) ? intval($_GET['deleted']) : 0;
 $deletedUnknownCount = isset($_GET['deleted_unknown']) ? intval($_GET['deleted_unknown']) : 0;
+$patchUpdatedCount = isset($_GET['patched']) ? intval($_GET['patched']) : -1;
+$patchMatchedCount = isset($_GET['matched']) ? intval($_GET['matched']) : 0;
+$patchKeyword = isset($_GET['patch_keyword']) ? trim($_GET['patch_keyword']) : '';
+$patchProvinceValue = isset($_GET['patch_province']) ? trim($_GET['patch_province']) : '';
+$patchCityValue = isset($_GET['patch_city']) ? trim($_GET['patch_city']) : '';
+$patchError = isset($_GET['patch_error']) ? trim($_GET['patch_error']) : '';
+$showPatchForm = isset($_GET['show_patch']) && $_GET['show_patch'] === '1';
 
 $unknownCountSql = "SELECT COUNT(*) AS total
                     FROM personality_test_scores pts
@@ -167,6 +329,7 @@ $query = "SELECT pts.id AS score_id,
 $scores = mysqli_query($connection, $query);
 $filteredTotal = $scores ? mysqli_num_rows($scores) : 0;
 ?>
+<?php include 'includes/header.php'; ?>
 
 <section class="page-wrap">
   <div class="glass-card hero-card mb-3">
@@ -179,6 +342,7 @@ $filteredTotal = $scores ? mysqli_num_rows($scores) : 0;
       <div class="d-flex gap-2 flex-wrap">
         <a href="generate_excel" class="btn btn-outline-soft">Export CSV</a>
         <button type="button" class="btn btn-outline-soft" id="exportExcelBtn">Export to Excel</button>
+        <button type="button" class="btn btn-outline-soft" id="togglePatchRegionBtn">Patching Provinsi dan Kota</button>
         <a href="admin_logout" class="btn btn-outline-danger">Logout</a>
       </div>
     </div>
@@ -246,6 +410,77 @@ $filteredTotal = $scores ? mysqli_num_rows($scores) : 0;
         <?php echo $deletedUnknownCount; ?> data unknown (bernilai "-"/kosong) berhasil dihapus.
       </div>
     <?php } ?>
+    <?php if ($patchError !== '') { ?>
+      <div class="alert alert-danger" role="alert">
+        <?php echo htmlspecialchars($patchError); ?>
+      </div>
+    <?php } ?>
+    <?php if ($patchUpdatedCount >= 0 && $patchError === '') { ?>
+      <div class="alert <?php echo $patchMatchedCount > 0 ? 'alert-success' : 'alert-warning'; ?>" role="alert">
+        <?php if ($patchMatchedCount > 0) { ?>
+          Patching selesai untuk pencarian "<?php echo htmlspecialchars($patchKeyword); ?>".
+          Ditemukan <?php echo intval($patchMatchedCount); ?> data, berubah <?php echo intval($patchUpdatedCount); ?> data.
+        <?php } else { ?>
+          Tidak ada data Sekolah/Institusi/Universitas yang cocok dengan pencarian "<?php echo htmlspecialchars($patchKeyword); ?>".
+        <?php } ?>
+      </div>
+    <?php } ?>
+
+    <div class="glass-card app-form-card mb-3" id="patchRegionPanel" style="<?php echo $showPatchForm ? '' : 'display:none;'; ?>">
+      <h3 class="h6 fw-bold text-success mb-3">Form Patching Provinsi dan Kota</h3>
+      <form method="post" action="admin_scores" class="row g-2">
+        <input type="hidden" name="return_query" value="<?php echo htmlspecialchars($returnQuery); ?>">
+        <div class="col-lg-5 col-md-12">
+          <label class="form-label small mb-1">Search "Sekolah/Institusi/Universitas"</label>
+          <input
+            type="text"
+            class="form-control"
+            name="school_keyword"
+            id="patchSchoolKeyword"
+            required
+            placeholder="Contoh: SMK Negeri"
+            value="<?php echo htmlspecialchars($patchKeyword); ?>"
+          >
+          <div class="d-flex justify-content-between align-items-center mt-2">
+            <button type="button" class="btn btn-sm btn-outline-secondary" id="patchPreviewBtn">Cari Preview</button>
+            <span class="small muted" id="patchPreviewHint">Preview menampilkan daftar sekolah yang cocok sebelum patching.</span>
+          </div>
+        </div>
+        <div class="col-lg-3 col-md-6">
+          <label class="form-label small mb-1">Provinsi</label>
+          <input type="text" class="form-control" name="patch_province" required placeholder="Contoh: Jawa Barat" value="<?php echo htmlspecialchars($patchProvinceValue); ?>">
+        </div>
+        <div class="col-lg-3 col-md-6">
+          <label class="form-label small mb-1">Kota</label>
+          <input type="text" class="form-control" name="patch_city" required placeholder="Contoh: Bandung" value="<?php echo htmlspecialchars($patchCityValue); ?>">
+        </div>
+        <div class="col-lg-1 col-md-12 d-flex align-items-end">
+          <button
+            type="submit"
+            name="patch_region_submit"
+            value="1"
+            class="btn btn-primary-soft w-100"
+            onclick="return confirm('Yakin ingin patching Provinsi dan Kota untuk semua data yang cocok dengan pencarian ini?');"
+          >
+            Simpan
+          </button>
+        </div>
+      </form>
+      <p class="small muted mb-0 mt-2">Patching akan mengubah kolom Provinsi dan Kota pada semua data yang nama Sekolah/Institusi/Universitas mengandung kata kunci pencarian.</p>
+      <div class="table-responsive mt-3" id="patchPreviewContainer" style="display:none;">
+        <table class="table table-sm table-hover align-middle mb-0">
+          <thead class="table-success">
+            <tr>
+              <th>Sekolah/Institusi/Universitas</th>
+              <th style="width:120px;">Jumlah Data</th>
+            </tr>
+          </thead>
+          <tbody id="patchPreviewBody">
+            <tr><td colspan="2" class="text-center muted">Belum ada preview.</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
 
     <form method="get" action="admin_scores" class="mb-3">
       <div class="row g-2">
@@ -433,7 +668,99 @@ document.addEventListener('DOMContentLoaded', function () {
   const selectAllRowsHeader = document.getElementById('selectAllRowsHeader');
   const bulkDeleteBtn = document.getElementById('bulkDeleteBtn');
   const exportExcelBtn = document.getElementById('exportExcelBtn');
+  const togglePatchRegionBtn = document.getElementById('togglePatchRegionBtn');
+  const patchRegionPanel = document.getElementById('patchRegionPanel');
+  const patchSchoolKeyword = document.getElementById('patchSchoolKeyword');
+  const patchPreviewBtn = document.getElementById('patchPreviewBtn');
+  const patchPreviewHint = document.getElementById('patchPreviewHint');
+  const patchPreviewContainer = document.getElementById('patchPreviewContainer');
+  const patchPreviewBody = document.getElementById('patchPreviewBody');
   const scoresTable = document.querySelector('table.table');
+
+  if (togglePatchRegionBtn && patchRegionPanel) {
+    togglePatchRegionBtn.addEventListener('click', function () {
+      const isHidden = window.getComputedStyle(patchRegionPanel).display === 'none';
+      patchRegionPanel.style.display = isHidden ? 'block' : 'none';
+    });
+  }
+
+  function renderPatchPreviewRows(items) {
+    if (!patchPreviewBody) {
+      return;
+    }
+    patchPreviewBody.innerHTML = '';
+    if (!items || !items.length) {
+      patchPreviewBody.innerHTML = '<tr><td colspan="2" class="text-center muted">Tidak ada data yang cocok.</td></tr>';
+      return;
+    }
+
+    items.forEach(function (item) {
+      const tr = document.createElement('tr');
+      const schoolTd = document.createElement('td');
+      schoolTd.textContent = item.school_name || '-';
+      const totalTd = document.createElement('td');
+      totalTd.textContent = String(item.total || 0);
+      tr.appendChild(schoolTd);
+      tr.appendChild(totalTd);
+      patchPreviewBody.appendChild(tr);
+    });
+  }
+
+  function runPatchPreview() {
+    if (!patchSchoolKeyword || !patchPreviewHint || !patchPreviewContainer) {
+      return;
+    }
+
+    const keyword = patchSchoolKeyword.value.trim();
+    if (!keyword) {
+      patchPreviewContainer.style.display = 'none';
+      patchPreviewHint.textContent = 'Masukkan kata kunci untuk melihat preview data.';
+      return;
+    }
+
+    patchPreviewContainer.style.display = 'block';
+    patchPreviewHint.textContent = 'Mencari data...';
+    if (patchPreviewBody) {
+      patchPreviewBody.innerHTML = '<tr><td colspan="2" class="text-center muted">Memuat preview...</td></tr>';
+    }
+
+    const url = 'admin_scores?patch_preview=1&school_keyword=' + encodeURIComponent(keyword);
+    fetch(url, { headers: { 'X-Requested-With': 'XMLHttpRequest' } })
+      .then(function (response) {
+        if (!response.ok) {
+          throw new Error('HTTP ' + response.status);
+        }
+        return response.json();
+      })
+      .then(function (payload) {
+        if (!payload || !payload.ok) {
+          throw new Error((payload && payload.message) ? payload.message : 'Gagal mengambil preview.');
+        }
+        renderPatchPreviewRows(payload.items || []);
+        patchPreviewHint.textContent = 'Ditemukan ' + String(payload.total || 0) + ' data cocok untuk kata kunci "' + keyword + '".';
+      })
+      .catch(function (error) {
+        if (patchPreviewBody) {
+          patchPreviewBody.innerHTML = '<tr><td colspan="2" class="text-center text-danger">Gagal memuat preview.</td></tr>';
+        }
+        patchPreviewHint.textContent = (error && error.message) ? error.message : 'Gagal memuat preview.';
+      });
+  }
+
+  if (patchPreviewBtn) {
+    patchPreviewBtn.addEventListener('click', runPatchPreview);
+  }
+  if (patchSchoolKeyword) {
+    patchSchoolKeyword.addEventListener('keydown', function (event) {
+      if (event.key === 'Enter') {
+        event.preventDefault();
+        runPatchPreview();
+      }
+    });
+  }
+  if (patchSchoolKeyword && patchSchoolKeyword.value.trim() !== '' && patchRegionPanel && window.getComputedStyle(patchRegionPanel).display !== 'none') {
+    runPatchPreview();
+  }
 
   if (rowCheckboxes.length && selectAllRows && selectAllRowsHeader && bulkDeleteBtn) {
     function syncBulkControls() {
