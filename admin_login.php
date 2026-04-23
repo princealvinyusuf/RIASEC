@@ -13,19 +13,21 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $isValidAdmin = false;
     $adminId = 0;
     $adminUsername = '';
+    $adminLevel = 'staff';
     if ($connection) {
         $stmt = mysqli_prepare(
             $connection,
-            "SELECT id, username, password_hash FROM admin_users WHERE username = ? AND is_active = 1 LIMIT 1"
+            "SELECT id, username, admin_level, password_hash FROM admin_users WHERE username = ? AND is_active = 1 LIMIT 1"
         );
         if ($stmt) {
             mysqli_stmt_bind_param($stmt, 's', $username);
             mysqli_stmt_execute($stmt);
-            mysqli_stmt_bind_result($stmt, $foundAdminId, $foundUsername, $passwordHash);
+            mysqli_stmt_bind_result($stmt, $foundAdminId, $foundUsername, $foundAdminLevel, $passwordHash);
             if (mysqli_stmt_fetch($stmt) && password_verify($password, $passwordHash)) {
                 $isValidAdmin = true;
                 $adminId = intval($foundAdminId);
                 $adminUsername = (string)$foundUsername;
+                $adminLevel = $foundAdminLevel === 'super_admin' ? 'super_admin' : 'staff';
             }
             mysqli_stmt_close($stmt);
         }
@@ -35,6 +37,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $_SESSION['is_admin'] = true;
         $_SESSION['admin_user_id'] = $adminId;
         $_SESSION['admin_username'] = $adminUsername;
+        $_SESSION['admin_level'] = $adminLevel;
         header('Location: admin_scores');
         exit;
     } else {

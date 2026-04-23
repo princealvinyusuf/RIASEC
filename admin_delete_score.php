@@ -4,8 +4,24 @@ if (empty($_SESSION['is_admin'])) {
   header('Location: admin_login');
   exit;
 }
-
 include 'includes/db.php';
+include_once 'includes/admin_auth.php';
+ensureAdminUsersTable($connection);
+
+$sessionAdminId = isset($_SESSION['admin_user_id']) ? intval($_SESSION['admin_user_id']) : 0;
+$sessionAdminLevel = isset($_SESSION['admin_level']) ? (string)$_SESSION['admin_level'] : '';
+if (!in_array($sessionAdminLevel, array('super_admin', 'staff'), true)) {
+    $sessionAdminLevel = getAdminLevelById($connection, $sessionAdminId);
+    $_SESSION['admin_level'] = $sessionAdminLevel;
+}
+$isSuperAdmin = $sessionAdminLevel === 'super_admin';
+if (!$isSuperAdmin) {
+    $params = array(
+        'permission_error' => 'Akses ditolak. Hanya Super Admin yang dapat menghapus data.'
+    );
+    header('Location: admin_scores?' . http_build_query($params));
+    exit;
+}
 
 $scoreIds = array();
 $returnQuery = '';

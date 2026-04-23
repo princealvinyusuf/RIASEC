@@ -10,6 +10,22 @@ include_once 'includes/admin_auth.php';
 
 ensureAdminUsersTable($connection);
 
+$currentAdminId = isset($_SESSION['admin_user_id']) ? intval($_SESSION['admin_user_id']) : 0;
+$currentAdminUsername = isset($_SESSION['admin_username']) ? (string)$_SESSION['admin_username'] : '';
+$currentAdminLevel = isset($_SESSION['admin_level']) ? (string)$_SESSION['admin_level'] : 'staff';
+if (!in_array($currentAdminLevel, array('super_admin', 'staff'), true)) {
+    $currentAdminLevel = getAdminLevelById($connection, $currentAdminId);
+    $_SESSION['admin_level'] = $currentAdminLevel;
+}
+
+if ($currentAdminLevel !== 'super_admin') {
+    $params = array(
+        'permission_error' => 'Akses ditolak. Hanya Super Admin yang dapat membuka halaman Kelola Admin.'
+    );
+    header('Location: admin_scores?' . http_build_query($params));
+    exit;
+}
+
 function redirectAdminUsers($status, $message) {
     $params = array(
         'status' => $status,
@@ -29,6 +45,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     if ($action === 'create_admin') {
         $username = isset($_POST['username']) ? trim((string)$_POST['username']) : '';
         $password = isset($_POST['password']) ? (string)$_POST['password'] : '';
+        $adminLevel = isset($_POST['admin_level']) ? trim((string)$_POST['admin_level']) : 'staff';
 
         if (!preg_match('/^[A-Za-z0-9_.-]{3,50}$/', $username)) {
             redirectAdminUsers('error', 'Username wajib 3-50 karakter (huruf, angka, titik, underscore, atau strip).');
@@ -36,13 +53,16 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         if (strlen($password) < 8) {
             redirectAdminUsers('error', 'Password minimal 8 karakter.');
         }
+        if (!in_array($adminLevel, array('super_admin', 'staff'), true)) {
+            redirectAdminUsers('error', 'Level admin tidak valid.');
+        }
 
         $passwordHash = password_hash($password, PASSWORD_DEFAULT);
-        $insertStmt = mysqli_prepare($connection, "INSERT INTO admin_users (username, password_hash, is_active) VALUES (?, ?, 1)");
+        $insertStmt = mysqli_prepare($connection, "INSERT INTO admin_users (username, password_hash, admin_level, is_active) VALUES (?, ?, ?, 1)");
         if (!$insertStmt) {
             redirectAdminUsers('error', 'Gagal menyiapkan data admin baru.');
         }
-        mysqli_stmt_bind_param($insertStmt, 'ss', $username, $passwordHash);
+        mysqli_stmt_bind_param($insertStmt, 'sss', $username, $passwordHash, $adminLevel);
         $insertOk = mysqli_stmt_execute($insertStmt);
         $insertErrno = mysqli_errno($connection);
         mysqli_stmt_close($insertStmt);
@@ -83,22 +103,74 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         redirectAdminUsers('error', 'Admin tidak ditemukan atau password tidak berubah.');
     }
 
-    if ($action === 'toggle_active') {
+    if ($action === 'change_level') {
         $userId = isset($_POST['user_id']) ? intval($_POST['user_id']) : 0;
-        $toggleTo = isset($_POST['toggle_to']) ? intval($_POST['toggle_to']) : -1;
-        $currentAdminId = isset($_SESSION['admin_user_id']) ? intval($_SESSION['admin_user_id']) : 0;
+        $newLevel = isset($_POST['new_level']) ? trim((string)$_POST['new_level']) : '';
 
-        if ($userId <= 0 || ($toggleTo !== 0 && $toggleTo !== 1)) {
-            redirectAdminUsers('error', 'Permintaan ubah status tidak valid.');
+        if ($userId <= 0 || !in_array($newLevel, array('super_admin', 'staff'), true)) {
+            redirectAdminUsers('error', 'Permintaan ubah level tidak valid.');
         }
 
-        $targetStmt = mysqli_prepare($connection, "SELECT username, is_active FROM admin_users WHERE id = ? LIMIT 1");
+        $targetStmt = mysqli_prepare($connection, "SELECT username, admin_level FROM admin_users WHERE id = ? LIMIT 1");
         if (!$targetStmt) {
             redirectAdminUsers('error', 'Gagal membaca data admin.');
         }
         mysqli_stmt_bind_param($targetStmt, 'i', $userId);
         mysqli_stmt_execute($targetStmt);
-        mysqli_stmt_bind_result($targetStmt, $targetUsername, $currentStatus);
+        mysqli_stmt_bind_result($targetStmt, $targetUsername, $currentLevel);
+        $foundTarget = mysqli_stmt_fetch($targetStmt);
+        mysqli_stmt_close($targetStmt);
+
+        if (!$foundTarget) {
+            redirectAdminUsers('error', 'Admin tidak ditemukan.');
+        }
+
+        $currentLevel = in_array($currentLevel, array('super_admin', 'staff'), true) ? $currentLevel : 'staff';
+        if ($currentLevel === $newLevel) {
+            redirectAdminUsers('success', 'Level admin sudah sesuai.');
+        }
+
+        if ($currentLevel === 'super_admin' && $newLevel === 'staff') {
+            $superAdminCount = countSuperAdminUsers($connection);
+            if ($superAdminCount <= 1) {
+                redirectAdminUsers('error', 'Tidak bisa mengubah level Super Admin terakhir menjadi Staff.');
+            }
+            if ($currentAdminId > 0 && $currentAdminId === $userId) {
+                redirectAdminUsers('error', 'Anda tidak dapat mengubah level akun Anda sendiri menjadi Staff.');
+            }
+        }
+
+        $levelStmt = mysqli_prepare($connection, "UPDATE admin_users SET admin_level = ? WHERE id = ?");
+        if (!$levelStmt) {
+            redirectAdminUsers('error', 'Gagal menyiapkan perubahan level admin.');
+        }
+        mysqli_stmt_bind_param($levelStmt, 'si', $newLevel, $userId);
+        mysqli_stmt_execute($levelStmt);
+        $changed = mysqli_stmt_affected_rows($levelStmt) > 0;
+        mysqli_stmt_close($levelStmt);
+
+        if ($changed) {
+            $newLevelLabel = $newLevel === 'super_admin' ? 'Super Admin' : 'Staff';
+            redirectAdminUsers('success', 'Level admin "' . $targetUsername . '" berhasil diubah ke ' . $newLevelLabel . '.');
+        }
+        redirectAdminUsers('error', 'Gagal mengubah level admin.');
+    }
+
+    if ($action === 'toggle_active') {
+        $userId = isset($_POST['user_id']) ? intval($_POST['user_id']) : 0;
+        $toggleTo = isset($_POST['toggle_to']) ? intval($_POST['toggle_to']) : -1;
+
+        if ($userId <= 0 || ($toggleTo !== 0 && $toggleTo !== 1)) {
+            redirectAdminUsers('error', 'Permintaan ubah status tidak valid.');
+        }
+
+        $targetStmt = mysqli_prepare($connection, "SELECT username, is_active, admin_level FROM admin_users WHERE id = ? LIMIT 1");
+        if (!$targetStmt) {
+            redirectAdminUsers('error', 'Gagal membaca data admin.');
+        }
+        mysqli_stmt_bind_param($targetStmt, 'i', $userId);
+        mysqli_stmt_execute($targetStmt);
+        mysqli_stmt_bind_result($targetStmt, $targetUsername, $currentStatus, $targetLevel);
         $foundTarget = mysqli_stmt_fetch($targetStmt);
         mysqli_stmt_close($targetStmt);
 
@@ -118,6 +190,18 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             }
             if ($currentAdminId > 0 && $currentAdminId === $userId) {
                 redirectAdminUsers('error', 'Anda tidak dapat menonaktifkan akun Anda sendiri.');
+            }
+            if ($targetLevel === 'super_admin') {
+                $activeSuperStmt = mysqli_prepare($connection, "SELECT COUNT(*) FROM admin_users WHERE admin_level = 'super_admin' AND is_active = 1");
+                if ($activeSuperStmt) {
+                    mysqli_stmt_execute($activeSuperStmt);
+                    mysqli_stmt_bind_result($activeSuperStmt, $activeSuperCount);
+                    mysqli_stmt_fetch($activeSuperStmt);
+                    mysqli_stmt_close($activeSuperStmt);
+                    if (intval($activeSuperCount) <= 1) {
+                        redirectAdminUsers('error', 'Tidak bisa menonaktifkan Super Admin aktif terakhir.');
+                    }
+                }
             }
         }
 
@@ -142,12 +226,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
 $status = isset($_GET['status']) ? trim((string)$_GET['status']) : '';
 $message = isset($_GET['message']) ? trim((string)$_GET['message']) : '';
-$currentAdminId = isset($_SESSION['admin_user_id']) ? intval($_SESSION['admin_user_id']) : 0;
-$currentAdminUsername = isset($_SESSION['admin_username']) ? (string)$_SESSION['admin_username'] : '';
 
 $adminRows = array();
 if ($connection) {
-    $adminResult = mysqli_query($connection, "SELECT id, username, is_active, created_at FROM admin_users ORDER BY id ASC");
+    $adminResult = mysqli_query($connection, "SELECT id, username, admin_level, is_active, created_at FROM admin_users ORDER BY id ASC");
     if ($adminResult) {
         while ($row = mysqli_fetch_assoc($adminResult)) {
             $adminRows[] = $row;
@@ -184,13 +266,20 @@ $pageTitle = 'Manajemen Admin - RIASEC';
     <h2 class="h5 fw-bold text-success mb-3">Tambah admin baru</h2>
     <form method="post" action="admin_users" class="row g-2">
       <input type="hidden" name="action" value="create_admin">
-      <div class="col-md-5">
+      <div class="col-md-4">
         <label class="form-label small mb-1">Username</label>
         <input type="text" class="form-control" name="username" required placeholder="Contoh: admin_ops">
       </div>
-      <div class="col-md-5">
+      <div class="col-md-4">
         <label class="form-label small mb-1">Password</label>
         <input type="password" class="form-control" name="password" required minlength="8" placeholder="Minimal 8 karakter">
+      </div>
+      <div class="col-md-2">
+        <label class="form-label small mb-1">Admin Level</label>
+        <select class="form-select" name="admin_level" required>
+          <option value="staff">Staff</option>
+          <option value="super_admin">Super Admin</option>
+        </select>
       </div>
       <div class="col-md-2 d-flex align-items-end">
         <button type="submit" class="btn btn-primary-soft w-100">Tambah</button>
@@ -210,6 +299,7 @@ $pageTitle = 'Manajemen Admin - RIASEC';
           <tr>
             <th style="width:70px;">ID</th>
             <th>Username</th>
+            <th style="width:170px;">Admin Level</th>
             <th style="width:130px;">Status</th>
             <th style="width:200px;">Dibuat</th>
             <th style="min-width:300px;">Ubah Password</th>
@@ -223,6 +313,7 @@ $pageTitle = 'Manajemen Admin - RIASEC';
                 $adminId = intval($adminRow['id']);
                 $isCurrent = $currentAdminId > 0 && $currentAdminId === $adminId;
                 $isActive = intval($adminRow['is_active']) === 1;
+                $adminLevel = $adminRow['admin_level'] === 'super_admin' ? 'super_admin' : 'staff';
               ?>
               <tr>
                 <td><?php echo $adminId; ?></td>
@@ -231,6 +322,17 @@ $pageTitle = 'Manajemen Admin - RIASEC';
                   <?php if ($isCurrent) { ?>
                     <span class="badge text-bg-info ms-1">Anda</span>
                   <?php } ?>
+                </td>
+                <td>
+                  <form method="post" action="admin_users" class="d-flex gap-2">
+                    <input type="hidden" name="action" value="change_level">
+                    <input type="hidden" name="user_id" value="<?php echo $adminId; ?>">
+                    <select class="form-select form-select-sm" name="new_level">
+                      <option value="super_admin" <?php echo $adminLevel === 'super_admin' ? 'selected' : ''; ?>>Super Admin</option>
+                      <option value="staff" <?php echo $adminLevel === 'staff' ? 'selected' : ''; ?>>Staff</option>
+                    </select>
+                    <button type="submit" class="btn btn-sm btn-outline-primary">Simpan</button>
+                  </form>
                 </td>
                 <td>
                   <span class="badge <?php echo $isActive ? 'text-bg-success' : 'text-bg-secondary'; ?>">
@@ -264,7 +366,7 @@ $pageTitle = 'Manajemen Admin - RIASEC';
             <?php } ?>
           <?php } else { ?>
             <tr>
-              <td colspan="6" class="text-center muted">Belum ada data admin.</td>
+              <td colspan="7" class="text-center muted">Belum ada data admin.</td>
             </tr>
           <?php } ?>
         </tbody>

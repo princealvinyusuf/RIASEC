@@ -5,9 +5,27 @@ if (empty($_SESSION['is_admin'])) {
   exit;
 }
 include_once __DIR__ . '/includes/db.php';
+include_once __DIR__ . '/includes/admin_auth.php';
+ensureAdminUsersTable($connection);
+
+$sessionAdminId = isset($_SESSION['admin_user_id']) ? intval($_SESSION['admin_user_id']) : 0;
+$currentAdminLevel = isset($_SESSION['admin_level']) ? (string)$_SESSION['admin_level'] : 'staff';
+if (!in_array($currentAdminLevel, array('super_admin', 'staff'), true) || $currentAdminLevel === '') {
+    $currentAdminLevel = getAdminLevelById($connection, $sessionAdminId);
+    $_SESSION['admin_level'] = $currentAdminLevel;
+}
+$isSuperAdmin = $currentAdminLevel === 'super_admin';
 ?>
 <?php
 $pageTitle = 'Dashboard Admin - RIASEC';
+
+if (!$isSuperAdmin && isset($_POST['patch_region_submit'])) {
+    $params = array(
+        'permission_error' => 'Akses ditolak. Hanya Super Admin yang dapat melakukan patching Provinsi dan Kota.'
+    );
+    header('Location: admin_scores?' . http_build_query($params));
+    exit;
+}
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['patch_region_submit'])) {
     $returnQueryRaw = isset($_POST['return_query']) ? trim((string)$_POST['return_query']) : '';
@@ -96,6 +114,16 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['patch_region_submit']
 
 if (isset($_GET['patch_preview']) && $_GET['patch_preview'] === '1') {
     header('Content-Type: application/json; charset=utf-8');
+
+    if (!$isSuperAdmin) {
+        echo json_encode(array(
+            'ok' => false,
+            'message' => 'Akses ditolak. Hanya Super Admin yang dapat membuka preview patching.',
+            'items' => array(),
+            'total' => 0
+        ));
+        exit;
+    }
 
     $keyword = isset($_GET['school_keyword']) ? trim((string)$_GET['school_keyword']) : '';
     if ($keyword === '') {
@@ -242,7 +270,7 @@ $filterResult = isset($_GET['result_code']) ? strtoupper(trim($_GET['result_code
 $filterSchool = isset($_GET['school_name']) ? trim($_GET['school_name']) : '';
 $filterProvince = isset($_GET['province']) ? trim($_GET['province']) : '';
 $filterCity = isset($_GET['city']) ? trim($_GET['city']) : '';
-$filterEmptyCity = isset($_GET['empty_city']) && $_GET['empty_city'] === '1';
+$filterEmptyCity = $isSuperAdmin && isset($_GET['empty_city']) && $_GET['empty_city'] === '1';
 $filterDateFrom = isset($_GET['date_from']) ? trim($_GET['date_from']) : '';
 $filterDateTo = isset($_GET['date_to']) ? trim($_GET['date_to']) : '';
 
@@ -303,7 +331,9 @@ $patchKeyword = isset($_GET['patch_keyword']) ? trim($_GET['patch_keyword']) : '
 $patchProvinceValue = isset($_GET['patch_province']) ? trim($_GET['patch_province']) : '';
 $patchCityValue = isset($_GET['patch_city']) ? trim($_GET['patch_city']) : '';
 $patchError = isset($_GET['patch_error']) ? trim($_GET['patch_error']) : '';
-$showPatchForm = isset($_GET['show_patch']) && $_GET['show_patch'] === '1';
+$showPatchForm = $isSuperAdmin && isset($_GET['show_patch']) && $_GET['show_patch'] === '1';
+$permissionError = isset($_GET['permission_error']) ? trim((string)$_GET['permission_error']) : '';
+$tableColspan = $isSuperAdmin ? 17 : 16;
 
 $unknownCountSql = "SELECT COUNT(*) AS total
                     FROM personality_test_scores pts
@@ -362,8 +392,10 @@ $filteredTotal = $scores ? mysqli_num_rows($scores) : 0;
       <div class="d-flex gap-2 flex-wrap">
         <a href="generate_excel" class="btn btn-outline-soft">Export CSV</a>
         <button type="button" class="btn btn-outline-soft" id="exportExcelBtn">Export to Excel</button>
-        <a href="admin_users" class="btn btn-outline-soft">Kelola Admin</a>
-        <button type="button" class="btn btn-outline-soft" id="togglePatchRegionBtn">Patching Provinsi dan Kota</button>
+        <?php if ($isSuperAdmin) { ?>
+          <a href="admin_users" class="btn btn-outline-soft">Kelola Admin</a>
+          <button type="button" class="btn btn-outline-soft" id="togglePatchRegionBtn">Patching Provinsi dan Kota</button>
+        <?php } ?>
         <a href="admin_logout" class="btn btn-outline-danger">Logout</a>
       </div>
     </div>
@@ -421,6 +453,11 @@ $filteredTotal = $scores ? mysqli_num_rows($scores) : 0;
       <span class="badge text-bg-light border">Menampilkan <?php echo $filteredTotal; ?> data</span>
     </div>
 
+    <?php if ($permissionError !== '') { ?>
+      <div class="alert alert-danger" role="alert">
+        <?php echo htmlspecialchars($permissionError); ?>
+      </div>
+    <?php } ?>
     <?php if ($deletedCount > 0) { ?>
       <div class="alert alert-success" role="alert">
         <?php echo $deletedCount; ?> data berhasil dihapus.
@@ -431,12 +468,12 @@ $filteredTotal = $scores ? mysqli_num_rows($scores) : 0;
         <?php echo $deletedUnknownCount; ?> data unknown (bernilai "-"/kosong) berhasil dihapus.
       </div>
     <?php } ?>
-    <?php if ($patchError !== '') { ?>
+    <?php if ($isSuperAdmin && $patchError !== '') { ?>
       <div class="alert alert-danger" role="alert">
         <?php echo htmlspecialchars($patchError); ?>
       </div>
     <?php } ?>
-    <?php if ($patchUpdatedCount >= 0 && $patchError === '') { ?>
+    <?php if ($isSuperAdmin && $patchUpdatedCount >= 0 && $patchError === '') { ?>
       <div class="alert <?php echo $patchMatchedCount > 0 ? 'alert-success' : 'alert-warning'; ?>" role="alert">
         <?php if ($patchMatchedCount > 0) { ?>
           Patching selesai untuk pencarian "<?php echo htmlspecialchars($patchKeyword); ?>".
@@ -452,61 +489,63 @@ $filteredTotal = $scores ? mysqli_num_rows($scores) : 0;
       </div>
     <?php } ?>
 
-    <div class="glass-card app-form-card mb-3" id="patchRegionPanel" style="<?php echo $showPatchForm ? '' : 'display:none;'; ?>">
-      <h3 class="h6 fw-bold text-success mb-3">Form Patching Provinsi dan Kota</h3>
-      <form method="post" action="admin_scores" class="row g-2">
-        <input type="hidden" name="return_query" value="<?php echo htmlspecialchars($returnQuery); ?>">
-        <div class="col-lg-5 col-md-12">
-          <label class="form-label small mb-1">Search "Sekolah/Institusi/Universitas"</label>
-          <input
-            type="text"
-            class="form-control"
-            name="school_keyword"
-            id="patchSchoolKeyword"
-            required
-            placeholder="Contoh: SMK Negeri"
-            value="<?php echo htmlspecialchars($patchKeyword); ?>"
-          >
-          <div class="d-flex justify-content-between align-items-center mt-2">
-            <button type="button" class="btn btn-sm btn-outline-secondary" id="patchPreviewBtn">Cari Preview</button>
-            <span class="small muted" id="patchPreviewHint">Preview menampilkan daftar sekolah yang cocok sebelum patching.</span>
+    <?php if ($isSuperAdmin) { ?>
+      <div class="glass-card app-form-card mb-3" id="patchRegionPanel" style="<?php echo $showPatchForm ? '' : 'display:none;'; ?>">
+        <h3 class="h6 fw-bold text-success mb-3">Form Patching Provinsi dan Kota</h3>
+        <form method="post" action="admin_scores" class="row g-2">
+          <input type="hidden" name="return_query" value="<?php echo htmlspecialchars($returnQuery); ?>">
+          <div class="col-lg-5 col-md-12">
+            <label class="form-label small mb-1">Search "Sekolah/Institusi/Universitas"</label>
+            <input
+              type="text"
+              class="form-control"
+              name="school_keyword"
+              id="patchSchoolKeyword"
+              required
+              placeholder="Contoh: SMK Negeri"
+              value="<?php echo htmlspecialchars($patchKeyword); ?>"
+            >
+            <div class="d-flex justify-content-between align-items-center mt-2">
+              <button type="button" class="btn btn-sm btn-outline-secondary" id="patchPreviewBtn">Cari Preview</button>
+              <span class="small muted" id="patchPreviewHint">Preview menampilkan daftar sekolah yang cocok sebelum patching.</span>
+            </div>
           </div>
+          <div class="col-lg-3 col-md-6">
+            <label class="form-label small mb-1">Provinsi</label>
+            <input type="text" class="form-control" name="patch_province" required placeholder="Contoh: Jawa Barat" value="<?php echo htmlspecialchars($patchProvinceValue); ?>">
+          </div>
+          <div class="col-lg-3 col-md-6">
+            <label class="form-label small mb-1">Kota</label>
+            <input type="text" class="form-control" name="patch_city" required placeholder="Contoh: Bandung" value="<?php echo htmlspecialchars($patchCityValue); ?>">
+          </div>
+          <div class="col-lg-1 col-md-12 d-flex align-items-end">
+            <button
+              type="submit"
+              name="patch_region_submit"
+              value="1"
+              class="btn btn-primary-soft w-100"
+              onclick="return confirm('Yakin ingin patching Provinsi dan Kota untuk semua data yang cocok dengan pencarian ini?');"
+            >
+              Simpan
+            </button>
+          </div>
+        </form>
+        <p class="small muted mb-0 mt-2">Patching akan mengubah kolom Provinsi dan Kota pada semua data yang nama Sekolah/Institusi/Universitas mengandung kata kunci pencarian.</p>
+        <div class="table-responsive mt-3" id="patchPreviewContainer" style="display:none;">
+          <table class="table table-sm table-hover align-middle mb-0">
+            <thead class="table-success">
+              <tr>
+                <th>Sekolah/Institusi/Universitas</th>
+                <th style="width:120px;">Jumlah Data</th>
+              </tr>
+            </thead>
+            <tbody id="patchPreviewBody">
+              <tr><td colspan="2" class="text-center muted">Belum ada preview.</td></tr>
+            </tbody>
+          </table>
         </div>
-        <div class="col-lg-3 col-md-6">
-          <label class="form-label small mb-1">Provinsi</label>
-          <input type="text" class="form-control" name="patch_province" required placeholder="Contoh: Jawa Barat" value="<?php echo htmlspecialchars($patchProvinceValue); ?>">
-        </div>
-        <div class="col-lg-3 col-md-6">
-          <label class="form-label small mb-1">Kota</label>
-          <input type="text" class="form-control" name="patch_city" required placeholder="Contoh: Bandung" value="<?php echo htmlspecialchars($patchCityValue); ?>">
-        </div>
-        <div class="col-lg-1 col-md-12 d-flex align-items-end">
-          <button
-            type="submit"
-            name="patch_region_submit"
-            value="1"
-            class="btn btn-primary-soft w-100"
-            onclick="return confirm('Yakin ingin patching Provinsi dan Kota untuk semua data yang cocok dengan pencarian ini?');"
-          >
-            Simpan
-          </button>
-        </div>
-      </form>
-      <p class="small muted mb-0 mt-2">Patching akan mengubah kolom Provinsi dan Kota pada semua data yang nama Sekolah/Institusi/Universitas mengandung kata kunci pencarian.</p>
-      <div class="table-responsive mt-3" id="patchPreviewContainer" style="display:none;">
-        <table class="table table-sm table-hover align-middle mb-0">
-          <thead class="table-success">
-            <tr>
-              <th>Sekolah/Institusi/Universitas</th>
-              <th style="width:120px;">Jumlah Data</th>
-            </tr>
-          </thead>
-          <tbody id="patchPreviewBody">
-            <tr><td colspan="2" class="text-center muted">Belum ada preview.</td></tr>
-          </tbody>
-        </table>
       </div>
-    </div>
+    <?php } ?>
 
     <form method="get" action="admin_scores" class="mb-3">
       <div class="row g-2">
@@ -580,9 +619,11 @@ $filteredTotal = $scores ? mysqli_num_rows($scores) : 0;
       </div>
       <div class="d-flex gap-2 mt-3">
         <button type="submit" class="btn btn-primary-soft">Terapkan filter</button>
-        <a href="<?php echo htmlspecialchars($showEmptyCityUrl); ?>" class="btn btn-outline-warning">Show Empty Kota (<?php echo $emptyCityCount; ?>)</a>
-        <?php if ($filterEmptyCity) { ?>
-          <a href="<?php echo htmlspecialchars($showAllCityUrl); ?>" class="btn btn-outline-secondary">Show Semua Kota</a>
+        <?php if ($isSuperAdmin) { ?>
+          <a href="<?php echo htmlspecialchars($showEmptyCityUrl); ?>" class="btn btn-outline-warning">Show Empty Kota (<?php echo $emptyCityCount; ?>)</a>
+          <?php if ($filterEmptyCity) { ?>
+            <a href="<?php echo htmlspecialchars($showAllCityUrl); ?>" class="btn btn-outline-secondary">Show Semua Kota</a>
+          <?php } ?>
         <?php } ?>
         <a href="admin_scores" class="btn btn-outline-secondary">Reset</a>
       </div>
@@ -590,41 +631,45 @@ $filteredTotal = $scores ? mysqli_num_rows($scores) : 0;
 
     <form method="post" action="admin_delete_score" id="bulkDeleteForm">
       <input type="hidden" name="return_query" value="<?php echo htmlspecialchars($returnQuery); ?>">
-      <div class="d-flex justify-content-between align-items-center flex-wrap gap-2 mb-3">
-        <div class="form-check">
-          <input class="form-check-input" type="checkbox" value="1" id="selectAllRows">
-          <label class="form-check-label" for="selectAllRows">Pilih semua data di halaman ini</label>
+      <?php if ($isSuperAdmin) { ?>
+        <div class="d-flex justify-content-between align-items-center flex-wrap gap-2 mb-3">
+          <div class="form-check">
+            <input class="form-check-input" type="checkbox" value="1" id="selectAllRows">
+            <label class="form-check-label" for="selectAllRows">Pilih semua data di halaman ini</label>
+          </div>
+          <div class="d-flex gap-2 flex-wrap">
+            <button
+              type="submit"
+              formaction="admin_delete_score"
+              formmethod="post"
+              name="delete_unknown"
+              value="1"
+              class="btn btn-warning"
+              <?php echo $unknownCount <= 0 ? 'disabled' : ''; ?>
+              onclick="return confirm('Apakah Anda yakin ingin menghapus semua data unknown (nilai \"-\" atau kosong)?');"
+            >
+              Remove Unknown data (<?php echo $unknownCount; ?>)
+            </button>
+            <button
+              type="submit"
+              class="btn btn-outline-danger"
+              id="bulkDeleteBtn"
+              disabled
+              onclick="return confirm('Apakah Anda yakin ingin menghapus semua data yang dipilih?');"
+            >
+              Hapus data terpilih
+            </button>
+          </div>
         </div>
-        <div class="d-flex gap-2 flex-wrap">
-          <button
-            type="submit"
-            formaction="admin_delete_score"
-            formmethod="post"
-            name="delete_unknown"
-            value="1"
-            class="btn btn-warning"
-            <?php echo $unknownCount <= 0 ? 'disabled' : ''; ?>
-            onclick="return confirm('Apakah Anda yakin ingin menghapus semua data unknown (nilai \"-\" atau kosong)?');"
-          >
-            Remove Unknown data (<?php echo $unknownCount; ?>)
-          </button>
-          <button
-            type="submit"
-            class="btn btn-outline-danger"
-            id="bulkDeleteBtn"
-            disabled
-            onclick="return confirm('Apakah Anda yakin ingin menghapus semua data yang dipilih?');"
-          >
-            Hapus data terpilih
-          </button>
-        </div>
-      </div>
+      <?php } ?>
 
       <div class="table-responsive">
-        <table class="table table-hover align-middle">
+        <table class="table table-hover align-middle" id="scoresTable" data-has-checkbox="<?php echo $isSuperAdmin ? '1' : '0'; ?>">
           <thead class="table-success">
             <tr>
-              <th><input class="form-check-input" type="checkbox" value="1" id="selectAllRowsHeader"></th>
+              <?php if ($isSuperAdmin) { ?>
+                <th><input class="form-check-input" type="checkbox" value="1" id="selectAllRowsHeader"></th>
+              <?php } ?>
               <th>#</th>
               <th>Nama</th>
               <th>Email</th>
@@ -647,14 +692,16 @@ $filteredTotal = $scores ? mysqli_num_rows($scores) : 0;
             <?php if ($scores && mysqli_num_rows($scores) > 0) { $rowNum = 1; ?>
               <?php while ($row = mysqli_fetch_assoc($scores)) { ?>
                 <tr>
-                  <td>
-                    <input
-                      class="form-check-input row-checkbox"
-                      type="checkbox"
-                      name="score_ids[]"
-                      value="<?php echo intval($row['score_id']); ?>"
-                    >
-                  </td>
+                  <?php if ($isSuperAdmin) { ?>
+                    <td>
+                      <input
+                        class="form-check-input row-checkbox"
+                        type="checkbox"
+                        name="score_ids[]"
+                        value="<?php echo intval($row['score_id']); ?>"
+                      >
+                    </td>
+                  <?php } ?>
                   <td><?php echo $rowNum++; ?></td>
                   <td><?php echo htmlspecialchars($row['full_name'] ?? '-'); ?></td>
                   <td><?php echo htmlspecialchars($row['email'] ?? '-'); ?></td>
@@ -673,14 +720,16 @@ $filteredTotal = $scores ? mysqli_num_rows($scores) : 0;
                   <td>
                     <div class="d-flex flex-column gap-1">
                       <a href="admin_score_detail?score_id=<?php echo intval($row['score_id']); ?>" class="btn btn-sm btn-outline-success">Detail</a>
-                      <a href="admin_delete_score?score_id=<?php echo intval($row['score_id']); ?>&return_query=<?php echo urlencode($returnQuery); ?>" class="btn btn-sm btn-outline-danger" onclick="return confirm('Apakah Anda yakin ingin menghapus hasil tes ini?');">Hapus</a>
+                      <?php if ($isSuperAdmin) { ?>
+                        <a href="admin_delete_score?score_id=<?php echo intval($row['score_id']); ?>&return_query=<?php echo urlencode($returnQuery); ?>" class="btn btn-sm btn-outline-danger" onclick="return confirm('Apakah Anda yakin ingin menghapus hasil tes ini?');">Hapus</a>
+                      <?php } ?>
                     </div>
                   </td>
                 </tr>
               <?php } ?>
             <?php } else { ?>
               <tr>
-                <td colspan="17" class="text-center muted">Belum ada data hasil tes.</td>
+                <td colspan="<?php echo $tableColspan; ?>" class="text-center muted">Belum ada data hasil tes.</td>
               </tr>
             <?php } ?>
           </tbody>
@@ -705,7 +754,7 @@ document.addEventListener('DOMContentLoaded', function () {
   const patchPreviewHint = document.getElementById('patchPreviewHint');
   const patchPreviewContainer = document.getElementById('patchPreviewContainer');
   const patchPreviewBody = document.getElementById('patchPreviewBody');
-  const scoresTable = document.querySelector('table.table');
+  const scoresTable = document.getElementById('scoresTable');
 
   if (togglePatchRegionBtn && patchRegionPanel) {
     togglePatchRegionBtn.addEventListener('click', function () {
@@ -833,10 +882,12 @@ document.addEventListener('DOMContentLoaded', function () {
       }
 
       const rows = Array.from(scoresTable.querySelectorAll('tr'));
+      const hasCheckboxColumn = scoresTable.getAttribute('data-has-checkbox') === '1';
+      const startColumnIndex = hasCheckboxColumn ? 1 : 0;
       const data = rows.map((row) => {
         const cells = Array.from(row.querySelectorAll('th, td'));
         return cells
-          .slice(1, -1) // Skip checkbox and action columns.
+          .slice(startColumnIndex, -1) // Skip optional checkbox and action columns.
           .map((cell) => cell.innerText.trim());
       }).filter((rowData) => rowData.length > 0);
 
