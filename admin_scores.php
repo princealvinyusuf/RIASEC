@@ -362,6 +362,7 @@ $filteredTotal = $scores ? mysqli_num_rows($scores) : 0;
       <div class="d-flex gap-2 flex-wrap">
         <a href="generate_excel" class="btn btn-outline-soft">Export CSV</a>
         <button type="button" class="btn btn-outline-soft" id="exportExcelBtn">Export to Excel</button>
+        <a href="admin_users" class="btn btn-outline-soft">Kelola Admin</a>
         <button type="button" class="btn btn-outline-soft" id="togglePatchRegionBtn">Patching Provinsi dan Kota</button>
         <a href="admin_logout" class="btn btn-outline-danger">Logout</a>
       </div>

@@ -1,43 +1,7 @@
 <?php
 if (session_status() === PHP_SESSION_NONE) { session_start(); }
 include 'includes/db.php';
-
-function ensureAdminUsersTable($connection) {
-    if (!$connection) {
-        return;
-    }
-
-    $createTableSql = "CREATE TABLE IF NOT EXISTS admin_users (
-        id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
-        username VARCHAR(100) NOT NULL UNIQUE,
-        password_hash VARCHAR(255) NOT NULL,
-        is_active TINYINT(1) NOT NULL DEFAULT 1,
-        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci";
-    mysqli_query($connection, $createTableSql);
-
-    $defaultUsername = 'arifa_pasker';
-    $checkStmt = mysqli_prepare($connection, "SELECT id FROM admin_users WHERE username = ? LIMIT 1");
-    if (!$checkStmt) {
-        return;
-    }
-
-    mysqli_stmt_bind_param($checkStmt, 's', $defaultUsername);
-    mysqli_stmt_execute($checkStmt);
-    mysqli_stmt_store_result($checkStmt);
-    $exists = mysqli_stmt_num_rows($checkStmt) > 0;
-    mysqli_stmt_close($checkStmt);
-
-    if (!$exists) {
-        $defaultPasswordHash = password_hash('PusatpasarKerj4', PASSWORD_DEFAULT);
-        $insertStmt = mysqli_prepare($connection, "INSERT INTO admin_users (username, password_hash, is_active) VALUES (?, ?, 1)");
-        if ($insertStmt) {
-            mysqli_stmt_bind_param($insertStmt, 'ss', $defaultUsername, $defaultPasswordHash);
-            mysqli_stmt_execute($insertStmt);
-            mysqli_stmt_close($insertStmt);
-        }
-    }
-}
+include_once 'includes/admin_auth.php';
 
 ensureAdminUsersTable($connection);
 
@@ -47,17 +11,21 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $password = isset($_POST['password']) ? $_POST['password'] : '';
 
     $isValidAdmin = false;
+    $adminId = 0;
+    $adminUsername = '';
     if ($connection) {
         $stmt = mysqli_prepare(
             $connection,
-            "SELECT password_hash FROM admin_users WHERE username = ? AND is_active = 1 LIMIT 1"
+            "SELECT id, username, password_hash FROM admin_users WHERE username = ? AND is_active = 1 LIMIT 1"
         );
         if ($stmt) {
             mysqli_stmt_bind_param($stmt, 's', $username);
             mysqli_stmt_execute($stmt);
-            mysqli_stmt_bind_result($stmt, $passwordHash);
+            mysqli_stmt_bind_result($stmt, $foundAdminId, $foundUsername, $passwordHash);
             if (mysqli_stmt_fetch($stmt) && password_verify($password, $passwordHash)) {
                 $isValidAdmin = true;
+                $adminId = intval($foundAdminId);
+                $adminUsername = (string)$foundUsername;
             }
             mysqli_stmt_close($stmt);
         }
@@ -65,6 +33,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
     if ($isValidAdmin) {
         $_SESSION['is_admin'] = true;
+        $_SESSION['admin_user_id'] = $adminId;
+        $_SESSION['admin_username'] = $adminUsername;
         header('Location: admin_scores');
         exit;
     } else {
