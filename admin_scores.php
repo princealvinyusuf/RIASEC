@@ -6,7 +6,9 @@ if (empty($_SESSION['is_admin'])) {
 }
 include_once __DIR__ . '/includes/db.php';
 include_once __DIR__ . '/includes/admin_auth.php';
+include_once __DIR__ . '/includes/zi_core.php';
 ensureAdminUsersTable($connection);
+ensureZiTablesAndSeed($connection);
 
 $sessionAdminId = isset($_SESSION['admin_user_id']) ? intval($_SESSION['admin_user_id']) : 0;
 $currentAdminLevel = isset($_SESSION['admin_level']) ? (string)$_SESSION['admin_level'] : 'staff';
@@ -356,6 +358,34 @@ $emptyCityCountRes = mysqli_query($connection, $emptyCityCountSql);
 $emptyCityCountRow = $emptyCityCountRes ? mysqli_fetch_assoc($emptyCityCountRes) : array('total' => 0);
 $emptyCityCount = intval($emptyCityCountRow['total']);
 
+$totalZiAssessments = 0;
+$avgZiScore = 0;
+$latestZiDate = '-';
+$ziAssessmentRows = array();
+
+$ziTotalRes = mysqli_query($connection, "SELECT COUNT(*) AS total, AVG(average_score) AS avg_score, MAX(submitted_at) AS latest_at FROM zi_assessments");
+if ($ziTotalRes) {
+    $ziTotalRow = mysqli_fetch_assoc($ziTotalRes);
+    $totalZiAssessments = intval($ziTotalRow['total'] ?? 0);
+    $avgZiScore = floatval($ziTotalRow['avg_score'] ?? 0);
+    if (!empty($ziTotalRow['latest_at'])) {
+        $latestZiDate = $ziTotalRow['latest_at'];
+    }
+}
+
+$ziListRes = mysqli_query(
+    $connection,
+    "SELECT id, respondent_name, respondent_email, average_score, positive_count, neutral_count, negative_count, total_questions, submitted_at
+     FROM zi_assessments
+     ORDER BY submitted_at DESC
+     LIMIT 30"
+);
+if ($ziListRes) {
+    while ($ziRow = mysqli_fetch_assoc($ziListRes)) {
+        $ziAssessmentRows[] = $ziRow;
+    }
+}
+
 $showEmptyCityParams = $_GET;
 $showEmptyCityParams['empty_city'] = '1';
 $showEmptyCityUrl = 'admin_scores?' . http_build_query($showEmptyCityParams);
@@ -414,6 +444,15 @@ $filteredTotal = $scores ? mysqli_num_rows($scores) : 0;
     <div class="interest-pill">
       <div class="muted small">Partisipasi Sekolah</div>
       <div class="display-6 fw-bold text-success"><?php echo $total_schools; ?></div>
+    </div>
+    <div class="interest-pill">
+      <div class="muted small">Total Survei ZI</div>
+      <div class="display-6 fw-bold text-success"><?php echo $totalZiAssessments; ?></div>
+      <div class="small muted">Rata-rata nilai: <?php echo number_format($avgZiScore, 2); ?>/5</div>
+    </div>
+    <div class="interest-pill">
+      <div class="muted small">Survei ZI Terakhir</div>
+      <div class="fw-semibold"><?php echo htmlspecialchars($latestZiDate); ?></div>
     </div>
   </div>
 
@@ -736,6 +775,55 @@ $filteredTotal = $scores ? mysqli_num_rows($scores) : 0;
         </table>
       </div>
     </form>
+  </div>
+
+  <div class="glass-card app-form-card mt-3">
+    <div class="d-flex justify-content-between align-items-start flex-wrap gap-2 mb-2">
+      <h2 class="h5 fw-bold text-success mb-0">Daftar hasil Survei Evaluasi Zona Integritas</h2>
+      <span class="badge text-bg-light border">Menampilkan <?php echo count($ziAssessmentRows); ?> data terbaru</span>
+    </div>
+    <div class="table-responsive">
+      <table class="table table-hover align-middle">
+        <thead class="table-success">
+          <tr>
+            <th>#</th>
+            <th>Nama Responden</th>
+            <th>Email</th>
+            <th>Rata-rata Nilai</th>
+            <th>Positif</th>
+            <th>Netral</th>
+            <th>Negatif</th>
+            <th>Total Pertanyaan</th>
+            <th>Tanggal Submit</th>
+            <th>Aksi</th>
+          </tr>
+        </thead>
+        <tbody>
+          <?php if (!empty($ziAssessmentRows)) { ?>
+            <?php foreach ($ziAssessmentRows as $idx => $ziRow) { ?>
+              <tr>
+                <td><?php echo $idx + 1; ?></td>
+                <td><?php echo htmlspecialchars($ziRow['respondent_name']); ?></td>
+                <td><?php echo htmlspecialchars($ziRow['respondent_email'] ?: '-'); ?></td>
+                <td><?php echo number_format(floatval($ziRow['average_score']), 2); ?>/5</td>
+                <td><?php echo intval($ziRow['positive_count']); ?></td>
+                <td><?php echo intval($ziRow['neutral_count']); ?></td>
+                <td><?php echo intval($ziRow['negative_count']); ?></td>
+                <td><?php echo intval($ziRow['total_questions']); ?></td>
+                <td><?php echo htmlspecialchars($ziRow['submitted_at']); ?></td>
+                <td>
+                  <a href="admin_zi_detail?assessment_id=<?php echo intval($ziRow['id']); ?>" class="btn btn-sm btn-outline-success">Detail</a>
+                </td>
+              </tr>
+            <?php } ?>
+          <?php } else { ?>
+            <tr>
+              <td colspan="10" class="text-center muted">Belum ada data Survei Evaluasi Zona Integritas.</td>
+            </tr>
+          <?php } ?>
+        </tbody>
+      </table>
+    </div>
   </div>
 </section>
 

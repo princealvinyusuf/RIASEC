@@ -12,6 +12,7 @@
     </p>
     <div class="cta-row">
       <a href="personal_info" class="btn btn-primary-soft">Mulai Asesmen</a>
+      <a href="survei_evaluasi" class="btn btn-outline-soft">Survei Evaluasi</a>
       <a href="statistik" class="btn btn-outline-soft">Statistik</a>
       <a href="admin_login" class="btn btn-outline-soft">Masuk Admin</a>
     </div>
