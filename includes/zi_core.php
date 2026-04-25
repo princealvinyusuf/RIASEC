@@ -2,6 +2,21 @@
 
 function getDefaultZiStatementsSeed() {
     return array(
+        'Kualitas layanan Makeup Wisuda sudah sesuai dengan kebutuhan saya.',
+        'Kualitas layanan Makeup Party/Event sudah sesuai dengan kebutuhan saya.',
+        'Kualitas layanan Makeup Engagement/Lamaran sudah sesuai dengan kebutuhan saya.',
+        'Kualitas layanan Makeup Akad/Resepsi sudah sesuai dengan kebutuhan saya.',
+        'Kualitas layanan Makeup Photoshoot/Prewedding sudah sesuai dengan kebutuhan saya.',
+        'Kualitas layanan Hairdo/Hijabdo sudah sesuai dengan kebutuhan saya.',
+        'Ketahanan hasil makeup sesuai dengan durasi acara yang saya butuhkan.',
+        'Kebersihan alat dan produk makeup yang digunakan sudah baik.',
+        'Ketepatan waktu dan profesionalisme tim layanan sudah memuaskan.',
+        'Secara keseluruhan, saya puas dengan layanan makeup yang ditawarkan.'
+    );
+}
+
+function getLegacyZiStatementsSeed() {
+    return array(
         'Layanan publik di instansi ini disampaikan secara adil tanpa diskriminasi.',
         'Proses pelayanan dilakukan secara transparan dan mudah dipahami.',
         'Petugas memberikan pelayanan dengan ramah, sopan, dan profesional.',
@@ -73,6 +88,43 @@ function ensureZiTablesAndSeed($connection) {
                 mysqli_stmt_execute($insertStmt);
             }
             mysqli_stmt_close($insertStmt);
+        }
+    } else {
+        // Auto-migrate only when table still contains the initial legacy ZI seed.
+        $currentStatements = array();
+        $currentRes = mysqli_query(
+            $connection,
+            "SELECT statement_content
+             FROM zi_statements
+             WHERE is_active = 1
+             ORDER BY sort_order ASC, statement_id ASC"
+        );
+        if ($currentRes) {
+            while ($currentRow = mysqli_fetch_assoc($currentRes)) {
+                $currentStatements[] = trim((string)($currentRow['statement_content'] ?? ''));
+            }
+        }
+
+        $legacySeed = getLegacyZiStatementsSeed();
+        $normalizedLegacy = array_map('trim', $legacySeed);
+        if ($currentStatements === $normalizedLegacy) {
+            mysqli_query($connection, "DELETE FROM zi_answers");
+            mysqli_query($connection, "DELETE FROM zi_assessments");
+            mysqli_query($connection, "DELETE FROM zi_statements");
+
+            $newSeed = getDefaultZiStatementsSeed();
+            $insertStmt = mysqli_prepare(
+                $connection,
+                "INSERT INTO zi_statements (statement_content, sort_order, is_active) VALUES (?, ?, 1)"
+            );
+            if ($insertStmt) {
+                foreach ($newSeed as $index => $content) {
+                    $sortOrder = $index + 1;
+                    mysqli_stmt_bind_param($insertStmt, 'si', $content, $sortOrder);
+                    mysqli_stmt_execute($insertStmt);
+                }
+                mysqli_stmt_close($insertStmt);
+            }
         }
     }
 

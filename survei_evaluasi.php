@@ -106,7 +106,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['submit_zi'])) {
           <table class="table table-hover align-middle">
             <thead class="table-success">
               <tr>
-                <th style="min-width:340px;">Pernyataan Zona Integritas</th>
+                <th style="min-width:340px;">Pertanyaan Layanan Makeup</th>
                 <th class="text-center">1</th>
                 <th class="text-center">2</th>
                 <th class="text-center">3</th>
