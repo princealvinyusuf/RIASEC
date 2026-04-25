@@ -2,6 +2,21 @@
 
 function getDefaultZiStatementsSeed() {
     return array(
+        'Petunjuk dan alur asesmen ini mudah saya pahami dari awal sampai akhir.',
+        'Pernyataan aktivitas kerja pada asesmen ini jelas dan relevan untuk menilai minat saya.',
+        'Durasi pengerjaan asesmen terasa pas untuk menggali minat kerja saya.',
+        'Tampilan halaman asesmen membantu saya tetap fokus saat menjawab pertanyaan.',
+        'Hasil profil RIASEC membantu saya memahami kombinasi minat kerja saya.',
+        'Penjelasan tiap tipe RIASEC (R, I, A, S, E, C) mudah dipahami.',
+        'Rekomendasi karier dan Job Zone membantu saya menentukan langkah eksplorasi berikutnya.',
+        'Rekomendasi pelatihan yang ditampilkan relevan dengan kebutuhan pengembangan saya.',
+        'Fitur unduh laporan hasil membantu saya untuk diskusi dengan guru BK atau konselor.',
+        'Secara keseluruhan, saya puas dengan pengalaman menggunakan Profiler Minat Karier RIASEC.'
+    );
+}
+
+function getMakeupZiStatementsSeed() {
+    return array(
         'Kualitas layanan Makeup Wisuda sudah sesuai dengan kebutuhan saya.',
         'Kualitas layanan Makeup Party/Event sudah sesuai dengan kebutuhan saya.',
         'Kualitas layanan Makeup Engagement/Lamaran sudah sesuai dengan kebutuhan saya.',
@@ -90,7 +105,7 @@ function ensureZiTablesAndSeed($connection) {
             mysqli_stmt_close($insertStmt);
         }
     } else {
-        // Auto-migrate only when table still contains the initial legacy ZI seed.
+        // Auto-migrate only when table still contains a known old seed.
         $currentStatements = array();
         $currentRes = mysqli_query(
             $connection,
@@ -105,9 +120,9 @@ function ensureZiTablesAndSeed($connection) {
             }
         }
 
-        $legacySeed = getLegacyZiStatementsSeed();
-        $normalizedLegacy = array_map('trim', $legacySeed);
-        if ($currentStatements === $normalizedLegacy) {
+        $normalizedLegacy = array_map('trim', getLegacyZiStatementsSeed());
+        $normalizedMakeup = array_map('trim', getMakeupZiStatementsSeed());
+        if ($currentStatements === $normalizedLegacy || $currentStatements === $normalizedMakeup) {
             mysqli_query($connection, "DELETE FROM zi_answers");
             mysqli_query($connection, "DELETE FROM zi_assessments");
             mysqli_query($connection, "DELETE FROM zi_statements");

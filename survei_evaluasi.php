@@ -37,7 +37,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['submit_zi'])) {
     }
 }
 ?>
-<?php $pageTitle = 'Survei Evaluasi Zona Integritas'; ?>
+<?php $pageTitle = 'Survei Evaluasi Asesmen RIASEC'; ?>
 <?php include 'includes/header.php'; ?>
 
 <section class="page-wrap">
@@ -45,9 +45,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['submit_zi'])) {
     <div class="d-flex justify-content-between align-items-start flex-wrap gap-2">
       <div>
         <p class="kicker mb-1">Survei Evaluasi</p>
-        <h1 class="hero-title h2 mb-1">Zona Integritas (ZI)</h1>
+        <h1 class="hero-title h2 mb-1">Evaluasi Pengalaman Asesmen RIASEC</h1>
         <p class="hero-subtitle mb-0">
-          Bantu kami meningkatkan kualitas layanan dengan menilai pengalaman Anda terhadap implementasi Zona Integritas.
+          Bantu kami meningkatkan kualitas asesmen dengan menilai pengalaman Anda saat menggunakan Profiler Minat Karier RIASEC.
         </p>
       </div>
       <a href="index" class="btn btn-outline-soft">&larr; Kembali ke beranda</a>
@@ -56,7 +56,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['submit_zi'])) {
 
   <?php if ($submitSuccess) { ?>
     <div class="alert alert-success" role="alert">
-      Terima kasih. Jawaban Survei Evaluasi Zona Integritas berhasil disimpan.
+      Terima kasih. Jawaban Survei Evaluasi Asesmen RIASEC berhasil disimpan.
       <?php if ($savedAssessmentId > 0) { ?>
         <span class="small d-block mt-1">ID survei: <?php echo $savedAssessmentId; ?></span>
       <?php } ?>
@@ -72,7 +72,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['submit_zi'])) {
 
     <?php if (empty($questions)) { ?>
       <div class="alert alert-warning mb-0">
-        Pertanyaan Survei ZI belum tersedia. Silakan hubungi admin untuk mengisi bank pertanyaan.
+        Pertanyaan survei belum tersedia. Silakan hubungi admin untuk mengisi bank pertanyaan.
       </div>
     <?php } else { ?>
       <form method="post" action="survei_evaluasi">
@@ -106,7 +106,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['submit_zi'])) {
           <table class="table table-hover align-middle">
             <thead class="table-success">
               <tr>
-                <th style="min-width:340px;">Pertanyaan Layanan Makeup</th>
+                <th style="min-width:340px;">Pertanyaan Evaluasi Asesmen RIASEC</th>
                 <th class="text-center">1</th>
                 <th class="text-center">2</th>
                 <th class="text-center">3</th>
