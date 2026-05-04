@@ -222,4 +222,40 @@ $jobZones = $recommendationPayload['job_zones'];
   </div>
 </section>
 
+<div class="modal fade" id="surveiEvaluasiModal" tabindex="-1" aria-labelledby="surveiEvaluasiModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h2 class="modal-title h5 mb-0" id="surveiEvaluasiModalLabel">Survei Evaluasi</h2>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Tutup"></button>
+      </div>
+      <div class="modal-body">
+        Mohon bantu kami dengan mengisi Survei Evaluasi untuk peningkatan layanan.
+      </div>
+      <div class="modal-footer">
+        <a href="survei_evaluasi" class="btn btn-primary-soft">Ya, Isi Suvei Evaluasi</a>
+        <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Tidak</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+  if (typeof bootstrap === 'undefined') {
+    return;
+  }
+
+  var modalElement = document.getElementById('surveiEvaluasiModal');
+  if (!modalElement) {
+    return;
+  }
+
+  var surveiModal = new bootstrap.Modal(modalElement);
+  setTimeout(function () {
+    surveiModal.show();
+  }, 5000);
+});
+</script>
+
 <?php include 'includes/footer.php'; ?>
