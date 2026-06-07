@@ -147,17 +147,17 @@ body.app-shell {
 }
 
 .consent-highlight {
-    background: #fff8df;
-    border: 2px solid #f0d06d;
+    background: #eaf3ff;
+    border: 2px solid #7fb0ff;
     border-radius: 14px;
     padding: 0.8rem 0.9rem;
-    box-shadow: 0 6px 16px rgba(96, 70, 6, 0.08);
+    box-shadow: 0 6px 16px rgba(19, 78, 163, 0.12);
 }
 
 .consent-title {
     font-size: 0.88rem;
     font-weight: 800;
-    color: #7a4d00;
+    color: #0b4ea2;
     letter-spacing: 0.03em;
     text-transform: uppercase;
     margin-bottom: 0.35rem;
@@ -172,7 +172,7 @@ body.app-shell {
 .consent-note {
     margin-top: 0.35rem;
     font-size: 0.82rem;
-    color: #5b4618;
+    color: #1f4c86;
 }
 
 .progress-top {
