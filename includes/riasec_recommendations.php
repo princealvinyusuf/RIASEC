@@ -92,8 +92,7 @@ function buildKarirhubSearchUrl($keyword) {
     if ($keyword === '') {
         return 'https://karirhub.kemnaker.go.id/lowongan-dalam-negeri/lowongan';
     }
-    $filtersValue = 'keyword:' . $keyword . '#' . $keyword;
-    return 'https://karirhub.kemnaker.go.id/lowongan-dalam-negeri/lowongan?filters=' . rawurlencode($filtersValue);
+    return 'https://karirhub.kemnaker.go.id/lowongan-dalam-negeri/lowongan?keyword=' . rawurlencode($keyword);
 }
 
 function buildSkillhubSearchUrl($keyword) {
