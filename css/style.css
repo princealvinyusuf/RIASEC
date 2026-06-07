@@ -146,6 +146,35 @@ body.app-shell {
     top: 1rem;
 }
 
+.consent-highlight {
+    background: #fff8df;
+    border: 2px solid #f0d06d;
+    border-radius: 14px;
+    padding: 0.8rem 0.9rem;
+    box-shadow: 0 6px 16px rgba(96, 70, 6, 0.08);
+}
+
+.consent-title {
+    font-size: 0.88rem;
+    font-weight: 800;
+    color: #7a4d00;
+    letter-spacing: 0.03em;
+    text-transform: uppercase;
+    margin-bottom: 0.35rem;
+}
+
+.consent-label {
+    color: #1a241d;
+    font-weight: 700;
+    line-height: 1.35;
+}
+
+.consent-note {
+    margin-top: 0.35rem;
+    font-size: 0.82rem;
+    color: #5b4618;
+}
+
 .progress-top {
     display: flex;
     justify-content: space-between;

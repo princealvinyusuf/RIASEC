@@ -103,11 +103,15 @@ if ($statementSelectQuery) {
               </button>
             </div>
 
-            <div class="form-check mb-3">
-              <input class="form-check-input" type="checkbox" name="can_save_data" value="true" id="saveDataYes" required>
-              <label class="form-check-label" for="saveDataYes">
-                Saya setuju jawaban saya disimpan untuk keperluan konseling dan pengembangan asesmen.
-              </label>
+            <div class="consent-highlight mb-3">
+              <div class="consent-title">Persetujuan Wajib</div>
+              <div class="form-check mb-0">
+                <input class="form-check-input" type="checkbox" name="can_save_data" value="true" id="saveDataYes" required>
+                <label class="form-check-label consent-label" for="saveDataYes">
+                  Saya setuju jawaban saya disimpan untuk keperluan konseling dan pengembangan asesmen.
+                </label>
+              </div>
+              <div class="consent-note">Centang kotak ini untuk mengaktifkan tombol <strong>Lihat Hasil</strong>.</div>
             </div>
 
             <div class="question-nav">
