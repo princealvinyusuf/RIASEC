@@ -397,18 +397,30 @@ if ($isSuperAdmin) {
     }
 }
 
+$ziRowsPerPage = 100;
+$ziCurrentPage = isset($_GET['zi_page']) ? max(1, intval($_GET['zi_page'])) : 1;
+$ziTotalPages = max(1, (int)ceil($totalZiAssessments / $ziRowsPerPage));
+if ($ziCurrentPage > $ziTotalPages) {
+    $ziCurrentPage = $ziTotalPages;
+}
+$ziOffset = ($ziCurrentPage - 1) * $ziRowsPerPage;
+
 $ziListRes = mysqli_query(
     $connection,
     "SELECT id, respondent_name, respondent_email, average_score, positive_count, neutral_count, negative_count, total_questions, submitted_at
      FROM zi_assessments
      ORDER BY submitted_at DESC
-     LIMIT 30"
+     LIMIT {$ziRowsPerPage} OFFSET {$ziOffset}"
 );
 if ($ziListRes) {
     while ($ziRow = mysqli_fetch_assoc($ziListRes)) {
         $ziAssessmentRows[] = $ziRow;
     }
 }
+$ziPaginationParams = $_GET;
+unset($ziPaginationParams['zi_page']);
+$ziPageStartRow = $totalZiAssessments > 0 ? $ziOffset + 1 : 0;
+$ziPageEndRow = min($ziOffset + $ziRowsPerPage, $totalZiAssessments);
 
 $showEmptyCityParams = $_GET;
 $showEmptyCityParams['empty_city'] = '1';
@@ -860,7 +872,9 @@ $pageEndRow = min($offset + $rowsPerPage, $filteredTotal);
     <div class="d-flex justify-content-between align-items-start flex-wrap gap-2 mb-2">
       <h2 class="h5 fw-bold text-success mb-0">Daftar hasil Survei Evaluasi Zona Integritas</h2>
       <div class="d-flex align-items-center gap-2 flex-wrap">
-        <span class="badge text-bg-light border">Menampilkan <?php echo count($ziAssessmentRows); ?> data terbaru</span>
+        <span class="badge text-bg-light border">
+          Menampilkan <?php echo $ziPageStartRow; ?>-<?php echo $ziPageEndRow; ?> dari <?php echo $totalZiAssessments; ?> data
+        </span>
         <?php if ($isSuperAdmin) { ?>
           <form method="post" action="admin_delete_duplicate_zi" class="m-0">
             <button
@@ -900,7 +914,7 @@ $pageEndRow = min($offset + $rowsPerPage, $filteredTotal);
           <?php if (!empty($ziAssessmentRows)) { ?>
             <?php foreach ($ziAssessmentRows as $idx => $ziRow) { ?>
               <tr>
-                <td><?php echo $idx + 1; ?></td>
+                <td><?php echo $ziOffset + $idx + 1; ?></td>
                 <td><?php echo htmlspecialchars($ziRow['respondent_name']); ?></td>
                 <td><?php echo htmlspecialchars($ziRow['respondent_email'] ?: '-'); ?></td>
                 <td><?php echo number_format(floatval($ziRow['average_score']), 2); ?>/5</td>
@@ -922,6 +936,39 @@ $pageEndRow = min($offset + $rowsPerPage, $filteredTotal);
         </tbody>
       </table>
     </div>
+    <?php if ($ziTotalPages > 1) { ?>
+      <nav class="mt-3" aria-label="Navigasi halaman hasil survei ZI">
+        <ul class="pagination justify-content-center flex-wrap mb-0">
+          <?php
+            $ziPreviousParams = $ziPaginationParams;
+            $ziPreviousParams['zi_page'] = max(1, $ziCurrentPage - 1);
+          ?>
+          <li class="page-item <?php echo $ziCurrentPage <= 1 ? 'disabled' : ''; ?>">
+            <a class="page-link" href="admin_scores?<?php echo htmlspecialchars(http_build_query($ziPreviousParams)); ?>">Sebelumnya</a>
+          </li>
+
+          <?php
+            $ziFirstVisiblePage = max(1, $ziCurrentPage - 2);
+            $ziLastVisiblePage = min($ziTotalPages, $ziCurrentPage + 2);
+            for ($ziPageNumber = $ziFirstVisiblePage; $ziPageNumber <= $ziLastVisiblePage; $ziPageNumber++) {
+                $ziPageParams = $ziPaginationParams;
+                $ziPageParams['zi_page'] = $ziPageNumber;
+          ?>
+            <li class="page-item <?php echo $ziPageNumber === $ziCurrentPage ? 'active' : ''; ?>">
+              <a class="page-link" href="admin_scores?<?php echo htmlspecialchars(http_build_query($ziPageParams)); ?>"><?php echo $ziPageNumber; ?></a>
+            </li>
+          <?php } ?>
+
+          <?php
+            $ziNextParams = $ziPaginationParams;
+            $ziNextParams['zi_page'] = min($ziTotalPages, $ziCurrentPage + 1);
+          ?>
+          <li class="page-item <?php echo $ziCurrentPage >= $ziTotalPages ? 'disabled' : ''; ?>">
+            <a class="page-link" href="admin_scores?<?php echo htmlspecialchars(http_build_query($ziNextParams)); ?>">Berikutnya</a>
+          </li>
+        </ul>
+      </nav>
+    <?php } ?>
   </div>
 </section>
 
