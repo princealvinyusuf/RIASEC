@@ -327,6 +327,7 @@ if (!empty($whereClauses)) {
 $returnQuery = $_SERVER['QUERY_STRING'] ?? '';
 $deletedCount = isset($_GET['deleted']) ? intval($_GET['deleted']) : 0;
 $deletedUnknownCount = isset($_GET['deleted_unknown']) ? intval($_GET['deleted_unknown']) : 0;
+$ziDuplicatesDeletedCount = isset($_GET['zi_duplicates_deleted']) ? intval($_GET['zi_duplicates_deleted']) : 0;
 $patchUpdatedCount = isset($_GET['patched']) ? intval($_GET['patched']) : -1;
 $patchMatchedCount = isset($_GET['matched']) ? intval($_GET['matched']) : 0;
 $patchKeyword = isset($_GET['patch_keyword']) ? trim($_GET['patch_keyword']) : '';
@@ -362,6 +363,7 @@ $totalZiAssessments = 0;
 $avgZiScore = 0;
 $latestZiDate = '-';
 $ziAssessmentRows = array();
+$ziDuplicateCount = 0;
 
 $ziTotalRes = mysqli_query($connection, "SELECT COUNT(*) AS total, AVG(average_score) AS avg_score, MAX(submitted_at) AS latest_at FROM zi_assessments");
 if ($ziTotalRes) {
@@ -370,6 +372,28 @@ if ($ziTotalRes) {
     $avgZiScore = floatval($ziTotalRow['avg_score'] ?? 0);
     if (!empty($ziTotalRow['latest_at'])) {
         $latestZiDate = $ziTotalRow['latest_at'];
+    }
+}
+
+if ($isSuperAdmin) {
+    $ziDuplicateCountRes = mysqli_query(
+        $connection,
+        "SELECT COUNT(*) AS total
+         FROM zi_assessments older
+         WHERE TRIM(COALESCE(older.respondent_email, '')) <> ''
+           AND EXISTS (
+               SELECT 1
+               FROM zi_assessments newer
+               WHERE LOWER(TRIM(newer.respondent_email)) = LOWER(TRIM(older.respondent_email))
+                 AND (
+                     newer.submitted_at > older.submitted_at
+                     OR (newer.submitted_at = older.submitted_at AND newer.id > older.id)
+                 )
+           )"
+    );
+    if ($ziDuplicateCountRes) {
+        $ziDuplicateCountRow = mysqli_fetch_assoc($ziDuplicateCountRes);
+        $ziDuplicateCount = intval($ziDuplicateCountRow['total'] ?? 0);
     }
 }
 
@@ -835,8 +859,27 @@ $pageEndRow = min($offset + $rowsPerPage, $filteredTotal);
   <div class="glass-card app-form-card mt-3">
     <div class="d-flex justify-content-between align-items-start flex-wrap gap-2 mb-2">
       <h2 class="h5 fw-bold text-success mb-0">Daftar hasil Survei Evaluasi Zona Integritas</h2>
-      <span class="badge text-bg-light border">Menampilkan <?php echo count($ziAssessmentRows); ?> data terbaru</span>
+      <div class="d-flex align-items-center gap-2 flex-wrap">
+        <span class="badge text-bg-light border">Menampilkan <?php echo count($ziAssessmentRows); ?> data terbaru</span>
+        <?php if ($isSuperAdmin) { ?>
+          <form method="post" action="admin_delete_duplicate_zi" class="m-0">
+            <button
+              type="submit"
+              class="btn btn-sm btn-outline-danger"
+              <?php echo $ziDuplicateCount <= 0 ? 'disabled' : ''; ?>
+              onclick="return confirm('Hapus <?php echo $ziDuplicateCount; ?> data survei ZI duplikat? Entri terbaru untuk setiap email akan dipertahankan.');"
+            >
+              Remove Duplicate item (<?php echo $ziDuplicateCount; ?>)
+            </button>
+          </form>
+        <?php } ?>
+      </div>
     </div>
+    <?php if ($ziDuplicatesDeletedCount > 0) { ?>
+      <div class="alert alert-success">
+        <?php echo $ziDuplicatesDeletedCount; ?> data survei ZI duplikat berhasil dihapus.
+      </div>
+    <?php } ?>
     <div class="table-responsive">
       <table class="table table-hover align-middle">
         <thead class="table-success">
