@@ -394,6 +394,21 @@ $showAllCityParams = $_GET;
 unset($showAllCityParams['empty_city']);
 $showAllCityUrl = 'admin_scores' . (!empty($showAllCityParams) ? ('?' . http_build_query($showAllCityParams)) : '');
 
+$rowsPerPage = 100;
+$currentPage = isset($_GET['page']) ? max(1, intval($_GET['page'])) : 1;
+$countQuery = "SELECT COUNT(*) AS total
+               FROM personality_test_scores pts
+               LEFT JOIN personal_info pi ON pi.id = pts.personal_info_id
+               {$whereSql}";
+$countResult = mysqli_query($connection, $countQuery);
+$countRow = $countResult ? mysqli_fetch_assoc($countResult) : array('total' => 0);
+$filteredTotal = intval($countRow['total']);
+$totalPages = max(1, (int)ceil($filteredTotal / $rowsPerPage));
+if ($currentPage > $totalPages) {
+    $currentPage = $totalPages;
+}
+$offset = ($currentPage - 1) * $rowsPerPage;
+
 $query = "SELECT pts.id AS score_id,
                  pts.result,
                  pts.realistic, pts.investigative, pts.artistic,
@@ -405,9 +420,14 @@ $query = "SELECT pts.id AS score_id,
           FROM personality_test_scores pts
           LEFT JOIN personal_info pi ON pi.id = pts.personal_info_id
           {$whereSql}
-          ORDER BY pts.created_at DESC";
+          ORDER BY pts.created_at DESC
+          LIMIT {$rowsPerPage} OFFSET {$offset}";
 $scores = mysqli_query($connection, $query);
-$filteredTotal = $scores ? mysqli_num_rows($scores) : 0;
+
+$paginationParams = $_GET;
+unset($paginationParams['page']);
+$pageStartRow = $filteredTotal > 0 ? $offset + 1 : 0;
+$pageEndRow = min($offset + $rowsPerPage, $filteredTotal);
 ?>
 <?php include 'includes/header.php'; ?>
 
@@ -489,7 +509,9 @@ $filteredTotal = $scores ? mysqli_num_rows($scores) : 0;
   <div class="glass-card app-form-card">
     <div class="d-flex justify-content-between align-items-start flex-wrap gap-2 mb-2">
       <h2 class="h5 fw-bold text-success mb-0">Daftar hasil tes peserta</h2>
-      <span class="badge text-bg-light border">Menampilkan <?php echo $filteredTotal; ?> data</span>
+      <span class="badge text-bg-light border">
+        Menampilkan <?php echo $pageStartRow; ?>-<?php echo $pageEndRow; ?> dari <?php echo $filteredTotal; ?> data
+      </span>
     </div>
 
     <?php if ($permissionError !== '') { ?>
@@ -728,7 +750,7 @@ $filteredTotal = $scores ? mysqli_num_rows($scores) : 0;
             </tr>
           </thead>
           <tbody>
-            <?php if ($scores && mysqli_num_rows($scores) > 0) { $rowNum = 1; ?>
+            <?php if ($scores && mysqli_num_rows($scores) > 0) { $rowNum = $offset + 1; ?>
               <?php while ($row = mysqli_fetch_assoc($scores)) { ?>
                 <tr>
                   <?php if ($isSuperAdmin) { ?>
@@ -774,6 +796,39 @@ $filteredTotal = $scores ? mysqli_num_rows($scores) : 0;
           </tbody>
         </table>
       </div>
+      <?php if ($totalPages > 1) { ?>
+        <nav class="mt-3" aria-label="Navigasi halaman hasil tes">
+          <ul class="pagination justify-content-center flex-wrap mb-0">
+            <?php
+              $previousParams = $paginationParams;
+              $previousParams['page'] = max(1, $currentPage - 1);
+            ?>
+            <li class="page-item <?php echo $currentPage <= 1 ? 'disabled' : ''; ?>">
+              <a class="page-link" href="admin_scores?<?php echo htmlspecialchars(http_build_query($previousParams)); ?>" aria-label="Halaman sebelumnya">Sebelumnya</a>
+            </li>
+
+            <?php
+              $firstVisiblePage = max(1, $currentPage - 2);
+              $lastVisiblePage = min($totalPages, $currentPage + 2);
+              for ($pageNumber = $firstVisiblePage; $pageNumber <= $lastVisiblePage; $pageNumber++) {
+                  $pageParams = $paginationParams;
+                  $pageParams['page'] = $pageNumber;
+            ?>
+              <li class="page-item <?php echo $pageNumber === $currentPage ? 'active' : ''; ?>">
+                <a class="page-link" href="admin_scores?<?php echo htmlspecialchars(http_build_query($pageParams)); ?>"><?php echo $pageNumber; ?></a>
+              </li>
+            <?php } ?>
+
+            <?php
+              $nextParams = $paginationParams;
+              $nextParams['page'] = min($totalPages, $currentPage + 1);
+            ?>
+            <li class="page-item <?php echo $currentPage >= $totalPages ? 'disabled' : ''; ?>">
+              <a class="page-link" href="admin_scores?<?php echo htmlspecialchars(http_build_query($nextParams)); ?>" aria-label="Halaman berikutnya">Berikutnya</a>
+            </li>
+          </ul>
+        </nav>
+      <?php } ?>
     </form>
   </div>
 
