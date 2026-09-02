@@ -324,6 +324,62 @@ if (!empty($whereClauses)) {
     $whereSql = 'WHERE ' . implode(' AND ', $whereClauses);
 }
 
+if (isset($_GET['export_excel']) && $_GET['export_excel'] === '1') {
+    header('Content-Type: application/json; charset=utf-8');
+
+    $exportQuery = "SELECT pts.id AS score_id,
+                           pts.result,
+                           pts.realistic, pts.investigative, pts.artistic,
+                           pts.social, pts.enterprising, pts.conventional,
+                           pts.created_at,
+                           pi.id AS person_id, pi.full_name, pi.birth_date, pi.phone, pi.email,
+                           pi.class_level, pi.school_name, pi.province, pi.city,
+                           pi.extracurricular, pi.organization, pi.created_at AS person_created
+                    FROM personality_test_scores pts
+                    LEFT JOIN personal_info pi ON pi.id = pts.personal_info_id
+                    {$whereSql}
+                    ORDER BY pts.created_at DESC";
+    $exportResult = mysqli_query($connection, $exportQuery);
+
+    if (!$exportResult) {
+        echo json_encode(array(
+            'ok' => false,
+            'message' => 'Gagal mengambil data export.',
+            'rows' => array(),
+            'total' => 0
+        ), JSON_UNESCAPED_UNICODE);
+        exit;
+    }
+
+    $rows = array();
+    while ($row = mysqli_fetch_assoc($exportResult)) {
+        $rows[] = array(
+            'full_name' => isset($row['full_name']) && trim((string)$row['full_name']) !== '' ? (string)$row['full_name'] : '-',
+            'email' => isset($row['email']) && trim((string)$row['email']) !== '' ? (string)$row['email'] : '-',
+            'class_level' => isset($row['class_level']) && trim((string)$row['class_level']) !== '' ? (string)$row['class_level'] : '-',
+            'school_name' => isset($row['school_name']) && trim((string)$row['school_name']) !== '' ? (string)$row['school_name'] : '-',
+            'province' => isset($row['province']) && trim((string)$row['province']) !== '' ? (string)$row['province'] : '-',
+            'city' => isset($row['city']) && trim((string)$row['city']) !== '' ? (string)$row['city'] : '-',
+            'result' => isset($row['result']) && trim((string)$row['result']) !== '' ? (string)$row['result'] : '-',
+            'realistic' => isset($row['realistic']) ? floatval($row['realistic']) : 0,
+            'investigative' => isset($row['investigative']) ? floatval($row['investigative']) : 0,
+            'artistic' => isset($row['artistic']) ? floatval($row['artistic']) : 0,
+            'social' => isset($row['social']) ? floatval($row['social']) : 0,
+            'enterprising' => isset($row['enterprising']) ? floatval($row['enterprising']) : 0,
+            'conventional' => isset($row['conventional']) ? floatval($row['conventional']) : 0,
+            'created_at' => isset($row['created_at']) && trim((string)$row['created_at']) !== '' ? (string)$row['created_at'] : '-'
+        );
+    }
+
+    echo json_encode(array(
+        'ok' => true,
+        'message' => '',
+        'rows' => $rows,
+        'total' => count($rows)
+    ), JSON_UNESCAPED_UNICODE);
+    exit;
+}
+
 $returnQuery = $_SERVER['QUERY_STRING'] ?? '';
 $deletedCount = isset($_GET['deleted']) ? intval($_GET['deleted']) : 0;
 $deletedUnknownCount = isset($_GET['deleted_unknown']) ? intval($_GET['deleted_unknown']) : 0;
@@ -1107,35 +1163,77 @@ document.addEventListener('DOMContentLoaded', function () {
     syncBulkControls();
   }
 
-  if (exportExcelBtn && scoresTable) {
-    exportExcelBtn.addEventListener('click', function () {
+  if (exportExcelBtn) {
+    exportExcelBtn.addEventListener('click', async function () {
       if (typeof XLSX === 'undefined') {
         alert('Library Excel belum tersedia. Silakan refresh halaman.');
         return;
       }
 
-      const rows = Array.from(scoresTable.querySelectorAll('tr'));
-      const hasCheckboxColumn = scoresTable.getAttribute('data-has-checkbox') === '1';
-      const startColumnIndex = hasCheckboxColumn ? 1 : 0;
-      const data = rows.map((row) => {
-        const cells = Array.from(row.querySelectorAll('th, td'));
-        return cells
-          .slice(startColumnIndex, -1) // Skip optional checkbox and action columns.
-          .map((cell) => cell.innerText.trim());
-      }).filter((rowData) => rowData.length > 0);
+      const originalLabel = exportExcelBtn.textContent;
+      exportExcelBtn.disabled = true;
+      exportExcelBtn.textContent = 'Menyiapkan...';
 
-      if (data.length <= 1) {
-        alert('Tidak ada data untuk diekspor.');
-        return;
+      try {
+        const params = new URLSearchParams(window.location.search);
+        params.delete('page');
+        params.delete('zi_page');
+        params.delete('export_excel');
+        params.set('export_excel', '1');
+
+        const response = await fetch('admin_scores?' + params.toString(), {
+          headers: { 'X-Requested-With': 'XMLHttpRequest' }
+        });
+        if (!response.ok) {
+          throw new Error('HTTP ' + response.status);
+        }
+
+        const payload = await response.json();
+        if (!payload || !payload.ok) {
+          throw new Error((payload && payload.message) ? payload.message : 'Gagal mengambil data export.');
+        }
+
+        const rows = Array.isArray(payload.rows) ? payload.rows : [];
+        if (!rows.length) {
+          alert('Tidak ada data untuk diekspor.');
+          return;
+        }
+
+        const data = [
+          ['Nama', 'Email', 'Jenjang Pendidikan', 'Sekolah/Institusi/Universitas', 'Provinsi', 'Kota', 'Kode', 'R', 'I', 'A', 'S', 'E', 'C', 'Tanggal Tes']
+        ];
+        rows.forEach(function (row) {
+          data.push([
+            row.full_name || '-',
+            row.email || '-',
+            row.class_level || '-',
+            row.school_name || '-',
+            row.province || '-',
+            row.city || '-',
+            row.result || '-',
+            String(row.realistic ?? 0) + '%',
+            String(row.investigative ?? 0) + '%',
+            String(row.artistic ?? 0) + '%',
+            String(row.social ?? 0) + '%',
+            String(row.enterprising ?? 0) + '%',
+            String(row.conventional ?? 0) + '%',
+            row.created_at || '-'
+          ]);
+        });
+
+        const worksheet = XLSX.utils.aoa_to_sheet(data);
+        const workbook = XLSX.utils.book_new();
+        XLSX.utils.book_append_sheet(workbook, worksheet, 'Hasil RIASEC');
+
+        const now = new Date();
+        const dateStamp = now.toISOString().slice(0, 10);
+        XLSX.writeFile(workbook, 'hasil_riasec_' + dateStamp + '.xlsx');
+      } catch (error) {
+        alert((error && error.message) ? error.message : 'Gagal mengekspor data.');
+      } finally {
+        exportExcelBtn.disabled = false;
+        exportExcelBtn.textContent = originalLabel;
       }
-
-      const worksheet = XLSX.utils.aoa_to_sheet(data);
-      const workbook = XLSX.utils.book_new();
-      XLSX.utils.book_append_sheet(workbook, worksheet, 'Hasil RIASEC');
-
-      const now = new Date();
-      const dateStamp = now.toISOString().slice(0, 10);
-      XLSX.writeFile(workbook, 'hasil_riasec_' + dateStamp + '.xlsx');
     });
   }
 });
