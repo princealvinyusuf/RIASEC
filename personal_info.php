@@ -72,6 +72,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $school_name = isset($_POST['school_name']) ? normalizeInputText($_POST['school_name']) : '';
     $province = isset($_POST['province']) ? normalizeInputText($_POST['province']) : '';
     $city = isset($_POST['city']) ? normalizeInputText($_POST['city']) : '';
+    $region_load_failed = isset($_POST['region_load_failed']) && $_POST['region_load_failed'] === '1';
     $extracurricular = isset($_POST['extracurricular']) ? normalizeInputText($_POST['extracurricular']) : '';
     $organization = isset($_POST['organization']) ? normalizeInputText($_POST['organization']) : '';
 
@@ -81,8 +82,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     if ($email === '') { $errors[] = 'E-mail wajib diisi.'; }
     if ($class_level === '') { $errors[] = 'Jenjang Pendidikan wajib dipilih.'; }
     if ($school_name === '') { $errors[] = 'Nama Sekolah/Institusi/Universitas wajib diisi.'; }
-    if ($province === '') { $errors[] = 'Provinsi wajib dipilih.'; }
-    if ($city === '') { $errors[] = 'Kota wajib dipilih.'; }
+    if (!$region_load_failed && $province === '') { $errors[] = 'Provinsi wajib dipilih.'; }
+    if (!$region_load_failed && $city === '') { $errors[] = 'Kota wajib dipilih.'; }
     if ($extracurricular === '') { $errors[] = 'Ekstrakurikuler yang diikuti wajib diisi.'; }
     if ($organization === '') { $errors[] = 'Organisasi yang diikuti wajib diisi.'; }
 
@@ -187,6 +188,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
     <form action="personal_info" method="post" novalidate>
       <div class="row g-3">
+        <input type="hidden" name="region_load_failed" id="regionLoadFailed" value="0">
         <div class="col-md-6">
           <label class="form-label">Nama lengkap</label>
           <input type="text" name="full_name" class="form-control" required minlength="3" maxlength="100" value="<?php echo isset($full_name) ? htmlspecialchars($full_name) : ''; ?>">
@@ -217,7 +219,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
           <label class="form-label">Nama Sekolah/Institusi/Universitas</label>
           <input type="text" name="school_name" class="form-control" required minlength="3" maxlength="150" value="<?php echo isset($school_name) ? htmlspecialchars($school_name) : ''; ?>">
         </div>
-        <div class="col-md-6">
+        <div class="col-md-6" id="provinceField">
           <label class="form-label">Provinsi</label>
           <select
             name="province"
@@ -230,7 +232,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             <option value="" selected disabled>Pilih provinsi</option>
           </select>
         </div>
-        <div class="col-md-6">
+        <div class="col-md-6" id="cityField">
           <label class="form-label">Kota</label>
           <select
             name="city"
@@ -266,6 +268,9 @@ document.addEventListener('DOMContentLoaded', function () {
   var provinceSelect = document.getElementById('provinceSelect');
   var citySelect = document.getElementById('citySelect');
   var regionHelp = document.getElementById('regionHelp');
+  var provinceField = document.getElementById('provinceField');
+  var cityField = document.getElementById('cityField');
+  var regionLoadFailed = document.getElementById('regionLoadFailed');
 
   if (!provinceSelect || !citySelect) {
     return;
@@ -279,6 +284,22 @@ document.addEventListener('DOMContentLoaded', function () {
   function setRegionHelp(message) {
     if (regionHelp) {
       regionHelp.textContent = message;
+    }
+  }
+
+  function hideUnavailableRegionFields() {
+    provinceSelect.required = false;
+    citySelect.required = false;
+    provinceSelect.disabled = true;
+    citySelect.disabled = true;
+    if (provinceField) {
+      provinceField.hidden = true;
+    }
+    if (cityField) {
+      cityField.hidden = true;
+    }
+    if (regionLoadFailed) {
+      regionLoadFailed.value = '1';
     }
   }
 
@@ -358,6 +379,7 @@ document.addEventListener('DOMContentLoaded', function () {
       .catch(function () {
         resetCitySelect('Gagal memuat kota');
         setRegionHelp('Gagal memuat data kota. Silakan periksa koneksi internet lalu coba lagi.');
+        hideUnavailableRegionFields();
       });
   }
 
@@ -389,6 +411,7 @@ document.addEventListener('DOMContentLoaded', function () {
       provinceSelect.innerHTML = '<option value="" selected disabled>Gagal memuat provinsi</option>';
       resetCitySelect('Gagal memuat kota');
       setRegionHelp('Gagal memuat data wilayah. Silakan refresh halaman atau periksa koneksi internet.');
+      hideUnavailableRegionFields();
     });
 });
 </script>
