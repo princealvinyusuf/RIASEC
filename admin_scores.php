@@ -418,14 +418,30 @@ $emptyCityCount = intval($emptyCityCountRow['total']);
 $totalZiAssessments = 0;
 $avgZiScore = 0;
 $latestZiDate = '-';
+$totalZiPositiveAnswers = 0;
+$totalZiNeutralAnswers = 0;
+$totalZiNegativeAnswers = 0;
 $ziAssessmentRows = array();
 $ziDuplicateCount = 0;
 
-$ziTotalRes = mysqli_query($connection, "SELECT COUNT(*) AS total, AVG(average_score) AS avg_score, MAX(submitted_at) AS latest_at FROM zi_assessments");
+$ziTotalRes = mysqli_query(
+    $connection,
+    "SELECT
+        COUNT(*) AS total,
+        AVG(average_score) AS avg_score,
+        MAX(submitted_at) AS latest_at,
+        COALESCE(SUM(positive_count), 0) AS total_positive,
+        COALESCE(SUM(neutral_count), 0) AS total_neutral,
+        COALESCE(SUM(negative_count), 0) AS total_negative
+     FROM zi_assessments"
+);
 if ($ziTotalRes) {
     $ziTotalRow = mysqli_fetch_assoc($ziTotalRes);
     $totalZiAssessments = intval($ziTotalRow['total'] ?? 0);
     $avgZiScore = floatval($ziTotalRow['avg_score'] ?? 0);
+    $totalZiPositiveAnswers = intval($ziTotalRow['total_positive'] ?? 0);
+    $totalZiNeutralAnswers = intval($ziTotalRow['total_neutral'] ?? 0);
+    $totalZiNegativeAnswers = intval($ziTotalRow['total_negative'] ?? 0);
     if (!empty($ziTotalRow['latest_at'])) {
         $latestZiDate = $ziTotalRow['latest_at'];
     }
@@ -950,6 +966,28 @@ $pageEndRow = min($offset + $rowsPerPage, $filteredTotal);
         <?php echo $ziDuplicatesDeletedCount; ?> data survei ZI duplikat berhasil dihapus.
       </div>
     <?php } ?>
+    <div class="results-grid my-3">
+      <div class="interest-pill">
+        <div class="muted small">Total Survei</div>
+        <div class="display-6 fw-bold text-success"><?php echo number_format($totalZiAssessments); ?></div>
+      </div>
+      <div class="interest-pill">
+        <div class="muted small">Keseluruhan Rata-rata Nilai</div>
+        <div class="display-6 fw-bold text-success"><?php echo number_format($avgZiScore, 2); ?><span class="fs-6 muted">/5</span></div>
+      </div>
+      <div class="interest-pill">
+        <div class="muted small">Total Jawaban Positif</div>
+        <div class="display-6 fw-bold text-success"><?php echo number_format($totalZiPositiveAnswers); ?></div>
+      </div>
+      <div class="interest-pill">
+        <div class="muted small">Total Jawaban Netral</div>
+        <div class="display-6 fw-bold text-success"><?php echo number_format($totalZiNeutralAnswers); ?></div>
+      </div>
+      <div class="interest-pill">
+        <div class="muted small">Total Jawaban Negatif</div>
+        <div class="display-6 fw-bold text-success"><?php echo number_format($totalZiNegativeAnswers); ?></div>
+      </div>
+    </div>
     <div class="table-responsive">
       <table class="table table-hover align-middle">
         <thead class="table-success">
